@@ -70,6 +70,7 @@ export async function processUploadQueue(options: ProcessUploadQueueOptions = {}
         description: item.description,
         tags: item.tags ? item.tags.split(',') : [],
         privacyStatus: item.privacyStatus as 'public' | 'unlisted' | 'private',
+        publishAt: item.publishAt,
         selfDeclaredMadeForKids: item.selfDeclaredMadeForKids,
         containsSyntheticMedia: item.containsSyntheticMedia,
         language: item.language || undefined,

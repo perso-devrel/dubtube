@@ -3,6 +3,7 @@ import 'server-only'
 import type { YouTubeLocalization, YouTubeUploadResult } from '@/lib/youtube/types'
 import { resolveCaptionTrackName } from '@/lib/youtube/captions'
 import { YouTubeError } from '@/lib/youtube/error'
+import { effectivePrivacyStatus, normalizePublishAt } from '@/lib/youtube/publish-schedule'
 
 const YOUTUBE_UPLOAD_BASE = 'https://www.googleapis.com/upload/youtube/v3'
 
@@ -39,6 +40,7 @@ export interface YouTubeUploadInput {
   tags: string[]
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
+  publishAt?: string | null
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
@@ -58,6 +60,7 @@ export interface YouTubeUploadSessionInput {
   tags: string[]
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
+  publishAt?: string | null
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
@@ -86,6 +89,7 @@ export async function initYouTubeResumableUpload(
     tags,
     categoryId = '22',
     privacyStatus = 'private',
+    publishAt,
     selfDeclaredMadeForKids = false,
     containsSyntheticMedia = false,
     language = 'en',
@@ -95,6 +99,14 @@ export async function initYouTubeResumableUpload(
 
   const filteredLocalizations = omitLanguage(localizations, language)
   const hasLocalizations = !!filteredLocalizations && Object.keys(filteredLocalizations).length > 0
+  const normalizedPublishAt = normalizePublishAt(publishAt)
+  if (normalizedPublishAt && new Date(normalizedPublishAt).getTime() <= Date.now()) {
+    throw new YouTubeError(
+      400,
+      'Scheduled publish time must be in the future',
+      'INVALID_PUBLISH_AT',
+    )
+  }
   const metadata: Record<string, unknown> = {
     snippet: {
       title,
@@ -105,7 +117,8 @@ export async function initYouTubeResumableUpload(
       defaultAudioLanguage: language,
     },
     status: {
-      privacyStatus,
+      privacyStatus: effectivePrivacyStatus(privacyStatus, normalizedPublishAt),
+      ...(normalizedPublishAt ? { publishAt: normalizedPublishAt } : {}),
       selfDeclaredMadeForKids,
       containsSyntheticMedia,
     },
@@ -170,6 +183,7 @@ export async function uploadVideoToYouTube(
     tags: input.tags,
     categoryId: input.categoryId,
     privacyStatus: input.privacyStatus,
+    publishAt: input.publishAt,
     selfDeclaredMadeForKids: input.selfDeclaredMadeForKids,
     containsSyntheticMedia: input.containsSyntheticMedia,
     language: input.language,

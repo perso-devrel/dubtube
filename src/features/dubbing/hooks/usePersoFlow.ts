@@ -175,6 +175,10 @@ async function buildYouTubeUploadSnapshotByLanguage(
     ? 'original_video'
     : 'dubbed_video'
   const sourceKind = sourceType === 'channel' ? 'my_youtube_video' : 'new_video'
+  const publishAt =
+    targetAssetKind === 'dubbed_video' || sourceKind === 'new_video'
+      ? settings.publishAt
+      : null
   const originalYouTubeVideoId = sourceType === 'channel'
     ? state.videoSource?.videoId ?? null
     : sourceType === 'url' && state.videoSource?.url
@@ -252,6 +256,8 @@ async function buildYouTubeUploadSnapshotByLanguage(
           description: baseDescription,
           tags: settings.tags,
           privacyStatus: settings.privacyStatus,
+          publishAt,
+          publishAtTimeZone: settings.publishAtTimeZone,
           uploadCaptions: settings.uploadCaptions,
           selfDeclaredMadeForKids: settings.selfDeclaredMadeForKids,
           containsSyntheticMedia: shouldApplyAiDisclosure,

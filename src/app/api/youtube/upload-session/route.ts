@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         tags: body.tags,
         categoryId: body.categoryId,
         privacyStatus: body.privacyStatus,
+        publishAt: body.publishAt,
         selfDeclaredMadeForKids: body.selfDeclaredMadeForKids,
         containsSyntheticMedia: body.containsSyntheticMedia,
         language: body.language,

@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { useYouTubeSettingsStore } from '@/stores/youtubeSettingsStore'
+import { getDefaultPublishTimeZone } from '@/lib/youtube/publish-schedule'
 import type {
   DubbingStep,
   VideoSource,
@@ -55,6 +56,8 @@ const buildDefaultUploadSettings = (): UploadSettings => ({
   description: '',
   tags: readDefaultTags(),
   privacyStatus: readDefaultPrivacy(),
+  publishAt: null,
+  publishAtTimeZone: getDefaultPublishTimeZone(),
   uploadCaptions: true,
   selfDeclaredMadeForKids: false,
   containsSyntheticMedia: true,
@@ -69,6 +72,8 @@ const REVIEW_RESET_FIELDS: Array<keyof UploadSettings> = [
   'description',
   'tags',
   'privacyStatus',
+  'publishAt',
+  'publishAtTimeZone',
   'metadataLanguage',
   'uploadCaptions',
   'selfDeclaredMadeForKids',

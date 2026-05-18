@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizePublishAt } from '@/lib/youtube/publish-schedule'
 
 export const captionBodySchema = z.object({
   videoId: z.string().min(1),
@@ -81,6 +82,23 @@ const formBooleanSchema = z
     return v === 'true'
   })
 
+const publishAtSchema = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((value, ctx): string | undefined => {
+    if (value === undefined || value === null || value.trim().length === 0) return undefined
+    const normalized = normalizePublishAt(value)
+    if (!normalized) {
+      ctx.addIssue({ code: 'custom', message: 'Invalid publishAt datetime' })
+      return z.NEVER
+    }
+    if (new Date(normalized).getTime() <= Date.now()) {
+      ctx.addIssue({ code: 'custom', message: 'publishAt must be in the future' })
+      return z.NEVER
+    }
+    return normalized
+  })
+
 export const uploadSessionBodySchema = z.object({
   contentType: z.string().min(1).max(200),
   contentLength: z.number().int().positive(),
@@ -89,6 +107,7 @@ export const uploadSessionBodySchema = z.object({
   tags: z.array(z.string()).default([]),
   categoryId: z.string().optional(),
   privacyStatus: z.enum(['public', 'unlisted', 'private']).optional(),
+  publishAt: publishAtSchema,
   selfDeclaredMadeForKids: z.boolean().optional(),
   containsSyntheticMedia: z.boolean().optional(),
   language: z.string().optional(),
@@ -104,6 +123,7 @@ export const uploadFormSchema = z.object({
     .transform((v) => (v ? v.split(',').map((t) => t.trim()).filter(Boolean) : [])),
   categoryId: z.string().optional(),
   privacyStatus: z.enum(['public', 'unlisted', 'private']).optional(),
+  publishAt: publishAtSchema,
   selfDeclaredMadeForKids: formBooleanSchema,
   containsSyntheticMedia: formBooleanSchema,
   language: z.string().optional(),

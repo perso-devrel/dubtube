@@ -15,6 +15,7 @@ export interface UploadQueueItem {
   description: string
   tags: string
   privacyStatus: string
+  publishAt: string | null
   language: string
   isShort: boolean
   uploadCaptions: boolean
@@ -54,6 +55,7 @@ async function ensureTable() {
       description TEXT NOT NULL DEFAULT '',
       tags TEXT NOT NULL DEFAULT '',
       privacy_status TEXT NOT NULL DEFAULT 'private',
+      publish_at TEXT,
       language TEXT NOT NULL DEFAULT '',
       is_short INTEGER NOT NULL DEFAULT 0,
       upload_captions INTEGER NOT NULL DEFAULT 1,
@@ -84,6 +86,7 @@ async function ensureTable() {
     })
   }
   await addColumn('upload_captions', 'INTEGER NOT NULL DEFAULT 1')
+  await addColumn('publish_at', 'TEXT')
   await addColumn('caption_language', 'TEXT')
   await addColumn('caption_name', 'TEXT')
   await addColumn('srt_content', 'TEXT')
@@ -104,6 +107,7 @@ export async function createUploadQueueItem(item: {
   description: string
   tags: string[]
   privacyStatus: string
+  publishAt?: string | null
   language: string
   isShort: boolean
   uploadCaptions?: boolean
@@ -142,6 +146,7 @@ export async function createUploadQueueItem(item: {
                 description = ?,
                 tags = ?,
                 privacy_status = ?,
+                publish_at = ?,
                 language = ?,
                 is_short = ?,
                 upload_captions = ?,
@@ -166,6 +171,7 @@ export async function createUploadQueueItem(item: {
         item.description,
         item.tags.join(','),
         item.privacyStatus,
+        item.publishAt ?? null,
         item.language,
         item.isShort ? 1 : 0,
         (item.uploadCaptions ?? true) ? 1 : 0,
@@ -186,10 +192,10 @@ export async function createUploadQueueItem(item: {
     sql: `INSERT INTO upload_queue (
             user_id, job_id, lang_code, video_url, title, description, tags,
             privacy_status, language, is_short, upload_captions, caption_language,
-            caption_name, srt_content, self_declared_made_for_kids, contains_synthetic_media,
+            publish_at, caption_name, srt_content, self_declared_made_for_kids, contains_synthetic_media,
             upload_kind, metadata_json, localizations_json
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       item.userId,
       item.jobId,
@@ -203,6 +209,7 @@ export async function createUploadQueueItem(item: {
       item.isShort ? 1 : 0,
       (item.uploadCaptions ?? true) ? 1 : 0,
       item.captionLanguage ?? null,
+      item.publishAt ?? null,
       item.captionName ?? null,
       item.srtContent ?? null,
       item.selfDeclaredMadeForKids ? 1 : 0,
@@ -326,6 +333,7 @@ function rowToItem(row: Record<string, unknown>): UploadQueueItem {
     description: String(row.description),
     tags: String(row.tags),
     privacyStatus: String(row.privacy_status),
+    publishAt: row.publish_at ? String(row.publish_at) : null,
     language: String(row.language),
     isShort: dbBoolean(row.is_short),
     uploadCaptions: dbBoolean(row.upload_captions),

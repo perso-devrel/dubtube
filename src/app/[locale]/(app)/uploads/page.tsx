@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock } from 'lucide-react'
-import { Card, CardTitle, Button, Badge, Select } from '@/components/ui'
+import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock, CalendarClock } from 'lucide-react'
+import { Card, CardTitle, Button, Badge, Select, Input } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
 import { EmptyState } from '@/components/feedback/EmptyState'
@@ -29,6 +29,17 @@ import {
   snapshotMetadataJson,
   type YouTubeUploadSnapshot,
 } from '@/lib/youtube/upload-snapshot'
+import {
+  effectivePrivacyStatus,
+  fromDateTimeLocalInputValue,
+  getDefaultPublishTimeZone,
+  getSupportedPublishTimeZones,
+  hasScheduledPublish,
+  isFuturePublishAt,
+  minDateTimeLocalInputValue,
+  normalizePublishTimeZone,
+  toDateTimeLocalInputValue,
+} from '@/lib/youtube/publish-schedule'
 
 type UploadState = 'idle' | 'fetching' | 'uploading' | 'done' | 'error'
 type PrivacyStatus = 'public' | 'unlisted' | 'private'
@@ -48,6 +59,8 @@ interface UploadSettings {
   description: string
   tags: string
   privacyStatus: PrivacyStatus
+  publishAt: string | null
+  publishAtTimeZone: string | null
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean
@@ -95,6 +108,8 @@ function buildFallbackSnapshot(item: CompletedJobLanguage, langName: string, t: 
       description,
       tags,
       privacyStatus: 'private',
+      publishAt: null,
+      publishAtTimeZone: getDefaultPublishTimeZone(),
       uploadCaptions: true,
       selfDeclaredMadeForKids: false,
       containsSyntheticMedia: targetAssetKind === 'dubbed_video',
@@ -173,6 +188,8 @@ function buildSettingsFromSnapshot(snapshot: YouTubeUploadSnapshot): UploadSetti
     description,
     tags: snapshot.settings.tags.join(', '),
     privacyStatus: snapshot.settings.privacyStatus,
+    publishAt: snapshot.settings.publishAt,
+    publishAtTimeZone: snapshot.settings.publishAtTimeZone,
     uploadCaptions: snapshot.settings.uploadCaptions,
     selfDeclaredMadeForKids: snapshot.settings.selfDeclaredMadeForKids,
     containsSyntheticMedia: snapshot.settings.containsSyntheticMedia,
@@ -231,6 +248,28 @@ function UploadSettingsModal({
   uploadsOriginalVideo,
 }: UploadSettingsModalProps) {
   const t = useLocaleText()
+  const videoUploadFlow = !captionUploadFlow || uploadsOriginalVideo
+  const publishAtTimeZone = normalizePublishTimeZone(settings.publishAtTimeZone)
+  const hasPublishSchedule = hasScheduledPublish(settings.publishAt)
+  const visibilityValue = effectivePrivacyStatus(settings.privacyStatus, settings.publishAt)
+  const scheduleInvalid = hasPublishSchedule && !isFuturePublishAt(settings.publishAt)
+  const handlePublishAtChange = (value: string) => {
+    const publishAt = fromDateTimeLocalInputValue(value, publishAtTimeZone)
+    onChange({
+      ...settings,
+      publishAt,
+      ...(publishAt ? { privacyStatus: 'private' as PrivacyStatus } : {}),
+    })
+  }
+  const handlePublishAtTimeZoneChange = (timeZone: string) => {
+    const nextTimeZone = normalizePublishTimeZone(timeZone)
+    const localValue = toDateTimeLocalInputValue(settings.publishAt, publishAtTimeZone)
+    onChange({
+      ...settings,
+      publishAtTimeZone: nextTimeZone,
+      publishAt: localValue ? fromDateTimeLocalInputValue(localValue, nextTimeZone) : settings.publishAt,
+    })
+  }
 
   return (
     <Modal
@@ -267,7 +306,7 @@ function UploadSettingsModal({
           </div>
         ) : null}
 
-        {captionUploadFlow ? null : (
+        {videoUploadFlow ? (
           <>
             <div className="rounded-lg border border-surface-200 bg-surface-50 p-3 text-sm text-surface-600 dark:border-surface-800 dark:bg-surface-900/40 dark:text-surface-300">
               <div className="flex items-start gap-2">
@@ -282,13 +321,56 @@ function UploadSettingsModal({
 
             <Select
               label={t('app.app.uploads.page.visibility')}
-              value={settings.privacyStatus}
+              value={visibilityValue}
               onChange={(e) => onChange({ ...settings, privacyStatus: e.target.value as PrivacyStatus })}
+              disabled={hasPublishSchedule}
               options={PRIVACY_OPTIONS.map((option) => ({
                 value: option.value,
                 label: t(option.labelKey),
               }))}
             />
+            {hasPublishSchedule && (
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('app.app.uploads.page.scheduledUploadsArePrivateUntilPublish')}
+              </p>
+            )}
+
+            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+              <div className="flex min-w-0 items-start gap-2">
+                <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div>
+                    <p className="text-sm text-surface-700 dark:text-surface-300">
+                      {t('app.app.uploads.page.schedulePublish')}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-300">
+                      {t('app.app.uploads.page.schedulePublishDescription')}
+                    </p>
+                  </div>
+                  <Input
+                    type="datetime-local"
+                    value={toDateTimeLocalInputValue(settings.publishAt, publishAtTimeZone)}
+                    min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
+                    onChange={(e) => handlePublishAtChange(e.target.value)}
+                    aria-label={t('app.app.uploads.page.schedulePublish')}
+                  />
+                  <Select
+                    label={t('app.app.uploads.page.publishTimeZone')}
+                    value={publishAtTimeZone}
+                    onChange={(e) => handlePublishAtTimeZoneChange(e.target.value)}
+                    options={getSupportedPublishTimeZones().map((timeZone) => ({
+                      value: timeZone,
+                      label: timeZone.replaceAll('_', ' '),
+                    }))}
+                  />
+                  {scheduleInvalid && (
+                    <p className="text-xs text-red-500">
+                      {t('app.app.uploads.page.publishTimeMustBeFuture')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
 
             <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
               <input
@@ -317,7 +399,7 @@ function UploadSettingsModal({
               </Badge>
             </div>
           </>
-        )}
+        ) : null}
 
         {!captionUploadFlow && (
           <div className="flex items-center gap-2 rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
@@ -326,12 +408,12 @@ function UploadSettingsModal({
         )}
 
         <div className="grid grid-cols-1 gap-2 pt-2 sm:flex sm:justify-end">
-          {!captionUploadFlow && (
+          {videoUploadFlow && (
             <Button size="sm" onClick={onClose} className="w-full bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-300 dark:hover:bg-surface-700 sm:w-auto">
               {t('app.app.uploads.page.cancel')}
             </Button>
           )}
-          <Button size="sm" onClick={onConfirm} disabled={isLoading || (!captionUploadFlow && !settings.title.trim())} className="w-full sm:w-auto">
+          <Button size="sm" onClick={onConfirm} disabled={isLoading || scheduleInvalid || (videoUploadFlow && !settings.title.trim())} className="w-full sm:w-auto">
             {isLoading ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -435,11 +517,14 @@ function UploadRow({ item, userId }: UploadRowProps) {
         return srtRes.ok ? await srtRes.text() : null
       }
 
+      const uploadPrivacyStatus = effectivePrivacyStatus(settings.privacyStatus, settings.publishAt)
       const effectiveSnapshot: YouTubeUploadSnapshot = {
         ...snapshot,
         settings: {
           ...snapshot.settings,
-          privacyStatus: settings.privacyStatus,
+          privacyStatus: uploadPrivacyStatus,
+          publishAt: settings.publishAt,
+          publishAtTimeZone: settings.publishAtTimeZone,
           uploadCaptions: captionOnly ? true : settings.uploadCaptions,
           selfDeclaredMadeForKids: settings.selfDeclaredMadeForKids,
         },
@@ -489,7 +574,8 @@ function UploadRow({ item, userId }: UploadRowProps) {
             title: uploadTitle,
             description: uploadDescription,
             tags: baseTags,
-            privacyStatus: settings.privacyStatus,
+            privacyStatus: uploadPrivacyStatus,
+            publishAt: settings.publishAt,
             selfDeclaredMadeForKids: settings.selfDeclaredMadeForKids,
             containsSyntheticMedia: isOriginalVideoUpload ? false : settings.containsSyntheticMedia,
             language: isOriginalVideoUpload ? toBcp47(snapshot.sourceLanguage) : toBcp47(snapshot.targetLanguage),
@@ -564,7 +650,7 @@ function UploadRow({ item, userId }: UploadRowProps) {
             youtubeVideoId: targetVideoId,
             title: uploadTitle,
             languageCode: item.language_code,
-            privacyStatus: settings.privacyStatus,
+            privacyStatus: uploadPrivacyStatus,
             isShort: false,
             uploadKind: snapshot.uploadKind,
             metadataJson,
@@ -583,11 +669,16 @@ function UploadRow({ item, userId }: UploadRowProps) {
       setVideoId(targetVideoId)
       setState('done')
 
-      const privacyLabelKey = PRIVACY_OPTIONS.find((o) => o.value === settings.privacyStatus)?.labelKey
+      const privacyLabelKey = PRIVACY_OPTIONS.find((o) => o.value === uploadPrivacyStatus)?.labelKey
+      const publishLabel = settings.publishAt
+        ? new Date(settings.publishAt).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US')
+        : null
       addToast({
         type: 'success',
         title: t('app.app.uploads.page.valueUploadComplete', { langName: langName }),
-        message: privacyLabelKey ? t(privacyLabelKey) : settings.privacyStatus,
+        message: publishLabel
+          ? t('app.app.uploads.page.scheduledForValue', { publishLabel })
+          : privacyLabelKey ? t(privacyLabelKey) : uploadPrivacyStatus,
       })
 
       queryClient.invalidateQueries({ queryKey: ['completed-languages'] })
@@ -599,7 +690,7 @@ function UploadRow({ item, userId }: UploadRowProps) {
         message: err instanceof Error ? err.message : t('app.app.uploads.page.anUnknownErrorOccurred'),
       })
     }
-  }, [captionOnly, item, langName, snapshot, captionLanguage, captionTrackName, settings, userId, videoId, addToast, queryClient, refetchAssetsFromPerso, t])
+  }, [captionOnly, item, langName, locale, snapshot, captionLanguage, captionTrackName, settings, userId, videoId, addToast, queryClient, refetchAssetsFromPerso, t])
 
   const isLoading = state === 'fetching' || state === 'uploading'
   const loadingLabel = state === 'fetching'

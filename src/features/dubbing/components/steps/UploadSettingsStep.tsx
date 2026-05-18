@@ -1,11 +1,21 @@
 'use client'
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Captions, Languages, Link2, ShieldCheck, Sparkles, Upload } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarClock, Captions, Languages, Link2, ShieldCheck, Sparkles, Upload } from 'lucide-react'
 import { Button, Card, CardTitle, Input, Select } from '@/components/ui'
 import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
 import { extractVideoId } from '@/utils/validators'
 import { SUPPORTED_LANGUAGES } from '@/utils/languages'
+import {
+  effectivePrivacyStatus,
+  fromDateTimeLocalInputValue,
+  getSupportedPublishTimeZones,
+  hasScheduledPublish,
+  isFuturePublishAt,
+  minDateTimeLocalInputValue,
+  normalizePublishTimeZone,
+  toDateTimeLocalInputValue,
+} from '@/lib/youtube/publish-schedule'
 import { useDubbingStore } from '../../store/dubbingStore'
 import { getAiDisclosureText, stripAiDisclosureFooter } from '../../utils/aiDisclosure'
 import type { PrivacyStatus } from '../../types/dubbing.types'
@@ -106,11 +116,16 @@ export function UploadSettingsStep() {
   const uploadsVideoToYouTube =
     deliverableMode === 'newDubbedVideos' ||
     (isMultiAudio && videoSource?.type === 'upload')
+  const hasPublishSchedule = hasScheduledPublish(uploadSettings.publishAt)
+  const visibilityValue = effectivePrivacyStatus(uploadSettings.privacyStatus, uploadSettings.publishAt)
+  const publishAtTimeZone = normalizePublishTimeZone(uploadSettings.publishAtTimeZone)
+  const scheduleInvalid = hasPublishSchedule && !isFuturePublishAt(uploadSettings.publishAt)
   const shouldShowAiDisclosure = deliverableMode === 'newDubbedVideos'
   const canContinue =
-    deliverableMode === 'originalWithMultiAudio'
+    (deliverableMode === 'originalWithMultiAudio'
       ? true
-      : uploadSettings.title.trim().length > 0
+      : uploadSettings.title.trim().length > 0) &&
+    !scheduleInvalid
   const handleSyntheticMediaToggle = () => {
     setUploadSettings({
       containsSyntheticMedia: !uploadSettings.containsSyntheticMedia,
@@ -123,8 +138,29 @@ export function UploadSettingsStep() {
       ? { autoUpload: true, uploadCaptions: true }
       : { autoUpload: false, uploadCaptions: false })
   }
+  const handlePublishAtChange = (value: string) => {
+    const publishAt = fromDateTimeLocalInputValue(value, publishAtTimeZone)
+    setUploadSettings({
+      publishAt,
+      ...(publishAt ? { privacyStatus: 'private' as PrivacyStatus } : {}),
+    })
+  }
+  const handlePublishAtTimeZoneChange = (timeZone: string) => {
+    const nextTimeZone = normalizePublishTimeZone(timeZone)
+    const localValue = toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)
+    setUploadSettings({
+      publishAtTimeZone: nextTimeZone,
+      publishAt: localValue ? fromDateTimeLocalInputValue(localValue, nextTimeZone) : uploadSettings.publishAt,
+    })
+  }
   const captionUploadDisabled =
     deliverableMode === 'newDubbedVideos' && !uploadSettings.autoUpload
+
+  useEffect(() => {
+    if (!uploadsVideoToYouTube && uploadSettings.publishAt) {
+      setUploadSettings({ publishAt: null })
+    }
+  }, [uploadsVideoToYouTube, uploadSettings.publishAt, setUploadSettings])
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -189,10 +225,16 @@ export function UploadSettingsStep() {
 
             <Select
               label={t('features.dubbing.components.steps.uploadSettingsStep.visibility')}
-              value={uploadSettings.privacyStatus}
+              value={visibilityValue}
               onChange={(e) => setUploadSettings({ privacyStatus: e.target.value as PrivacyStatus })}
+              disabled={hasPublishSchedule}
               options={privacyOptions}
             />
+            {hasPublishSchedule && (
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
+              </p>
+            )}
           </div>
         </Card>
       )}
@@ -249,10 +291,16 @@ export function UploadSettingsStep() {
 
             <Select
               label={t('features.dubbing.components.steps.uploadSettingsStep.visibility2')}
-              value={uploadSettings.privacyStatus}
+              value={visibilityValue}
               onChange={(e) => setUploadSettings({ privacyStatus: e.target.value as PrivacyStatus })}
+              disabled={hasPublishSchedule}
               options={privacyOptions}
             />
+            {hasPublishSchedule && (
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
+              </p>
+            )}
           </div>
         </Card>
       )}
@@ -272,6 +320,17 @@ export function UploadSettingsStep() {
             inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off')}
             onToggle={handleAutoUploadToggle}
           />
+
+          {uploadsVideoToYouTube && (
+            <SchedulePublishRow
+              value={toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)}
+              min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
+              timeZone={publishAtTimeZone}
+              invalid={scheduleInvalid}
+              onChange={handlePublishAtChange}
+              onTimeZoneChange={handlePublishAtTimeZoneChange}
+            />
+          )}
 
           {(deliverableMode === 'newDubbedVideos' || isMultiAudio) && (
             <ToggleRow
@@ -370,6 +429,58 @@ function AiDisclosurePreview({ text }: { text: string }) {
       <p className="mt-1 text-xs leading-5 text-surface-700 dark:text-surface-200">
         {text}
       </p>
+    </div>
+  )
+}
+
+interface SchedulePublishRowProps {
+  value: string
+  min: string
+  timeZone: string
+  invalid: boolean
+  onChange: (value: string) => void
+  onTimeZoneChange: (timeZone: string) => void
+}
+
+function SchedulePublishRow({ value, min, timeZone, invalid, onChange, onTimeZoneChange }: SchedulePublishRowProps) {
+  const t = useLocaleText()
+
+  return (
+    <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+      <div className="flex min-w-0 items-start gap-2">
+        <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div>
+            <p className="text-sm text-surface-700 dark:text-surface-300">
+              {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublish')}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-300">
+              {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublishDescription')}
+            </p>
+          </div>
+          <Input
+            type="datetime-local"
+            value={value}
+            min={min}
+            onChange={(e) => onChange(e.target.value)}
+            aria-label={t('features.dubbing.components.steps.uploadSettingsStep.schedulePublish')}
+          />
+          <Select
+            label={t('features.dubbing.components.steps.uploadSettingsStep.publishTimeZone')}
+            value={timeZone}
+            onChange={(e) => onTimeZoneChange(e.target.value)}
+            options={getSupportedPublishTimeZones().map((zone) => ({
+              value: zone,
+              label: zone.replaceAll('_', ' '),
+            }))}
+          />
+          {invalid && (
+            <p className="text-xs text-red-500">
+              {t('features.dubbing.components.steps.uploadSettingsStep.publishTimeMustBeFuture')}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -49,6 +49,8 @@ const uploadSettings = {
     description: 'Base description',
     tags: ['sub2tube'],
     privacyStatus: 'private' as const,
+    publishAt: null,
+    publishAtTimeZone: 'UTC',
     uploadCaptions: false,
     selfDeclaredMadeForKids: false,
     containsSyntheticMedia: true,

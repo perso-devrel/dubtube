@@ -503,6 +503,46 @@ describe('uploadVideoToYouTube', () => {
     expect(initBody.localizations.en.title).toBe('English title')
   })
 
+  it('sets publishAt and forces private visibility for scheduled uploads', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({}, 200, { Location: 'https://upload.example.com/resume' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ id: 'yt-scheduled', status: { uploadStatus: 'uploaded' } }),
+      )
+
+    await uploadVideoToYouTube({
+      accessToken: 'tok',
+      videoBlob: new Blob(['video'], { type: 'video/mp4' }),
+      title: 'Scheduled Vid',
+      description: '',
+      tags: [],
+      privacyStatus: 'public',
+      publishAt: '2030-01-02T03:04:05.000Z',
+    })
+
+    const initBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string)
+    expect(initBody.status).toMatchObject({
+      privacyStatus: 'private',
+      publishAt: '2030-01-02T03:04:05.000Z',
+    })
+  })
+
+  it('rejects past scheduled publish times before upload init', async () => {
+    await expect(
+      uploadVideoToYouTube({
+        accessToken: 'tok',
+        videoBlob: new Blob(['video'], { type: 'video/mp4' }),
+        title: 'Past Scheduled Vid',
+        description: '',
+        tags: [],
+        publishAt: '2000-01-01T00:00:00.000Z',
+      }),
+    ).rejects.toThrow('Scheduled publish time must be in the future')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('throws on init failure', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse('Bad request', 400))
     await expect(

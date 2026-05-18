@@ -207,6 +207,7 @@ async function enqueueCompletedLanguage(
   const snapshot = item.youtubeUploadSnapshot
   const snapshotMetadata = snapshot?.metadata.translated[item.languageCode]
   const uploadCaptions = snapshot?.settings.uploadCaptions ?? settings.uploadCaptions
+  const publishAt = snapshot?.settings.publishAt ?? settings.publishAt
   const srtContent = uploadCaptions ? await fetchTranslatedSrt(item).catch(() => null) : null
 
   return enqueueYouTubeUpload({
@@ -218,6 +219,7 @@ async function enqueueCompletedLanguage(
     description: snapshotMetadata?.finalDescription || metadata.description,
     tags: snapshot?.settings.tags?.length ? snapshot.settings.tags : metadata.tags,
     privacyStatus: snapshot?.settings.privacyStatus || settings.privacyStatus,
+    publishAt,
     language: item.languageCode,
     isShort: item.isShort,
     uploadCaptions,

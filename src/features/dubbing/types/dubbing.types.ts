@@ -11,6 +11,8 @@ export interface UploadSettings {
   description: string
   tags: string[]
   privacyStatus: PrivacyStatus
+  publishAt: string | null
+  publishAtTimeZone: string | null
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean

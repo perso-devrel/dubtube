@@ -19,6 +19,7 @@ export async function ytUploadVideo(params: {
   tags: string[]
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
+  publishAt?: string | null
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
@@ -34,6 +35,7 @@ export async function ytUploadVideo(params: {
     form.append('tags', params.tags.join(','))
     if (params.categoryId) form.append('categoryId', params.categoryId)
     if (params.privacyStatus) form.append('privacyStatus', params.privacyStatus)
+    if (params.publishAt) form.append('publishAt', params.publishAt)
     if (params.selfDeclaredMadeForKids !== undefined) {
       form.append('selfDeclaredMadeForKids', String(params.selfDeclaredMadeForKids))
     }
@@ -70,6 +72,7 @@ export async function ytUploadVideo(params: {
       tags: params.tags,
       categoryId: params.categoryId,
       privacyStatus: params.privacyStatus,
+      publishAt: params.publishAt,
       selfDeclaredMadeForKids: params.selfDeclaredMadeForKids,
       containsSyntheticMedia: params.containsSyntheticMedia,
       language: params.language,

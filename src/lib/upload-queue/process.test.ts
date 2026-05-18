@@ -46,6 +46,7 @@ const queueItem = {
   description: 'Translated description',
   tags: 'sub2tube,english',
   privacyStatus: 'private',
+  publishAt: null,
   language: 'en',
   isShort: false,
   uploadCaptions: true,

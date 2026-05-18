@@ -1,5 +1,6 @@
 import type { DeliverableMode, PrivacyStatus, VideoSourceType } from '@/features/dubbing/types/dubbing.types'
 import type { YouTubeLocalization } from '@/lib/youtube/types'
+import { normalizePublishTimeZone } from '@/lib/youtube/publish-schedule'
 
 export type YouTubeUploadKind =
   | 'new_video_dubbed_video'
@@ -23,6 +24,8 @@ export interface YouTubeUploadSnapshot {
     description: string
     tags: string[]
     privacyStatus: PrivacyStatus
+    publishAt: string | null
+    publishAtTimeZone: string | null
     uploadCaptions: boolean
     selfDeclaredMadeForKids: boolean
     containsSyntheticMedia: boolean
@@ -64,6 +67,13 @@ function asString(value: unknown, fallback = '') {
 
 function asNullableString(value: unknown) {
   return typeof value === 'string' && value.trim().length > 0 ? value : null
+}
+
+function asPublishAt(value: unknown) {
+  const raw = asNullableString(value)
+  if (!raw) return null
+  const date = new Date(raw)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
 function asBoolean(value: unknown, fallback: boolean) {
@@ -157,6 +167,8 @@ export function parseYouTubeUploadSnapshot(json: string | null | undefined): You
         description: asString(settings.description),
         tags: asStringArray(settings.tags),
         privacyStatus: asPrivacy(settings.privacyStatus),
+        publishAt: asPublishAt(settings.publishAt),
+        publishAtTimeZone: normalizePublishTimeZone(settings.publishAtTimeZone),
         uploadCaptions: asBoolean(settings.uploadCaptions, true),
         selfDeclaredMadeForKids: asBoolean(settings.selfDeclaredMadeForKids, false),
         containsSyntheticMedia: asBoolean(settings.containsSyntheticMedia, false),

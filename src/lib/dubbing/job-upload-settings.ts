@@ -1,3 +1,5 @@
+import { getDefaultPublishTimeZone, normalizePublishTimeZone } from '@/lib/youtube/publish-schedule'
+
 export type PersistedDeliverableMode = 'newDubbedVideos' | 'originalWithMultiAudio' | 'downloadOnly'
 
 export type PersistedPrivacyStatus = 'public' | 'unlisted' | 'private'
@@ -9,6 +11,8 @@ export interface PersistedUploadSettings {
   description: string
   tags: string[]
   privacyStatus: PersistedPrivacyStatus
+  publishAt: string | null
+  publishAtTimeZone: string | null
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean
@@ -30,6 +34,8 @@ const DEFAULT_UPLOAD_SETTINGS: PersistedUploadSettings = {
   description: '',
   tags: [],
   privacyStatus: 'private',
+  publishAt: null,
+  publishAtTimeZone: getDefaultPublishTimeZone(),
   uploadCaptions: true,
   selfDeclaredMadeForKids: false,
   containsSyntheticMedia: true,
@@ -56,6 +62,13 @@ function asString(value: unknown, fallback = ''): string {
 
 function asNullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null
+}
+
+function asPublishAt(value: unknown): string | null {
+  const raw = asNullableString(value)
+  if (!raw) return null
+  const date = new Date(raw)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
 function asBoolean(value: unknown, fallback: boolean): boolean {
@@ -96,6 +109,8 @@ export function normalizeJobUploadSettings(value: unknown): PersistedJobUploadSe
       description: asString(uploadSettings.description),
       tags: asTags(uploadSettings.tags),
       privacyStatus: asPrivacy(uploadSettings.privacyStatus),
+      publishAt: asPublishAt(uploadSettings.publishAt),
+      publishAtTimeZone: normalizePublishTimeZone(uploadSettings.publishAtTimeZone),
       uploadCaptions: asBoolean(uploadSettings.uploadCaptions, DEFAULT_UPLOAD_SETTINGS.uploadCaptions),
       selfDeclaredMadeForKids: asBoolean(
         uploadSettings.selfDeclaredMadeForKids,

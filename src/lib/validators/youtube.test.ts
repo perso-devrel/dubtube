@@ -153,6 +153,16 @@ describe('uploadFormSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects past scheduled publish times', () => {
+    const result = uploadFormSchema.safeParse({ publishAt: '2000-01-01T00:00:00.000Z' })
+    expect(result.success).toBe(false)
+  })
+
+  it('normalizes future scheduled publish times', () => {
+    const result = uploadFormSchema.parse({ publishAt: '2100-01-01T00:00:00.000Z' })
+    expect(result.publishAt).toBe('2100-01-01T00:00:00.000Z')
+  })
+
   it('handles empty tags string', () => {
     const result = uploadFormSchema.parse({ tags: '' })
     expect(result.tags).toEqual([])

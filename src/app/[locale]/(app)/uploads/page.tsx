@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import NextImage from 'next/image'
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock, CalendarClock, Bell, Image, ListPlus, Tag } from 'lucide-react'
 import { Card, CardTitle, Button, Badge, Select, Input } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
@@ -54,6 +55,7 @@ type CompletedJobGroup = {
   title: string
   durationMs: number
   createdAt: string
+  thumbnail: string
   langs: CompletedJobLanguage[]
 }
 type UploadPreviewSource =
@@ -123,7 +125,7 @@ function buildFallbackSnapshot(item: CompletedJobLanguage, langName: string, t: 
       publishAt: null,
       publishAtTimeZone: getDefaultPublishTimeZone(),
       notifySubscribers: true,
-      thumbnailUrl: '',
+      thumbnailUrl: item.video_thumbnail || '',
       playlistIds: [],
       uploadCaptions: true,
       selfDeclaredMadeForKids: false,
@@ -190,7 +192,7 @@ function resolvePreviewSource(snapshot: YouTubeUploadSnapshot, item: CompletedJo
   return dubbedVideoUrl ? { kind: 'direct', url: dubbedVideoUrl } : null
 }
 
-function buildSettingsFromSnapshot(snapshot: YouTubeUploadSnapshot): UploadSettings {
+function buildSettingsFromSnapshot(snapshot: YouTubeUploadSnapshot, fallbackThumbnailUrl = ''): UploadSettings {
   const metadata = snapshot.metadata.translated[snapshot.targetLanguage]
   const title = snapshot.targetAssetKind === 'dubbed_video'
     ? metadata?.title || snapshot.settings.title
@@ -207,7 +209,7 @@ function buildSettingsFromSnapshot(snapshot: YouTubeUploadSnapshot): UploadSetti
     publishAt: snapshot.settings.publishAt,
     publishAtTimeZone: snapshot.settings.publishAtTimeZone,
     notifySubscribers: snapshot.settings.notifySubscribers,
-    thumbnailUrl: snapshot.settings.thumbnailUrl,
+    thumbnailUrl: snapshot.settings.thumbnailUrl || fallbackThumbnailUrl,
     thumbnailFile: null,
     playlistIds: formatPlaylistIds(snapshot.settings.playlistIds),
     uploadCaptions: snapshot.settings.uploadCaptions,
@@ -530,9 +532,14 @@ function UploadSettingsModal({
 interface UploadRowProps {
   item: CompletedJobLanguage
   userId: string
+  compact?: boolean
 }
 
-function UploadRow({ item, userId }: UploadRowProps) {
+interface UploadRowHandle {
+  upload: () => Promise<void>
+}
+
+const UploadRow = forwardRef<UploadRowHandle, UploadRowProps>(function UploadRow({ item, userId, compact = false }, ref) {
   const locale = useAppLocale()
   const t = useLocaleText()
   const addToast = useNotificationStore((s) => s.addToast)
@@ -552,7 +559,7 @@ function UploadRow({ item, userId }: UploadRowProps) {
   const captionTrackName = resolveCaptionTrackName(captionLanguage, lang?.name)
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [settings, setSettings] = useState<UploadSettings>(() => buildSettingsFromSnapshot(snapshot))
+  const [settings, setSettings] = useState<UploadSettings>(() => buildSettingsFromSnapshot(snapshot, item.video_thumbnail))
   const [previewSource, setPreviewSource] = useState<UploadPreviewSource | null>(() => resolvePreviewSource(snapshot, item))
   const [previewLoading, setPreviewLoading] = useState(false)
 
@@ -573,7 +580,7 @@ function UploadRow({ item, userId }: UploadRowProps) {
   const handleOpenModal = useCallback(() => {
     const nextSnapshot = resolveSnapshot(item, langName, t)
     const nextPreview = resolvePreviewSource(nextSnapshot, item)
-    setSettings(buildSettingsFromSnapshot(nextSnapshot))
+    setSettings(buildSettingsFromSnapshot(nextSnapshot, item.video_thumbnail))
     setPreviewSource(nextPreview)
     setPreviewLoading(false)
     setModalOpen(true)
@@ -797,16 +804,27 @@ function UploadRow({ item, userId }: UploadRowProps) {
     ? t('app.app.uploads.page.checkingDownloadLink')
     : t('app.app.uploads.page.uploading2')
 
+  useImperativeHandle(ref, () => ({
+    upload: async () => {
+      if (state === 'done' || isLoading) return
+      await handleUpload()
+    },
+  }), [handleUpload, isLoading, state])
+
   return (
     <>
       <div className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800 sm:flex-row sm:items-center">
-        <div className="flex h-10 w-16 shrink-0 items-center justify-center rounded bg-surface-100 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-300">
-          {formatDuration(Math.round(item.video_duration_ms / 1000))}
-        </div>
+        {!compact && (
+          <div className="flex h-10 w-16 shrink-0 items-center justify-center rounded bg-surface-100 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-300">
+            {formatDuration(Math.round(item.video_duration_ms / 1000))}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-surface-900 dark:text-white">{settings.title || item.video_title}</p>
-          <div className="mt-1 flex items-center gap-1.5">
+          {!compact && (
+            <p className="truncate text-sm font-medium text-surface-900 dark:text-white">{settings.title || item.video_title}</p>
+          )}
+          <div className={`${compact ? 'mt-0' : 'mt-1'} flex flex-wrap items-center gap-1.5`}>
             {lang && <LanguageBadge code={item.language_code} />}
             <Badge variant={snapshot.targetAssetKind === 'original_video' ? 'info' : 'brand'}>
               {uploadKindLabel}
@@ -860,9 +878,105 @@ function UploadRow({ item, userId }: UploadRowProps) {
       />
     </>
   )
+})
+
+function uploadRowKey(item: CompletedJobLanguage) {
+  return `${item.job_id}-${item.language_code}`
 }
 
-export default function UploadsPage() {
+function EmbeddedUploadJobCard({ job, userId }: { job: CompletedJobGroup; userId: string }) {
+  const locale = useAppLocale()
+  const rowRefs = useRef<Record<string, UploadRowHandle | null>>({})
+  const [bulkUploading, setBulkUploading] = useState(false)
+  const pendingItems = job.langs.filter((item) => !item.youtube_video_id)
+  const thumbnailUrl = toAssetUrl(job.thumbnail)
+  const hasPending = pendingItems.length > 0
+  const uploadAllLabel = locale === 'ko' ? '모두 업로드' : 'Upload all'
+  const uploadingLabel = locale === 'ko' ? '업로드 중' : 'Uploading'
+
+  const handleUploadAll = useCallback(async () => {
+    if (!hasPending || bulkUploading) return
+    setBulkUploading(true)
+    try {
+      for (const item of pendingItems) {
+        await rowRefs.current[uploadRowKey(item)]?.upload()
+      }
+    } finally {
+      setBulkUploading(false)
+    }
+  }, [bulkUploading, hasPending, pendingItems])
+
+  return (
+    <div className="rounded-lg border border-surface-200 bg-white p-4 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-850">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-md bg-surface-100 dark:bg-surface-800 sm:h-20 sm:w-32">
+          {thumbnailUrl ? (
+            <NextImage
+              src={thumbnailUrl}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 100vw, 128px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-surface-400">
+              <Video className="h-6 w-6" />
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <Badge variant="warning">{locale === 'ko' ? '업로드 대기' : 'Upload pending'}</Badge>
+              <h3 className="mt-2 truncate text-base font-semibold text-surface-900 dark:text-white">
+                {job.title}
+              </h3>
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+                <span>{formatDuration(Math.round(job.durationMs / 1000))}</span>
+                <span>{new Date(job.createdAt).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US')}</span>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={handleUploadAll}
+              disabled={!hasPending || bulkUploading || !userId}
+              className="w-full whitespace-nowrap sm:w-auto"
+            >
+              {bulkUploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              {bulkUploading ? uploadingLabel : uploadAllLabel}
+            </Button>
+          </div>
+
+          <div className="mt-4 space-y-2 border-t border-surface-100 pt-3 dark:border-surface-800">
+            {job.langs.map((item) => (
+              <UploadRow
+                key={uploadRowKey(item)}
+                ref={(row) => {
+                  rowRefs.current[uploadRowKey(item)] = row
+                }}
+                item={item}
+                userId={userId}
+                compact
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface UploadsPageProps {
+  embedded?: boolean
+}
+
+export function UploadsPage({ embedded = false }: UploadsPageProps = {}) {
   const t = useLocaleText()
   const locale = useAppLocale()
   const user = useAuthStore((s) => s.user)
@@ -876,7 +990,7 @@ export default function UploadsPage() {
   const jobs = Array.from(items.reduce<Map<number, CompletedJobGroup>>((acc, item) => {
     const lang = getLanguageByCode(item.language_code)
     const langName = (locale === 'ko' ? lang?.nativeName : lang?.name) || lang?.name || item.language_code
-    const displayTitle = buildSettingsFromSnapshot(resolveSnapshot(item, langName, t)).title || item.video_title
+    const displayTitle = buildSettingsFromSnapshot(resolveSnapshot(item, langName, t), item.video_thumbnail).title || item.video_title
     const existing = acc.get(item.job_id)
     if (!existing) {
       acc.set(item.job_id, {
@@ -884,6 +998,7 @@ export default function UploadsPage() {
         title: displayTitle,
         durationMs: item.video_duration_ms,
         createdAt: item.created_at,
+        thumbnail: item.video_thumbnail,
         langs: [item],
       })
       return acc
@@ -893,11 +1008,13 @@ export default function UploadsPage() {
   }, new Map()).values())
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.uploads.page.youTubeUploads')}</h1>
-        <p className="text-surface-600 dark:text-surface-400">{t('app.app.uploads.page.uploadCompletedDubbingResultsToYouTube')}</p>
-      </div>
+    <div className={embedded ? 'space-y-3' : 'space-y-6'}>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.uploads.page.youTubeUploads')}</h1>
+          <p className="text-surface-600 dark:text-surface-400">{t('app.app.uploads.page.uploadCompletedDubbingResultsToYouTube')}</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex items-center gap-2 text-surface-500 dark:text-surface-400">
@@ -912,26 +1029,34 @@ export default function UploadsPage() {
         />
       ) : (
         <div className="space-y-4">
-          {jobs.map((job) => (
-            <Card key={job.id}>
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">{job.title}</CardTitle>
-                  <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-400">
-                    {formatDuration(Math.round(job.durationMs / 1000))} · {new Date(job.createdAt).toLocaleDateString('ko-KR')}
-                  </p>
+          {jobs.map((job) => {
+            if (embedded) {
+              return <EmbeddedUploadJobCard key={job.id} job={job} userId={user?.uid || ''} />
+            }
+
+            return (
+              <Card key={job.id}>
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">{job.title}</CardTitle>
+                    <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-400">
+                      {formatDuration(Math.round(job.durationMs / 1000))} · {new Date(job.createdAt).toLocaleDateString('ko-KR')}
+                    </p>
+                  </div>
+                  <Badge variant="success">{t('app.app.uploads.page.valueLanguages', { jobLangsLength: job.langs.length })}</Badge>
                 </div>
-                <Badge variant="success">{t('app.app.uploads.page.valueLanguages', { jobLangsLength: job.langs.length })}</Badge>
-              </div>
-              <div className="space-y-2">
-                {job.langs.map((item) => (
-                  <UploadRow key={`${item.job_id}-${item.language_code}`} item={item} userId={user?.uid || ''} />
-                ))}
-              </div>
-            </Card>
-          ))}
+                <div className="space-y-2">
+                  {job.langs.map((item) => (
+                    <UploadRow key={`${item.job_id}-${item.language_code}`} item={item} userId={user?.uid || ''} />
+                  ))}
+                </div>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
   )
 }
+
+export default UploadsPage

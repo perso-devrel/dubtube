@@ -48,7 +48,12 @@ export function VideoInputStep() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const initialTab = searchParams.get('url') ? 'url' : 'upload'
+  const requestedSource = searchParams.get('source')
+  const initialTab = searchParams.get('url')
+    ? 'url'
+    : requestedSource === 'channel' || requestedSource === 'url' || requestedSource === 'upload'
+      ? requestedSource
+      : 'upload'
   const [activeTab, setActiveTab] = useState(initialTab)
 
   const channelTabActive = activeTab === 'channel'
@@ -211,15 +216,6 @@ export function VideoInputStep() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">
-          {t('features.dubbing.components.steps.videoInputStep.chooseAVideo')}
-        </h2>
-        <p className="mt-1 text-surface-600 dark:text-surface-400">
-          {t('features.dubbing.components.steps.videoInputStep.pasteAYouTubeLinkOrUploadAVideo')}
-        </p>
-      </div>
-
       <Tabs
         defaultValue={initialTab}
         onChange={(value) => {

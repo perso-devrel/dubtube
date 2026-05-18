@@ -58,19 +58,88 @@ const stepPreloaders: Record<number, () => Promise<unknown>> = {
 }
 
 const steps = [
-  { num: 1, label: 'features.dubbing.components.dubbingWizard.labelVideo' },
-  { num: 2, label: 'features.dubbing.components.dubbingWizard.labelLanguages' },
-  { num: 3, label: 'features.dubbing.components.dubbingWizard.labelOutput' },
+  {
+    num: 1,
+    label: 'features.dubbing.components.dubbingWizard.labelVideo',
+    description: 'features.dubbing.components.steps.videoInputStep.pasteAYouTubeLinkOrUploadAVideo',
+  },
+  {
+    num: 2,
+    label: 'features.dubbing.components.steps.languageSelectStep.chooseTargetLanguages',
+    description: 'features.dubbing.components.steps.languageSelectStep.chooseTheLanguagesForYourOutput',
+  },
+  {
+    num: 3,
+    label: 'features.dubbing.components.steps.outputModeStep.chooseOutput',
+    description: 'features.dubbing.components.steps.outputModeStep.chooseWhatYouWantToDoWithThe',
+  },
   { num: 4, label: 'features.dubbing.components.dubbingWizard.labelPublishSettings' },
-  { num: 5, label: 'features.dubbing.components.dubbingWizard.labelReview' },
+  {
+    num: 5,
+    label: 'features.dubbing.components.steps.translationEditStep.reviewSettings',
+    description: 'features.dubbing.components.steps.translationEditStep.reviewUploadSettingsBeforeStartingDubbing',
+  },
   { num: 6, label: 'features.dubbing.components.dubbingWizard.labelProcessing' },
   { num: 7, label: 'features.dubbing.components.dubbingWizard.labelResults' },
-] satisfies Array<{ num: number; label: string }>
+] satisfies Array<{ num: number; label: string; description?: string }>
+
+function isFinishedProgressReason(reason: string) {
+  return reason === 'COMPLETED' ||
+    reason === 'Completed' ||
+    reason === 'FAILED' ||
+    reason === 'Failed' ||
+    reason === 'CANCELED'
+}
 
 export function DubbingWizard() {
   const currentStep = useDubbingStore((s) => s.currentStep)
+  const deliverableMode = useDubbingStore((s) => s.deliverableMode)
+  const languageProgress = useDubbingStore((s) => s.languageProgress)
+  const selectedLanguages = useDubbingStore((s) => s.selectedLanguages)
   const t = useLocaleText()
   const currentStepInfo = steps.find((step) => step.num === currentStep) ?? steps[0]
+  const allProcessingFinished = languageProgress.length > 0 && languageProgress.every((p) => isFinishedProgressReason(p.progressReason))
+  const completedLanguageCount = selectedLanguages.filter((code) => {
+    const progress = languageProgress.find((p) => p.langCode === code)
+    return progress?.progressReason === 'COMPLETED' || progress?.progressReason === 'Completed'
+  }).length
+  const failedLanguageCount = selectedLanguages.filter((code) => {
+    const progress = languageProgress.find((p) => p.langCode === code)
+    return progress?.progressReason === 'FAILED' || progress?.progressReason === 'Failed' || progress?.progressReason === 'CANCELED'
+  }).length
+
+  const stepTitle = currentStep === 6
+    ? allProcessingFinished
+      ? t('features.dubbing.components.steps.processingStep.processingComplete')
+      : t('features.dubbing.components.steps.processingStep.processingVideo')
+    : currentStep === 7
+      ? failedLanguageCount > 0
+        ? t('features.dubbing.components.steps.uploadStep.someLanguagesFinished')
+        : t('features.dubbing.components.steps.uploadStep.dubbingFilesAreReady')
+      : t(currentStepInfo.label)
+
+  const stepDescription = currentStepInfo.description
+    ? t(currentStepInfo.description)
+    : currentStep === 4
+      ? deliverableMode === 'originalWithMultiAudio'
+        ? t('features.dubbing.components.steps.uploadSettingsStep.reviewTheSettingsBeforeAddingCaptionsToThe')
+        : t('features.dubbing.components.steps.uploadSettingsStep.chooseHowTheFinishedDubbingShouldBeUploaded')
+      : currentStep === 6
+        ? allProcessingFinished
+          ? t('features.dubbing.components.steps.processingStep.reviewTheFinishedFilesAndContinueWithThe')
+          : deliverableMode === 'originalWithMultiAudio'
+            ? t('features.dubbing.components.steps.processingStep.creatingCaptionsProcessingTimeDependsOnVideoLength')
+            : t('features.dubbing.components.steps.processingStep.creatingCaptionsAndDubbedAudioProcessingTimeDepends')
+        : currentStep === 7
+          ? `${t('features.dubbing.components.steps.uploadStep.completedLanguageProgress', {
+            completed: completedLanguageCount,
+            total: selectedLanguages.length,
+          })}${deliverableMode === 'downloadOnly'
+            ? t('features.dubbing.components.steps.uploadStep.downloadTheFilesYouNeed')
+            : deliverableMode === 'originalWithMultiAudio'
+              ? t('features.dubbing.components.steps.uploadStep.youCanAddCaptionsToTheOriginalVideo')
+              : t('features.dubbing.components.steps.uploadStep.downloadThemOrUploadToYouTube')}`
+          : null
 
   useEffect(() => {
     window.requestAnimationFrame(() => {
@@ -92,12 +161,17 @@ export function DubbingWizard() {
       <div className="rounded-lg border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-medium text-surface-500 dark:text-surface-400">
-              {currentStep} / {steps.length}
+            <p className="truncate text-base font-semibold text-surface-900 dark:text-white">
+              {stepTitle}
             </p>
-            <p className="mt-1 truncate text-base font-semibold text-surface-900 dark:text-white">
-              {t(currentStepInfo.label)}
-            </p>
+            {stepDescription && (
+              <p className="mt-1 text-sm text-surface-600 dark:text-surface-400">
+                {stepDescription}
+              </p>
+            )}
+          </div>
+          <div className="shrink-0 rounded-full bg-surface-100 px-2.5 py-1 text-xs font-medium text-surface-600 dark:bg-surface-800 dark:text-surface-300">
+            {currentStep} / {steps.length}
           </div>
         </div>
         <div className="mt-3 grid grid-cols-7 gap-1.5" aria-hidden="true">

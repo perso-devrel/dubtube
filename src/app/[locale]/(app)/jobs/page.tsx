@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { CheckCircle2, Clock, Layers, ListFilter, Loader2, Plus, UploadCloud } from 'lucide-react'
+import { UploadsPage } from '@/app/[locale]/(app)/uploads/page'
 import { LocaleLink } from '@/components/i18n/LocaleLink'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
@@ -13,7 +14,7 @@ import { cn } from '@/utils/cn'
 import { formatDuration } from '@/utils/formatters'
 import type { DubbingJob } from '@/features/dashboard/components/types'
 
-type JobFilter = 'all' | 'inProgress' | 'completed' | 'uploadPending' | 'uploadCompleted'
+type JobFilter = 'all' | 'inProgress' | 'uploadPending' | 'uploadCompleted'
 
 const copy: Record<AppLocale, {
   title: string
@@ -55,7 +56,6 @@ const copy: Record<AppLocale, {
     filters: {
       all: '전체',
       inProgress: '진행 중',
-      completed: '완료',
       uploadPending: '업로드 대기',
       uploadCompleted: '업로드 완료',
     },
@@ -88,7 +88,6 @@ const copy: Record<AppLocale, {
     filters: {
       all: 'All',
       inProgress: 'In progress',
-      completed: 'Completed',
       uploadPending: 'Upload pending',
       uploadCompleted: 'Upload completed',
     },
@@ -146,7 +145,6 @@ function matchesFilter(job: DubbingJob, filter: JobFilter) {
   const state = getJobState(job)
   if (filter === 'all') return true
   if (filter === 'inProgress') return state.isInProgress
-  if (filter === 'completed') return state.isCompleted
   if (filter === 'uploadPending') return state.hasUploadPending
   return state.hasUploadCompleted
 }
@@ -174,7 +172,6 @@ export default function JobsPage() {
     () => ([
       { id: 'all' as const, icon: ListFilter },
       { id: 'inProgress' as const, icon: Clock },
-      { id: 'completed' as const, icon: CheckCircle2 },
       { id: 'uploadPending' as const, icon: UploadCloud },
       { id: 'uploadCompleted' as const, icon: CheckCircle2 },
     ]).map((item) => ({
@@ -227,104 +224,111 @@ export default function JobsPage() {
         })}
       </div>
 
-      <Card>
-        <CardTitle>{text.filters[filter]}</CardTitle>
+      {filter === 'uploadPending' ? (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-surface-900 dark:text-white">{text.filters.uploadPending}</h2>
+          <UploadsPage embedded />
+        </div>
+      ) : (
+        <Card>
+          <CardTitle>{text.filters[filter]}</CardTitle>
 
-        {isLoading ? (
-          <div className="mt-6 flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {text.loading}
-          </div>
-        ) : isError ? (
-          <EmptyState
-            icon={<Layers className="h-10 w-10" />}
-            title={text.loadError}
-          />
-        ) : jobs.length === 0 ? (
-          <EmptyState
-            icon={<Layers className="h-12 w-12" />}
-            title={text.emptyTitle}
-            description={text.emptyDescription}
-            action={
-              <LocaleLink href="/dubbing">
-                <Button><Plus className="h-4 w-4" /> {text.newJob}</Button>
-              </LocaleLink>
-            }
-          />
-        ) : visibleJobs.length === 0 ? (
-          <EmptyState
-            icon={<ListFilter className="h-10 w-10" />}
-            title={text.noFilterTitle}
-            description={text.noFilterDescription}
-          />
-        ) : (
-          <div className="mt-4 space-y-3">
-            {visibleJobs.map((job) => {
-              const languages = job.languages ? String(job.languages).split(',').filter(Boolean) : []
-              const state = getJobState(job)
-              const createdAt = new Date(job.created_at)
-              const baseStatus = job.status in text.status ? job.status : 'pending'
+          {isLoading ? (
+            <div className="mt-6 flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {text.loading}
+            </div>
+          ) : isError ? (
+            <EmptyState
+              icon={<Layers className="h-10 w-10" />}
+              title={text.loadError}
+            />
+          ) : jobs.length === 0 ? (
+            <EmptyState
+              icon={<Layers className="h-12 w-12" />}
+              title={text.emptyTitle}
+              description={text.emptyDescription}
+              action={
+                <LocaleLink href="/dubbing">
+                  <Button><Plus className="h-4 w-4" /> {text.newJob}</Button>
+                </LocaleLink>
+              }
+            />
+          ) : visibleJobs.length === 0 ? (
+            <EmptyState
+              icon={<ListFilter className="h-10 w-10" />}
+              title={text.noFilterTitle}
+              description={text.noFilterDescription}
+            />
+          ) : (
+            <div className="mt-4 space-y-3">
+              {visibleJobs.map((job) => {
+                const languages = job.languages ? String(job.languages).split(',').filter(Boolean) : []
+                const state = getJobState(job)
+                const createdAt = new Date(job.created_at)
+                const baseStatus = job.status in text.status ? job.status : 'pending'
 
-              return (
-                <div
-                  key={job.id}
-                  className="rounded-lg border border-surface-200 p-4 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:hover:bg-surface-850"
-                >
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={statusVariant[baseStatus] ?? 'default'}>
-                          {text.status[baseStatus as keyof typeof text.status]}
-                        </Badge>
-                        {state.hasUploadPending && (
-                          <Badge variant="warning">{text.status.uploadPending}</Badge>
-                        )}
-                        {state.hasUploadCompleted && (
-                          <Badge variant="success">{text.status.uploadCompleted}</Badge>
-                        )}
+                return (
+                  <div
+                    key={job.id}
+                    className="rounded-lg border border-surface-200 p-4 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:hover:bg-surface-850"
+                  >
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={statusVariant[baseStatus] ?? 'default'}>
+                            {text.status[baseStatus as keyof typeof text.status]}
+                          </Badge>
+                          {state.hasUploadPending && (
+                            <Badge variant="warning">{text.status.uploadPending}</Badge>
+                          )}
+                          {state.hasUploadCompleted && (
+                            <Badge variant="success">{text.status.uploadCompleted}</Badge>
+                          )}
+                        </div>
+                        <h2 className="mt-2 truncate text-base font-semibold text-surface-900 dark:text-white">
+                          {job.video_title}
+                        </h2>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+                          <span>{formatDuration(Math.round(job.video_duration_ms / 1000))}</span>
+                          <span>
+                            {text.createdAt}: {Number.isNaN(createdAt.getTime()) ? job.created_at : dateFormatter.format(createdAt)}
+                          </span>
+                          <span>{text.languages}: {state.languageCount}</span>
+                        </div>
                       </div>
-                      <h2 className="mt-2 truncate text-base font-semibold text-surface-900 dark:text-white">
-                        {job.video_title}
-                      </h2>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
-                        <span>{formatDuration(Math.round(job.video_duration_ms / 1000))}</span>
-                        <span>
-                          {text.createdAt}: {Number.isNaN(createdAt.getTime()) ? job.created_at : dateFormatter.format(createdAt)}
-                        </span>
-                        <span>{text.languages}: {state.languageCount}</span>
+
+                      <div className="w-full shrink-0 space-y-2 lg:w-56">
+                        <div className="flex items-center justify-between text-xs text-surface-500 dark:text-surface-400">
+                          <span>{text.progress}</span>
+                          <span>{state.progress}%</span>
+                        </div>
+                        <Progress value={state.progress} size="sm" />
+                        <div className="flex flex-wrap gap-1 text-xs text-surface-500 dark:text-surface-400">
+                          <span>{text.uploadedCount(state.uploadedCount, state.languageCount)}</span>
+                          {state.uploadProcessingCount > 0 && <span>{text.uploadProcessingCount(state.uploadProcessingCount)}</span>}
+                          {state.uploadPendingCount > 0 && <span>{text.uploadPendingCount(state.uploadPendingCount)}</span>}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="w-full shrink-0 space-y-2 lg:w-56">
-                      <div className="flex items-center justify-between text-xs text-surface-500 dark:text-surface-400">
-                        <span>{text.progress}</span>
-                        <span>{state.progress}%</span>
+                    {languages.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {languages.slice(0, 8).map((lang) => (
+                          <LanguageBadge key={lang} code={lang} />
+                        ))}
+                        {languages.length > 8 && (
+                          <span className="text-xs text-surface-500 dark:text-surface-400">+{languages.length - 8}</span>
+                        )}
                       </div>
-                      <Progress value={state.progress} size="sm" />
-                      <div className="flex flex-wrap gap-1 text-xs text-surface-500 dark:text-surface-400">
-                        <span>{text.uploadedCount(state.uploadedCount, state.languageCount)}</span>
-                        {state.uploadProcessingCount > 0 && <span>{text.uploadProcessingCount(state.uploadProcessingCount)}</span>}
-                        {state.uploadPendingCount > 0 && <span>{text.uploadPendingCount(state.uploadPendingCount)}</span>}
-                      </div>
-                    </div>
+                    )}
                   </div>
-
-                  {languages.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {languages.slice(0, 8).map((lang) => (
-                        <LanguageBadge key={lang} code={lang} />
-                      ))}
-                      {languages.length > 8 && (
-                        <span className="text-xs text-surface-500 dark:text-surface-400">+{languages.length - 8}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </Card>
+                )
+              })}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   )
 }

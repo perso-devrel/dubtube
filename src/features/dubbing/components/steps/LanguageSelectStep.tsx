@@ -109,17 +109,9 @@ export function LanguageSelectStep() {
   const remainingMinutes = summary ? Number(summary.credits_remaining) : null
   const remainingAfter = remainingMinutes === null ? null : remainingMinutes - estimatedMinutes
   const hasInsufficientMinutes = remainingAfter !== null && selectedLanguages.length > 0 && remainingAfter < 0
-  const selectionDescription = t('features.dubbing.components.steps.languageSelectStep.chooseTheLanguagesForYourOutput')
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.dubbing.components.steps.languageSelectStep.chooseTargetLanguages')}</h2>
-        <p className="mt-1 text-surface-600 dark:text-surface-400">
-          {selectionDescription} ({countLocaleMessage(locale, selectedLanguages.length, 'features.dubbing.components.steps.languageSelectStep.unitSelected', t)})
-        </p>
-      </div>
-
       {/* Selected chips */}
       {selectedLanguages.length > 0 && (
         <div className="flex flex-wrap gap-2">

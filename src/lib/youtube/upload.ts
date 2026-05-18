@@ -1,11 +1,33 @@
 import 'server-only'
 
-import type { YouTubeLocalization, YouTubeUploadResult } from '@/lib/youtube/types'
+import type {
+  YouTubeLocalization,
+  YouTubePostUploadResult,
+  YouTubeUploadResult,
+} from '@/lib/youtube/types'
 import { resolveCaptionTrackName } from '@/lib/youtube/captions'
 import { YouTubeError } from '@/lib/youtube/error'
+import { DEFAULT_YOUTUBE_CATEGORY_ID, parsePlaylistIds } from '@/lib/youtube/upload-options'
 import { effectivePrivacyStatus, normalizePublishAt } from '@/lib/youtube/publish-schedule'
 
 const YOUTUBE_UPLOAD_BASE = 'https://www.googleapis.com/upload/youtube/v3'
+const YOUTUBE_DATA_BASE = 'https://www.googleapis.com/youtube/v3'
+const MAX_THUMBNAIL_BYTES = 2 * 1024 * 1024
+const THUMBNAIL_CONTENT_TYPES = new Set([
+  '',
+  'application/octet-stream',
+  'image/jpeg',
+  'image/png',
+])
+const THUMBNAIL_URL_ALLOWED_DOMAINS = [
+  '.blob.core.windows.net',
+  '.perso.ai',
+  'perso.ai',
+  'i.ytimg.com',
+  'img.youtube.com',
+  'yt3.ggpht.com',
+  'lh3.googleusercontent.com',
+]
 
 function normalizeLanguageTag(language?: string | null) {
   return language?.trim().toLowerCase() || ''
@@ -41,9 +63,13 @@ export interface YouTubeUploadInput {
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
   publishAt?: string | null
+  notifySubscribers?: boolean
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
+  thumbnailBlob?: Blob
+  thumbnailUrl?: string | null
+  playlistIds?: string[]
   /**
    * BCP-47 언어 코드를 키로 한 추가 번역 맵.
    * snippet.defaultLanguage가 함께 설정돼야 YouTube가 적용한다.
@@ -61,6 +87,7 @@ export interface YouTubeUploadSessionInput {
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
   publishAt?: string | null
+  notifySubscribers?: boolean
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
@@ -71,6 +98,170 @@ export interface YouTubeUploadSessionInput {
    * 서버사이드에서 PUT까지 책임지는 경로는 생략해도 무방.
    */
   origin?: string
+}
+
+export interface YouTubePostUploadActionsInput {
+  accessToken: string
+  videoId: string
+  thumbnailBlob?: Blob
+  thumbnailUrl?: string | null
+  playlistIds?: string[]
+}
+
+function isAllowedUrlHost(url: string, allowedDomains: string[]) {
+  try {
+    const urlHost = new URL(url).hostname
+    return allowedDomains.some((domain) => {
+      if (domain.startsWith('.')) return urlHost.endsWith(domain)
+      return urlHost === domain || urlHost.endsWith(`.${domain}`)
+    })
+  } catch {
+    return false
+  }
+}
+
+function validateThumbnailBlob(thumbnailBlob: Blob) {
+  if (thumbnailBlob.size <= 0) {
+    throw new YouTubeError(400, 'Thumbnail image is empty', 'INVALID_THUMBNAIL')
+  }
+  if (thumbnailBlob.size > MAX_THUMBNAIL_BYTES) {
+    throw new YouTubeError(400, 'Thumbnail image must be 2MB or smaller', 'INVALID_THUMBNAIL')
+  }
+  const contentType = thumbnailBlob.type.toLowerCase()
+  if (!THUMBNAIL_CONTENT_TYPES.has(contentType)) {
+    throw new YouTubeError(400, 'Thumbnail must be a JPEG or PNG image', 'INVALID_THUMBNAIL')
+  }
+}
+
+async function thumbnailBlobFromUrl(thumbnailUrl: string): Promise<Blob> {
+  if (!thumbnailUrl.trim()) {
+    throw new YouTubeError(400, 'Thumbnail URL is empty', 'INVALID_THUMBNAIL_URL')
+  }
+  if (!isAllowedUrlHost(thumbnailUrl, THUMBNAIL_URL_ALLOWED_DOMAINS)) {
+    throw new YouTubeError(400, 'Thumbnail URL domain not allowed', 'INVALID_THUMBNAIL_URL')
+  }
+  const res = await fetch(thumbnailUrl)
+  if (!res.ok) {
+    throw new YouTubeError(502, 'Failed to fetch thumbnail image', 'THUMBNAIL_FETCH_FAILED')
+  }
+  const contentLength = Number(res.headers.get('content-length') || 0)
+  if (contentLength > MAX_THUMBNAIL_BYTES) {
+    throw new YouTubeError(400, 'Thumbnail image must be 2MB or smaller', 'INVALID_THUMBNAIL')
+  }
+  return res.blob()
+}
+
+async function resolveThumbnailBlob(input: YouTubePostUploadActionsInput): Promise<Blob | null> {
+  const directBlob = input.thumbnailBlob
+  if (directBlob && directBlob.size > 0) {
+    validateThumbnailBlob(directBlob)
+    return directBlob
+  }
+
+  const thumbnailUrl = input.thumbnailUrl?.trim()
+  if (!thumbnailUrl) return null
+  const fetchedBlob = await thumbnailBlobFromUrl(thumbnailUrl)
+  validateThumbnailBlob(fetchedBlob)
+  return fetchedBlob
+}
+
+async function uploadThumbnailToYouTube(
+  accessToken: string,
+  videoId: string,
+  thumbnailBlob: Blob,
+): Promise<void> {
+  const contentType = thumbnailBlob.type || 'application/octet-stream'
+  const qs = new URLSearchParams({
+    uploadType: 'media',
+    videoId,
+  })
+  const res = await fetch(`${YOUTUBE_UPLOAD_BASE}/thumbnails/set?${qs.toString()}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': contentType,
+    },
+    body: thumbnailBlob,
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new YouTubeError(
+      res.status,
+      `Thumbnail upload failed: ${err}`,
+      'THUMBNAIL_UPLOAD_FAILED',
+    )
+  }
+}
+
+async function addVideoToPlaylist(
+  accessToken: string,
+  videoId: string,
+  playlistId: string,
+): Promise<string> {
+  const res = await fetch(`${YOUTUBE_DATA_BASE}/playlistItems?part=snippet`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify({
+      snippet: {
+        playlistId,
+        resourceId: {
+          kind: 'youtube#video',
+          videoId,
+        },
+      },
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new YouTubeError(
+      res.status,
+      `Playlist insert failed: ${err}`,
+      'PLAYLIST_INSERT_FAILED',
+    )
+  }
+
+  const data = (await res.json()) as { id?: string }
+  return data.id || playlistId
+}
+
+function warningMessage(err: unknown) {
+  return err instanceof Error ? err.message : 'Unknown error'
+}
+
+export async function applyYouTubePostUploadActions(
+  input: YouTubePostUploadActionsInput,
+): Promise<YouTubePostUploadResult> {
+  const result: YouTubePostUploadResult = {
+    thumbnailUploaded: false,
+    playlistItemIds: [],
+    warnings: [],
+  }
+
+  try {
+    const thumbnailBlob = await resolveThumbnailBlob(input)
+    if (thumbnailBlob) {
+      await uploadThumbnailToYouTube(input.accessToken, input.videoId, thumbnailBlob)
+      result.thumbnailUploaded = true
+    }
+  } catch (err) {
+    result.warnings.push({ action: 'thumbnail', message: warningMessage(err) })
+  }
+
+  for (const playlistId of parsePlaylistIds(input.playlistIds ?? [])) {
+    try {
+      const playlistItemId = await addVideoToPlaylist(input.accessToken, input.videoId, playlistId)
+      result.playlistItemIds.push(playlistItemId)
+    } catch (err) {
+      result.warnings.push({ action: 'playlist', message: warningMessage(err) })
+    }
+  }
+
+  return result
 }
 
 /**
@@ -87,9 +278,10 @@ export async function initYouTubeResumableUpload(
     title,
     description,
     tags,
-    categoryId = '22',
+    categoryId = DEFAULT_YOUTUBE_CATEGORY_ID,
     privacyStatus = 'private',
     publishAt,
+    notifySubscribers,
     selfDeclaredMadeForKids = false,
     containsSyntheticMedia = false,
     language = 'en',
@@ -139,8 +331,16 @@ export async function initYouTubeResumableUpload(
     initHeaders.Origin = origin
   }
 
+  const query = new URLSearchParams({
+    uploadType: 'resumable',
+    part: parts,
+  })
+  if (notifySubscribers !== undefined) {
+    query.set('notifySubscribers', String(notifySubscribers))
+  }
+
   const initRes = await fetch(
-    `${YOUTUBE_UPLOAD_BASE}/videos?uploadType=resumable&part=${parts}`,
+    `${YOUTUBE_UPLOAD_BASE}/videos?${query.toString()}`,
     {
       method: 'POST',
       headers: initHeaders,
@@ -184,6 +384,7 @@ export async function uploadVideoToYouTube(
     categoryId: input.categoryId,
     privacyStatus: input.privacyStatus,
     publishAt: input.publishAt,
+    notifySubscribers: input.notifySubscribers,
     selfDeclaredMadeForKids: input.selfDeclaredMadeForKids,
     containsSyntheticMedia: input.containsSyntheticMedia,
     language: input.language,
@@ -214,11 +415,26 @@ export async function uploadVideoToYouTube(
     status?: { uploadStatus?: string }
   }
 
-  return {
+  const uploadResult: YouTubeUploadResult = {
     videoId: result.id,
     title: result.snippet?.title || title,
     status: result.status?.uploadStatus || 'uploaded',
   }
+  const postProcessing = await applyYouTubePostUploadActions({
+    accessToken,
+    videoId: result.id,
+    thumbnailBlob: input.thumbnailBlob,
+    thumbnailUrl: input.thumbnailUrl,
+    playlistIds: input.playlistIds,
+  })
+  if (
+    postProcessing.thumbnailUploaded ||
+    postProcessing.playlistItemIds.length > 0 ||
+    postProcessing.warnings.length > 0
+  ) {
+    uploadResult.postProcessing = postProcessing
+  }
+  return uploadResult
 }
 
 export interface CaptionUploadInput {
@@ -230,8 +446,6 @@ export interface CaptionUploadInput {
   /** true면 동일 language의 기존 캡션을 모두 삭제한 뒤 새 SRT를 삽입한다. */
   replace?: boolean
 }
-
-const YOUTUBE_DATA_BASE = 'https://www.googleapis.com/youtube/v3'
 
 export interface CaptionListItem {
   id: string

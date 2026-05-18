@@ -29,9 +29,12 @@ export async function POST(req: NextRequest) {
       categoryId: (form.get('categoryId') as string) || undefined,
       privacyStatus: (form.get('privacyStatus') as string) || undefined,
       publishAt: (form.get('publishAt') as string) || undefined,
+      notifySubscribers: (form.get('notifySubscribers') as string) || undefined,
       selfDeclaredMadeForKids: (form.get('selfDeclaredMadeForKids') as string) || undefined,
       containsSyntheticMedia: (form.get('containsSyntheticMedia') as string) || undefined,
       language: (form.get('language') as string) || undefined,
+      thumbnailUrl: (form.get('thumbnailUrl') as string) || undefined,
+      playlistIds: (form.get('playlistIds') as string) || undefined,
       localizations: (form.get('localizations') as string) || undefined,
     }
     const fields = uploadFormSchema.parse(rawFields)
@@ -57,6 +60,10 @@ export async function POST(req: NextRequest) {
       }
       videoBlob = video
     }
+    const thumbnail = form.get('thumbnail')
+    const thumbnailBlob = thumbnail instanceof Blob && thumbnail.size > 0
+      ? thumbnail
+      : undefined
 
     return uploadVideoToYouTube({
       accessToken,
@@ -67,9 +74,13 @@ export async function POST(req: NextRequest) {
       categoryId: fields.categoryId,
       privacyStatus: fields.privacyStatus,
       publishAt: fields.publishAt,
+      notifySubscribers: fields.notifySubscribers,
       selfDeclaredMadeForKids: fields.selfDeclaredMadeForKids,
       containsSyntheticMedia: fields.containsSyntheticMedia,
       language: fields.language,
+      thumbnailBlob,
+      thumbnailUrl: fields.thumbnailUrl,
+      playlistIds: fields.playlistIds,
       localizations: fields.localizations,
     })
   })

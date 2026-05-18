@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getDb } from '@/lib/db/client'
 import { recordOperationalEventSafe } from '@/lib/ops/observability'
+import { DEFAULT_YOUTUBE_CATEGORY_ID, parsePlaylistIds } from '@/lib/youtube/upload-options'
 
 type QueueStatus = 'pending' | 'processing' | 'done' | 'failed'
 
@@ -14,8 +15,12 @@ export interface UploadQueueItem {
   title: string
   description: string
   tags: string
+  categoryId: string
   privacyStatus: string
   publishAt: string | null
+  notifySubscribers: boolean
+  thumbnailUrl: string | null
+  playlistIds: string[]
   language: string
   isShort: boolean
   uploadCaptions: boolean
@@ -54,8 +59,12 @@ async function ensureTable() {
       title TEXT NOT NULL,
       description TEXT NOT NULL DEFAULT '',
       tags TEXT NOT NULL DEFAULT '',
+      category_id TEXT NOT NULL DEFAULT '22',
       privacy_status TEXT NOT NULL DEFAULT 'private',
       publish_at TEXT,
+      notify_subscribers INTEGER NOT NULL DEFAULT 1,
+      thumbnail_url TEXT,
+      playlist_ids TEXT,
       language TEXT NOT NULL DEFAULT '',
       is_short INTEGER NOT NULL DEFAULT 0,
       upload_captions INTEGER NOT NULL DEFAULT 1,
@@ -86,7 +95,11 @@ async function ensureTable() {
     })
   }
   await addColumn('upload_captions', 'INTEGER NOT NULL DEFAULT 1')
+  await addColumn('category_id', `TEXT NOT NULL DEFAULT '${DEFAULT_YOUTUBE_CATEGORY_ID}'`)
   await addColumn('publish_at', 'TEXT')
+  await addColumn('notify_subscribers', 'INTEGER NOT NULL DEFAULT 1')
+  await addColumn('thumbnail_url', 'TEXT')
+  await addColumn('playlist_ids', 'TEXT')
   await addColumn('caption_language', 'TEXT')
   await addColumn('caption_name', 'TEXT')
   await addColumn('srt_content', 'TEXT')
@@ -106,8 +119,12 @@ export async function createUploadQueueItem(item: {
   title: string
   description: string
   tags: string[]
+  categoryId?: string
   privacyStatus: string
   publishAt?: string | null
+  notifySubscribers?: boolean
+  thumbnailUrl?: string | null
+  playlistIds?: string[]
   language: string
   isShort: boolean
   uploadCaptions?: boolean
@@ -145,8 +162,12 @@ export async function createUploadQueueItem(item: {
                 title = ?,
                 description = ?,
                 tags = ?,
+                category_id = ?,
                 privacy_status = ?,
                 publish_at = ?,
+                notify_subscribers = ?,
+                thumbnail_url = ?,
+                playlist_ids = ?,
                 language = ?,
                 is_short = ?,
                 upload_captions = ?,
@@ -170,8 +191,12 @@ export async function createUploadQueueItem(item: {
         item.title,
         item.description,
         item.tags.join(','),
+        item.categoryId || DEFAULT_YOUTUBE_CATEGORY_ID,
         item.privacyStatus,
         item.publishAt ?? null,
+        (item.notifySubscribers ?? true) ? 1 : 0,
+        item.thumbnailUrl ?? null,
+        JSON.stringify(parsePlaylistIds(item.playlistIds ?? [])),
         item.language,
         item.isShort ? 1 : 0,
         (item.uploadCaptions ?? true) ? 1 : 0,
@@ -191,11 +216,12 @@ export async function createUploadQueueItem(item: {
   const result = await db.execute({
     sql: `INSERT INTO upload_queue (
             user_id, job_id, lang_code, video_url, title, description, tags,
-            privacy_status, language, is_short, upload_captions, caption_language,
-            publish_at, caption_name, srt_content, self_declared_made_for_kids, contains_synthetic_media,
+            category_id, privacy_status, publish_at, notify_subscribers, thumbnail_url, playlist_ids,
+            language, is_short, upload_captions, caption_language,
+            caption_name, srt_content, self_declared_made_for_kids, contains_synthetic_media,
             upload_kind, metadata_json, localizations_json
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       item.userId,
       item.jobId,
@@ -204,12 +230,16 @@ export async function createUploadQueueItem(item: {
       item.title,
       item.description,
       item.tags.join(','),
+      item.categoryId || DEFAULT_YOUTUBE_CATEGORY_ID,
       item.privacyStatus,
+      item.publishAt ?? null,
+      (item.notifySubscribers ?? true) ? 1 : 0,
+      item.thumbnailUrl ?? null,
+      JSON.stringify(parsePlaylistIds(item.playlistIds ?? [])),
       item.language,
       item.isShort ? 1 : 0,
       (item.uploadCaptions ?? true) ? 1 : 0,
       item.captionLanguage ?? null,
-      item.publishAt ?? null,
       item.captionName ?? null,
       item.srtContent ?? null,
       item.selfDeclaredMadeForKids ? 1 : 0,
@@ -322,6 +352,20 @@ function dbBoolean(value: unknown) {
   return value === true || value === 1 || value === '1'
 }
 
+function dbPlaylistIds(value: unknown) {
+  if (!value) return []
+  const raw = String(value)
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (Array.isArray(parsed)) {
+      return parsePlaylistIds(parsed.filter((item): item is string => typeof item === 'string'))
+    }
+  } catch {
+    // fall through to legacy comma parsing
+  }
+  return parsePlaylistIds(raw)
+}
+
 function rowToItem(row: Record<string, unknown>): UploadQueueItem {
   return {
     id: Number(row.id),
@@ -332,8 +376,12 @@ function rowToItem(row: Record<string, unknown>): UploadQueueItem {
     title: String(row.title),
     description: String(row.description),
     tags: String(row.tags),
+    categoryId: row.category_id ? String(row.category_id) : DEFAULT_YOUTUBE_CATEGORY_ID,
     privacyStatus: String(row.privacy_status),
     publishAt: row.publish_at ? String(row.publish_at) : null,
+    notifySubscribers: dbBoolean(row.notify_subscribers ?? 1),
+    thumbnailUrl: row.thumbnail_url ? String(row.thumbnail_url) : null,
+    playlistIds: dbPlaylistIds(row.playlist_ids),
     language: String(row.language),
     isShort: dbBoolean(row.is_short),
     uploadCaptions: dbBoolean(row.upload_captions),

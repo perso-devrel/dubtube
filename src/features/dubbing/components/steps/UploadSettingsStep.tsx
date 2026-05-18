@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, CalendarClock, Captions, Languages, Link2, ShieldCheck, Sparkles, Upload } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bell, CalendarClock, Captions, Image, Languages, Link2, ListPlus, ShieldCheck, Sparkles, Tag, Upload } from 'lucide-react'
 import { Button, Card, CardTitle, Input, Select } from '@/components/ui'
 import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
 import { extractVideoId } from '@/utils/validators'
@@ -16,6 +16,11 @@ import {
   normalizePublishTimeZone,
   toDateTimeLocalInputValue,
 } from '@/lib/youtube/publish-schedule'
+import {
+  formatPlaylistIds,
+  getYouTubeCategoryOptions,
+  parsePlaylistIds,
+} from '@/lib/youtube/upload-options'
 import { useDubbingStore } from '../../store/dubbingStore'
 import { getAiDisclosureText, stripAiDisclosureFooter } from '../../utils/aiDisclosure'
 import type { PrivacyStatus } from '../../types/dubbing.types'
@@ -46,6 +51,25 @@ export function UploadSettingsStep() {
       ? `${l.flag} ${l.nativeName} (${l.name})`
       : `${l.flag} ${l.name} (${l.nativeName})`,
   }))
+  const categoryOptions = getYouTubeCategoryOptions(locale)
+  const uploadOptionText = {
+    category: locale === 'ko' ? 'YouTube 카테고리' : 'YouTube category',
+    thumbnailUrl: locale === 'ko' ? '썸네일 이미지 URL' : 'Thumbnail image URL',
+    thumbnailPlaceholder: locale === 'ko'
+      ? 'https://.../thumbnail.png'
+      : 'https://.../thumbnail.png',
+    playlists: locale === 'ko' ? '추가할 플레이리스트 ID' : 'Playlist IDs to add',
+    playlistsPlaceholder: locale === 'ko'
+      ? 'PL..., UU... 쉼표로 구분'
+      : 'PL..., UU... separated by commas',
+    notifySubscribers: locale === 'ko' ? '구독자에게 알림 보내기' : 'Notify subscribers',
+    notifySubscribersDescription: locale === 'ko'
+      ? 'YouTube 업로드 시 notifySubscribers 값을 함께 전달합니다.'
+      : 'Pass notifySubscribers when creating the YouTube video.',
+    postUploadOptions: locale === 'ko'
+      ? '카테고리, 썸네일, 플레이리스트'
+      : 'Category, thumbnail, and playlists',
+  }
 
   // YouTube 설정 페이지의 기본값과 동기화 (사용자 override 없을 때만).
   useEffect(() => {
@@ -110,6 +134,17 @@ export function UploadSettingsStep() {
       .map((t) => t.trim())
       .filter(Boolean)
     setUploadSettings({ tags: parsed })
+  }
+  const [playlistInput, setPlaylistInput] = useState(() => formatPlaylistIds(uploadSettings.playlistIds))
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setPlaylistInput(formatPlaylistIds(uploadSettings.playlistIds))
+    }, 0)
+    return () => window.clearTimeout(timeout)
+  }, [uploadSettings.playlistIds])
+
+  const commitPlaylists = () => {
+    setUploadSettings({ playlistIds: parsePlaylistIds(playlistInput) })
   }
 
   const isMultiAudio = deliverableMode === 'originalWithMultiAudio'
@@ -320,6 +355,54 @@ export function UploadSettingsStep() {
             inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off')}
             onToggle={handleAutoUploadToggle}
           />
+
+          {uploadsVideoToYouTube && (
+            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+              <div className="mb-3 flex min-w-0 items-start gap-2">
+                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <p className="text-sm text-surface-700 dark:text-surface-300">
+                  {uploadOptionText.postUploadOptions}
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Select
+                  label={uploadOptionText.category}
+                  value={uploadSettings.categoryId}
+                  onChange={(e) => setUploadSettings({ categoryId: e.target.value })}
+                  options={categoryOptions}
+                />
+                <Input
+                  label={uploadOptionText.thumbnailUrl}
+                  value={uploadSettings.thumbnailUrl}
+                  onChange={(e) => setUploadSettings({ thumbnailUrl: e.target.value })}
+                  placeholder={uploadOptionText.thumbnailPlaceholder}
+                  icon={<Image className="h-4 w-4" />}
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label={uploadOptionText.playlists}
+                    value={playlistInput}
+                    onChange={(e) => setPlaylistInput(e.target.value)}
+                    onBlur={commitPlaylists}
+                    placeholder={uploadOptionText.playlistsPlaceholder}
+                    icon={<ListPlus className="h-4 w-4" />}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {uploadsVideoToYouTube && (
+            <ToggleRow
+              icon={<Bell className="h-4 w-4 text-surface-400" />}
+              label={uploadOptionText.notifySubscribers}
+              description={uploadOptionText.notifySubscribersDescription}
+              active={uploadSettings.notifySubscribers}
+              activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on5')}
+              inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off4')}
+              onToggle={() => setUploadSettings({ notifySubscribers: !uploadSettings.notifySubscribers })}
+            />
+          )}
 
           {uploadsVideoToYouTube && (
             <SchedulePublishRow

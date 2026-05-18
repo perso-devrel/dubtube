@@ -1,6 +1,7 @@
 import type { DeliverableMode, PrivacyStatus, VideoSourceType } from '@/features/dubbing/types/dubbing.types'
 import type { YouTubeLocalization } from '@/lib/youtube/types'
 import { normalizePublishTimeZone } from '@/lib/youtube/publish-schedule'
+import { DEFAULT_YOUTUBE_CATEGORY_ID, parsePlaylistIds } from '@/lib/youtube/upload-options'
 
 export type YouTubeUploadKind =
   | 'new_video_dubbed_video'
@@ -23,9 +24,13 @@ export interface YouTubeUploadSnapshot {
     title: string
     description: string
     tags: string[]
+    categoryId: string
     privacyStatus: PrivacyStatus
     publishAt: string | null
     publishAtTimeZone: string | null
+    notifySubscribers: boolean
+    thumbnailUrl: string
+    playlistIds: string[]
     uploadCaptions: boolean
     selfDeclaredMadeForKids: boolean
     containsSyntheticMedia: boolean
@@ -84,6 +89,11 @@ function asStringArray(value: unknown) {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
     : []
+}
+
+function asPlaylistIds(value: unknown) {
+  if (Array.isArray(value)) return parsePlaylistIds(value.filter((item): item is string => typeof item === 'string'))
+  return parsePlaylistIds(typeof value === 'string' ? value : '')
 }
 
 function asPrivacy(value: unknown): PrivacyStatus {
@@ -166,9 +176,13 @@ export function parseYouTubeUploadSnapshot(json: string | null | undefined): You
         title: asString(settings.title),
         description: asString(settings.description),
         tags: asStringArray(settings.tags),
+        categoryId: asString(settings.categoryId, DEFAULT_YOUTUBE_CATEGORY_ID).trim() || DEFAULT_YOUTUBE_CATEGORY_ID,
         privacyStatus: asPrivacy(settings.privacyStatus),
         publishAt: asPublishAt(settings.publishAt),
         publishAtTimeZone: normalizePublishTimeZone(settings.publishAtTimeZone),
+        notifySubscribers: asBoolean(settings.notifySubscribers, true),
+        thumbnailUrl: asString(settings.thumbnailUrl),
+        playlistIds: asPlaylistIds(settings.playlistIds),
         uploadCaptions: asBoolean(settings.uploadCaptions, true),
         selfDeclaredMadeForKids: asBoolean(settings.selfDeclaredMadeForKids, false),
         containsSyntheticMedia: asBoolean(settings.containsSyntheticMedia, false),

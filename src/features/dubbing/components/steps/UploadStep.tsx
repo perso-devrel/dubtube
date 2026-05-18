@@ -70,8 +70,12 @@ export function UploadStep() {
     title: settingsTitle,
     description: settingsDescription,
     tags: settingsTags,
+    categoryId,
     privacyStatus,
     publishAt,
+    notifySubscribers,
+    thumbnailUrl,
+    playlistIds,
     metadataLanguage,
     uploadCaptions: uploadCaptionsEnabled,
     selfDeclaredMadeForKids,
@@ -297,11 +301,15 @@ export function UploadStep() {
         title: settingsTitle?.trim() || videoMeta?.title || t('features.dubbing.components.steps.uploadStep.originalVideo2'),
         description: applyDescriptionFooter(editableDescription, metadataLanguage),
         tags: settingsTags,
+        categoryId,
         privacyStatus: uploadPrivacyStatus,
         publishAt,
+        notifySubscribers,
         selfDeclaredMadeForKids,
         containsSyntheticMedia: shouldApplyAiDisclosure,
         language: toBcp47(metadataLanguage),
+        thumbnailUrl,
+        playlistIds,
         localizations: Object.keys(localizations).length > 0 ? localizations : undefined,
       })
       setOriginalUploadState({ status: 'uploading', videoId: result.videoId })
@@ -317,7 +325,7 @@ export function UploadStep() {
       addToast({ type: 'error', title: t('features.dubbing.components.steps.uploadStep.originalUploadFailed'), message: msg })
       return null
     }
-  }, [isAuthenticated, originalUploadState.videoId, originalVideoUrl, settingsTitle, editableDescription, settingsTags, uploadPrivacyStatus, publishAt, selfDeclaredMadeForKids, shouldApplyAiDisclosure, videoMeta, dbJobId, addToast, ensureTranslations, selectedLanguages, metadataLanguage, applyDescriptionFooter, t])
+  }, [isAuthenticated, originalUploadState.videoId, originalVideoUrl, settingsTitle, editableDescription, settingsTags, categoryId, uploadPrivacyStatus, publishAt, notifySubscribers, selfDeclaredMadeForKids, shouldApplyAiDisclosure, thumbnailUrl, playlistIds, videoMeta, dbJobId, addToast, ensureTranslations, selectedLanguages, metadataLanguage, applyDescriptionFooter, t])
 
   // ─── File download ──────────────────────────────────────────────────
   const handleDownload = useCallback(async (langCode: string, type: 'video' | 'voiceAudio' | 'translatedSubtitle') => {

@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
         categoryId: body.categoryId,
         privacyStatus: body.privacyStatus,
         publishAt: body.publishAt,
+        notifySubscribers: body.notifySubscribers,
         selfDeclaredMadeForKids: body.selfDeclaredMadeForKids,
         containsSyntheticMedia: body.containsSyntheticMedia,
         language: body.language,

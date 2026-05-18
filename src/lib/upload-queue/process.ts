@@ -69,11 +69,15 @@ export async function processUploadQueue(options: ProcessUploadQueueOptions = {}
         title: item.title,
         description: item.description,
         tags: item.tags ? item.tags.split(',') : [],
+        categoryId: item.categoryId,
         privacyStatus: item.privacyStatus as 'public' | 'unlisted' | 'private',
         publishAt: item.publishAt,
+        notifySubscribers: item.notifySubscribers,
         selfDeclaredMadeForKids: item.selfDeclaredMadeForKids,
         containsSyntheticMedia: item.containsSyntheticMedia,
         language: item.language || undefined,
+        thumbnailUrl: item.thumbnailUrl,
+        playlistIds: item.playlistIds,
         localizations: parseLocalizationsJson(item.localizationsJson),
       })
 

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { normalizePublishAt } from '@/lib/youtube/publish-schedule'
+import { parsePlaylistIds } from '@/lib/youtube/upload-options'
 
 export const captionBodySchema = z.object({
   videoId: z.string().min(1),
@@ -99,15 +100,33 @@ const publishAtSchema = z
     return normalized
   })
 
+const optionalStringSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return value
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}, z.string().optional())
+
+const categoryIdSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return value
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}, z.string().regex(/^\d+$/).optional())
+
+const playlistIdsSchema = z
+  .union([z.array(z.string()), z.string()])
+  .optional()
+  .transform((value) => parsePlaylistIds(value ?? []))
+
 export const uploadSessionBodySchema = z.object({
   contentType: z.string().min(1).max(200),
   contentLength: z.number().int().positive(),
   title: z.string().default(''),
   description: z.string().default(''),
   tags: z.array(z.string()).default([]),
-  categoryId: z.string().optional(),
+  categoryId: categoryIdSchema,
   privacyStatus: z.enum(['public', 'unlisted', 'private']).optional(),
   publishAt: publishAtSchema,
+  notifySubscribers: z.boolean().optional(),
   selfDeclaredMadeForKids: z.boolean().optional(),
   containsSyntheticMedia: z.boolean().optional(),
   language: z.string().optional(),
@@ -121,12 +140,15 @@ export const uploadFormSchema = z.object({
     .string()
     .default('')
     .transform((v) => (v ? v.split(',').map((t) => t.trim()).filter(Boolean) : [])),
-  categoryId: z.string().optional(),
+  categoryId: categoryIdSchema,
   privacyStatus: z.enum(['public', 'unlisted', 'private']).optional(),
   publishAt: publishAtSchema,
+  notifySubscribers: formBooleanSchema,
   selfDeclaredMadeForKids: formBooleanSchema,
   containsSyntheticMedia: formBooleanSchema,
   language: z.string().optional(),
+  thumbnailUrl: optionalStringSchema,
+  playlistIds: playlistIdsSchema,
   /** form에서는 JSON 문자열로 전달. */
   localizations: z
     .string()
@@ -139,4 +161,10 @@ export const uploadFormSchema = z.object({
         return undefined
       }
     }),
+})
+
+export const uploadPostProcessingFormSchema = z.object({
+  videoId: z.string().min(1),
+  thumbnailUrl: optionalStringSchema,
+  playlistIds: playlistIdsSchema,
 })

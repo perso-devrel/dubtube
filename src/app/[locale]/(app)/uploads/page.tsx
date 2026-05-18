@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock, CalendarClock } from 'lucide-react'
+import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock, CalendarClock, Bell, Image, ListPlus, Tag } from 'lucide-react'
 import { Card, CardTitle, Button, Badge, Select, Input } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
@@ -40,6 +40,12 @@ import {
   normalizePublishTimeZone,
   toDateTimeLocalInputValue,
 } from '@/lib/youtube/publish-schedule'
+import {
+  DEFAULT_YOUTUBE_CATEGORY_ID,
+  formatPlaylistIds,
+  getYouTubeCategoryOptions,
+  parsePlaylistIds,
+} from '@/lib/youtube/upload-options'
 
 type UploadState = 'idle' | 'fetching' | 'uploading' | 'done' | 'error'
 type PrivacyStatus = 'public' | 'unlisted' | 'private'
@@ -58,9 +64,14 @@ interface UploadSettings {
   title: string
   description: string
   tags: string
+  categoryId: string
   privacyStatus: PrivacyStatus
   publishAt: string | null
   publishAtTimeZone: string | null
+  notifySubscribers: boolean
+  thumbnailUrl: string
+  thumbnailFile: File | null
+  playlistIds: string
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean
@@ -107,9 +118,13 @@ function buildFallbackSnapshot(item: CompletedJobLanguage, langName: string, t: 
       title,
       description,
       tags,
+      categoryId: DEFAULT_YOUTUBE_CATEGORY_ID,
       privacyStatus: 'private',
       publishAt: null,
       publishAtTimeZone: getDefaultPublishTimeZone(),
+      notifySubscribers: true,
+      thumbnailUrl: '',
+      playlistIds: [],
       uploadCaptions: true,
       selfDeclaredMadeForKids: false,
       containsSyntheticMedia: targetAssetKind === 'dubbed_video',
@@ -187,9 +202,14 @@ function buildSettingsFromSnapshot(snapshot: YouTubeUploadSnapshot): UploadSetti
     title,
     description,
     tags: snapshot.settings.tags.join(', '),
+    categoryId: snapshot.settings.categoryId || DEFAULT_YOUTUBE_CATEGORY_ID,
     privacyStatus: snapshot.settings.privacyStatus,
     publishAt: snapshot.settings.publishAt,
     publishAtTimeZone: snapshot.settings.publishAtTimeZone,
+    notifySubscribers: snapshot.settings.notifySubscribers,
+    thumbnailUrl: snapshot.settings.thumbnailUrl,
+    thumbnailFile: null,
+    playlistIds: formatPlaylistIds(snapshot.settings.playlistIds),
     uploadCaptions: snapshot.settings.uploadCaptions,
     selfDeclaredMadeForKids: snapshot.settings.selfDeclaredMadeForKids,
     containsSyntheticMedia: snapshot.settings.containsSyntheticMedia,
@@ -248,7 +268,23 @@ function UploadSettingsModal({
   uploadsOriginalVideo,
 }: UploadSettingsModalProps) {
   const t = useLocaleText()
+  const locale = useAppLocale()
   const videoUploadFlow = !captionUploadFlow || uploadsOriginalVideo
+  const categoryOptions = getYouTubeCategoryOptions(locale)
+  const labels = {
+    category: locale === 'ko' ? 'YouTube 카테고리' : 'YouTube category',
+    thumbnailUrl: locale === 'ko' ? '썸네일 이미지 URL' : 'Thumbnail image URL',
+    thumbnailFile: locale === 'ko' ? '썸네일 파일' : 'Thumbnail file',
+    thumbnailPlaceholder: 'https://.../thumbnail.png',
+    playlists: locale === 'ko' ? '추가할 플레이리스트 ID' : 'Playlist IDs to add',
+    playlistsPlaceholder: locale === 'ko'
+      ? 'PL..., UU... 쉼표로 구분'
+      : 'PL..., UU... separated by commas',
+    notifySubscribers: locale === 'ko' ? '구독자에게 알림 보내기' : 'Notify subscribers',
+    postUploadOptions: locale === 'ko'
+      ? '카테고리, 썸네일, 플레이리스트'
+      : 'Category, thumbnail, and playlists',
+  }
   const publishAtTimeZone = normalizePublishTimeZone(settings.publishAtTimeZone)
   const hasPublishSchedule = hasScheduledPublish(settings.publishAt)
   const visibilityValue = effectivePrivacyStatus(settings.privacyStatus, settings.publishAt)
@@ -371,6 +407,61 @@ function UploadSettingsModal({
                 </div>
               </div>
             </div>
+
+            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+              <div className="mb-3 flex min-w-0 items-start gap-2">
+                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <p className="text-sm text-surface-700 dark:text-surface-300">
+                  {labels.postUploadOptions}
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Select
+                  label={labels.category}
+                  value={settings.categoryId}
+                  onChange={(e) => onChange({ ...settings, categoryId: e.target.value })}
+                  options={categoryOptions}
+                />
+                <Input
+                  label={labels.thumbnailUrl}
+                  value={settings.thumbnailUrl}
+                  onChange={(e) => onChange({ ...settings, thumbnailUrl: e.target.value })}
+                  placeholder={labels.thumbnailPlaceholder}
+                  icon={<Image className="h-4 w-4" />}
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label={labels.playlists}
+                    value={settings.playlistIds}
+                    onChange={(e) => onChange({ ...settings, playlistIds: e.target.value })}
+                    placeholder={labels.playlistsPlaceholder}
+                    icon={<ListPlus className="h-4 w-4" />}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                    {labels.thumbnailFile}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    onChange={(e) => onChange({ ...settings, thumbnailFile: e.target.files?.[0] ?? null })}
+                    className="block w-full text-sm text-surface-700 file:mr-3 file:rounded-md file:border-0 file:bg-surface-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-surface-700 hover:file:bg-surface-300 dark:text-surface-300 dark:file:bg-surface-700 dark:file:text-surface-100 dark:hover:file:bg-surface-600"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500"
+                checked={settings.notifySubscribers}
+                onChange={(e) => onChange({ ...settings, notifySubscribers: e.target.checked })}
+              />
+              <Bell className="mt-0.5 h-4 w-4 shrink-0 text-surface-400" />
+              <span>{labels.notifySubscribers}</span>
+            </label>
 
             <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
               <input
@@ -522,9 +613,13 @@ function UploadRow({ item, userId }: UploadRowProps) {
         ...snapshot,
         settings: {
           ...snapshot.settings,
+          categoryId: settings.categoryId,
           privacyStatus: uploadPrivacyStatus,
           publishAt: settings.publishAt,
           publishAtTimeZone: settings.publishAtTimeZone,
+          notifySubscribers: settings.notifySubscribers,
+          thumbnailUrl: settings.thumbnailUrl,
+          playlistIds: parsePlaylistIds(settings.playlistIds),
           uploadCaptions: captionOnly ? true : settings.uploadCaptions,
           selfDeclaredMadeForKids: settings.selfDeclaredMadeForKids,
         },
@@ -574,11 +669,16 @@ function UploadRow({ item, userId }: UploadRowProps) {
             title: uploadTitle,
             description: uploadDescription,
             tags: baseTags,
+            categoryId: settings.categoryId,
             privacyStatus: uploadPrivacyStatus,
             publishAt: settings.publishAt,
+            notifySubscribers: settings.notifySubscribers,
             selfDeclaredMadeForKids: settings.selfDeclaredMadeForKids,
             containsSyntheticMedia: isOriginalVideoUpload ? false : settings.containsSyntheticMedia,
             language: isOriginalVideoUpload ? toBcp47(snapshot.sourceLanguage) : toBcp47(snapshot.targetLanguage),
+            thumbnail: settings.thumbnailFile,
+            thumbnailUrl: settings.thumbnailUrl,
+            playlistIds: parsePlaylistIds(settings.playlistIds),
             localizations: isOriginalVideoUpload ? snapshot.metadata.localizations : undefined,
           })
 

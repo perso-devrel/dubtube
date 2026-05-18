@@ -11,8 +11,12 @@ export interface EnqueueYouTubeUploadInput {
   title: string
   description: string
   tags: string[]
+  categoryId?: string
   privacyStatus: string
   publishAt?: string | null
+  notifySubscribers?: boolean
+  thumbnailUrl?: string | null
+  playlistIds?: string[]
   language: string
   isShort: boolean
   uploadCaptions?: boolean

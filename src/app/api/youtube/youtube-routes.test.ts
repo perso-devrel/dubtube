@@ -40,6 +40,11 @@ vi.mock('@/lib/youtube/server', () => ({
     status: 'uploaded',
   })),
   uploadCaptionToYouTube: vi.fn(async () => undefined),
+  applyYouTubePostUploadActions: vi.fn(async () => ({
+    thumbnailUploaded: true,
+    playlistItemIds: ['playlist-item-1'],
+    warnings: [],
+  })),
   fetchVideoStatistics: vi.fn(async () => [
     { videoId: 'v1', viewCount: 100, likeCount: 10, commentCount: 5 },
   ]),
@@ -82,7 +87,7 @@ vi.mock('@/lib/youtube/server', () => ({
 }))
 
 import { requireAccessToken } from '@/lib/youtube/route-helpers'
-import { uploadVideoToYouTube } from '@/lib/youtube/server'
+import { applyYouTubePostUploadActions, uploadVideoToYouTube } from '@/lib/youtube/server'
 
 describe('POST /api/youtube/upload', () => {
   let POST: (req: NextRequest) => Promise<Response>
@@ -94,12 +99,17 @@ describe('POST /api/youtube/upload', () => {
 
   it('uploads video and returns videoId', async () => {
     const videoBlob = new Blob(['fake'], { type: 'video/mp4' })
+    const thumbnailBlob = new Blob(['thumb'], { type: 'image/png' })
     const mockFormData = new Map<string, unknown>([
       ['video', videoBlob],
+      ['thumbnail', thumbnailBlob],
       ['title', 'Test'],
       ['description', 'Desc'],
       ['tags', 'a,b'],
       ['language', 'ko'],
+      ['notifySubscribers', 'false'],
+      ['thumbnailUrl', 'https://i.ytimg.com/vi/abc/maxresdefault.jpg'],
+      ['playlistIds', 'PL123'],
       ['selfDeclaredMadeForKids', 'false'],
       ['containsSyntheticMedia', 'true'],
     ])
@@ -118,6 +128,10 @@ describe('POST /api/youtube/upload', () => {
         accessToken: 'mock-token',
         title: 'Test',
         tags: ['a', 'b'],
+        notifySubscribers: false,
+        thumbnailBlob,
+        thumbnailUrl: 'https://i.ytimg.com/vi/abc/maxresdefault.jpg',
+        playlistIds: ['PL123'],
         selfDeclaredMadeForKids: false,
         containsSyntheticMedia: true,
       }),
@@ -180,6 +194,42 @@ describe('POST /api/youtube/upload', () => {
     const body = await res.json()
     expect(body.ok).toBe(false)
     expect(body.error.code).toBe('MISSING_VIDEO')
+  })
+})
+
+describe('POST /api/youtube/upload-post-processing', () => {
+  let POST: (req: NextRequest) => Promise<Response>
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    ;({ POST } = await import('./upload-post-processing/route'))
+  })
+
+  it('applies thumbnail and playlist actions to an uploaded video', async () => {
+    const thumbnailBlob = new Blob(['thumb'], { type: 'image/png' })
+    const mockFormData = new Map<string, unknown>([
+      ['videoId', 'yt-123'],
+      ['thumbnail', thumbnailBlob],
+      ['thumbnailUrl', 'https://i.ytimg.com/vi/abc/maxresdefault.jpg'],
+      ['playlistIds', 'PL123'],
+    ])
+    const req = {
+      url: 'http://localhost/api/youtube/upload-post-processing',
+      headers: new Headers(),
+      formData: async () => ({ get: (key: string) => mockFormData.get(key) ?? null }),
+    } as unknown as NextRequest
+
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(body.ok).toBe(true)
+    expect(applyYouTubePostUploadActions).toHaveBeenCalledWith({
+      accessToken: 'mock-token',
+      videoId: 'yt-123',
+      thumbnailBlob,
+      thumbnailUrl: 'https://i.ytimg.com/vi/abc/maxresdefault.jpg',
+      playlistIds: ['PL123'],
+    })
   })
 })
 

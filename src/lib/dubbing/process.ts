@@ -208,6 +208,9 @@ async function enqueueCompletedLanguage(
   const snapshotMetadata = snapshot?.metadata.translated[item.languageCode]
   const uploadCaptions = snapshot?.settings.uploadCaptions ?? settings.uploadCaptions
   const publishAt = snapshot?.settings.publishAt ?? settings.publishAt
+  const playlistIds = snapshot?.settings.playlistIds?.length
+    ? snapshot.settings.playlistIds
+    : settings.playlistIds
   const srtContent = uploadCaptions ? await fetchTranslatedSrt(item).catch(() => null) : null
 
   return enqueueYouTubeUpload({
@@ -218,8 +221,12 @@ async function enqueueCompletedLanguage(
     title: snapshotMetadata?.title || metadata.title,
     description: snapshotMetadata?.finalDescription || metadata.description,
     tags: snapshot?.settings.tags?.length ? snapshot.settings.tags : metadata.tags,
+    categoryId: snapshot?.settings.categoryId || settings.categoryId,
     privacyStatus: snapshot?.settings.privacyStatus || settings.privacyStatus,
     publishAt,
+    notifySubscribers: snapshot?.settings.notifySubscribers ?? settings.notifySubscribers,
+    thumbnailUrl: snapshot?.settings.thumbnailUrl || settings.thumbnailUrl,
+    playlistIds,
     language: item.languageCode,
     isShort: item.isShort,
     uploadCaptions,

@@ -35,7 +35,7 @@ export default function BatchPage() {
     if (!ok) return
 
     setDeletingId(jobId)
-    queryClient.setQueryData(['recent-jobs', user?.uid], (old: typeof jobs) =>
+    queryClient.setQueryData(['recent-jobs', user?.uid, 10], (old: typeof jobs) =>
       old ? old.filter((j) => j.id !== jobId) : old,
     )
     try {

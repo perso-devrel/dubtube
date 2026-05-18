@@ -38,7 +38,13 @@ const createDubbingJobSchema = z.object({
       title: z.string(),
       description: z.string(),
       tags: z.array(z.string()),
+      categoryId: z.string().optional(),
       privacyStatus: z.enum(['public', 'unlisted', 'private']),
+      publishAt: z.string().nullable().optional(),
+      publishAtTimeZone: z.string().nullable().optional(),
+      notifySubscribers: z.boolean().optional(),
+      thumbnailUrl: z.string().optional(),
+      playlistIds: z.array(z.string()).optional(),
       uploadCaptions: z.boolean(),
       selfDeclaredMadeForKids: z.boolean(),
       containsSyntheticMedia: z.boolean(),
@@ -121,6 +127,21 @@ const updateJobLanguageYouTubeSchema = z.object({
     jobId: z.number().int(),
     langCode: z.string().min(1),
     youtubeVideoId: z.string().min(1),
+  }),
+})
+
+const recordJobLanguageCaptionUploadSchema = z.object({
+  type: z.literal('recordJobLanguageCaptionUpload'),
+  payload: z.object({
+    jobId: z.number().int(),
+    langCode: z.string().min(1),
+    youtubeVideoId: z.string().min(1),
+    title: z.string().min(1),
+    languageCode: z.string().min(1),
+    privacyStatus: z.string().min(1),
+    isShort: z.boolean(),
+    uploadKind: z.enum(['new_video_original_captions', 'my_video_original_captions']),
+    metadataJson: z.string().nullable().optional(),
   }),
 })
 
@@ -212,7 +233,12 @@ const queueYouTubeUploadSchema = z.object({
     title: z.string().min(1),
     description: z.string(),
     tags: z.array(z.string()),
+    categoryId: z.string().optional(),
     privacyStatus: z.string().min(1),
+    publishAt: z.string().nullable().optional(),
+    notifySubscribers: z.boolean().optional(),
+    thumbnailUrl: z.string().nullable().optional(),
+    playlistIds: z.array(z.string()).optional(),
     language: z.string(),
     isShort: z.boolean(),
     uploadCaptions: z.boolean().optional(),
@@ -248,6 +274,7 @@ export const mutationActionSchema = z.discriminatedUnion('type', [
   updateDubbingJobOriginalYouTubeUrlSchema,
   createYouTubeUploadSchema,
   updateJobLanguageYouTubeSchema,
+  recordJobLanguageCaptionUploadSchema,
   startJobLanguageYouTubeUploadSchema,
   failJobLanguageYouTubeUploadSchema,
   deductUserMinutesSchema,
@@ -298,6 +325,8 @@ export function getJobIdFromAction(action: MutationAction): number | null {
     case 'updateDubbingJobOriginalYouTubeUrl':
       return action.payload.jobId
     case 'updateJobLanguageYouTube':
+      return action.payload.jobId
+    case 'recordJobLanguageCaptionUpload':
       return action.payload.jobId
     case 'startJobLanguageYouTubeUpload':
       return action.payload.jobId

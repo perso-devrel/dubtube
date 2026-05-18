@@ -57,6 +57,55 @@ export async function createYouTubeUpload(upload: {
   return Number(result.lastInsertRowid)
 }
 
+export async function createJobLanguageYouTubeUpload(upload: {
+  userId: string
+  jobId: number
+  langCode: string
+  youtubeVideoId: string
+  title: string
+  languageCode: string
+  privacyStatus: string
+  isShort: boolean
+  uploadKind: string
+  metadataJson?: string | null
+}): Promise<{ id: number; status: 'created' | 'already_recorded' } | { status: 'not_found' }> {
+  await ensureYouTubeUploadColumns()
+  const db = getDb()
+  const languageRow = await db.execute({
+    sql: `SELECT id
+          FROM job_languages
+          WHERE job_id = ? AND language_code = ?
+          LIMIT 1`,
+    args: [upload.jobId, upload.langCode],
+  })
+  const jobLanguageId = languageRow.rows[0]?.id ? Number(languageRow.rows[0].id) : null
+  if (!jobLanguageId) return { status: 'not_found' }
+
+  const existing = await db.execute({
+    sql: `SELECT id
+          FROM youtube_uploads
+          WHERE job_language_id = ? AND upload_kind = ?
+          ORDER BY id DESC
+          LIMIT 1`,
+    args: [jobLanguageId, upload.uploadKind],
+  })
+  const existingId = existing.rows[0]?.id ? Number(existing.rows[0].id) : null
+  if (existingId) return { id: existingId, status: 'already_recorded' }
+
+  const id = await createYouTubeUpload({
+    userId: upload.userId,
+    jobLanguageId,
+    youtubeVideoId: upload.youtubeVideoId,
+    title: upload.title,
+    languageCode: upload.languageCode,
+    privacyStatus: upload.privacyStatus,
+    isShort: upload.isShort,
+    uploadKind: upload.uploadKind,
+    metadataJson: upload.metadataJson,
+  })
+  return { id, status: 'created' }
+}
+
 export async function startJobLanguageYouTubeUpload(
   jobId: number,
   langCode: string,
@@ -74,6 +123,30 @@ export async function startJobLanguageYouTubeUpload(
 
   const youtubeVideoId = row.youtube_video_id ? String(row.youtube_video_id) : null
   if (youtubeVideoId) return { status: 'already_uploaded', youtubeVideoId }
+
+  const completedQueue = await db.execute({
+    sql: `SELECT youtube_video_id
+          FROM upload_queue
+          WHERE job_id = ? AND lang_code = ?
+            AND status = 'done'
+            AND COALESCE(youtube_video_id, '') != ''
+          ORDER BY id DESC
+          LIMIT 1`,
+    args: [jobId, langCode],
+  })
+  const completedQueueVideoId = completedQueue.rows[0]?.youtube_video_id
+    ? String(completedQueue.rows[0].youtube_video_id)
+    : null
+  if (completedQueueVideoId) {
+    await db.execute({
+      sql: `UPDATE job_languages
+            SET youtube_video_id = ?, youtube_upload_status = 'uploaded', updated_at = datetime('now')
+            WHERE job_id = ? AND language_code = ?`,
+      args: [completedQueueVideoId, jobId, langCode],
+    })
+    return { status: 'already_uploaded', youtubeVideoId: completedQueueVideoId }
+  }
+
   if (row.youtube_upload_status === 'uploading') {
     return { status: 'already_uploading' }
   }

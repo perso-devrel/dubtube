@@ -10,7 +10,13 @@ export interface UploadSettings {
   title: string
   description: string
   tags: string[]
+  categoryId: string
   privacyStatus: PrivacyStatus
+  publishAt: string | null
+  publishAtTimeZone: string | null
+  notifySubscribers: boolean
+  thumbnailUrl: string
+  playlistIds: string[]
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean

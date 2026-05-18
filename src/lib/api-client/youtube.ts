@@ -19,9 +19,14 @@ export async function ytUploadVideo(params: {
   tags: string[]
   categoryId?: string
   privacyStatus?: 'public' | 'unlisted' | 'private'
+  publishAt?: string | null
+  notifySubscribers?: boolean
   selfDeclaredMadeForKids?: boolean
   containsSyntheticMedia?: boolean
   language?: string
+  thumbnail?: File | Blob | null
+  thumbnailUrl?: string | null
+  playlistIds?: string[]
   /** BCP-47 language code → { title, description } 맵. snippet.localizations로 전달. */
   localizations?: Record<string, { title: string; description: string }>
 }): Promise<YouTubeUploadResult> {
@@ -34,6 +39,10 @@ export async function ytUploadVideo(params: {
     form.append('tags', params.tags.join(','))
     if (params.categoryId) form.append('categoryId', params.categoryId)
     if (params.privacyStatus) form.append('privacyStatus', params.privacyStatus)
+    if (params.publishAt) form.append('publishAt', params.publishAt)
+    if (params.notifySubscribers !== undefined) {
+      form.append('notifySubscribers', String(params.notifySubscribers))
+    }
     if (params.selfDeclaredMadeForKids !== undefined) {
       form.append('selfDeclaredMadeForKids', String(params.selfDeclaredMadeForKids))
     }
@@ -41,6 +50,9 @@ export async function ytUploadVideo(params: {
       form.append('containsSyntheticMedia', String(params.containsSyntheticMedia))
     }
     if (params.language) form.append('language', params.language)
+    if (params.thumbnail) form.append('thumbnail', params.thumbnail)
+    if (params.thumbnailUrl) form.append('thumbnailUrl', params.thumbnailUrl)
+    if (params.playlistIds?.length) form.append('playlistIds', params.playlistIds.join(','))
     if (params.localizations && Object.keys(params.localizations).length > 0) {
       form.append('localizations', JSON.stringify(params.localizations))
     }
@@ -70,6 +82,8 @@ export async function ytUploadVideo(params: {
       tags: params.tags,
       categoryId: params.categoryId,
       privacyStatus: params.privacyStatus,
+      publishAt: params.publishAt,
+      notifySubscribers: params.notifySubscribers,
       selfDeclaredMadeForKids: params.selfDeclaredMadeForKids,
       containsSyntheticMedia: params.containsSyntheticMedia,
       language: params.language,
@@ -96,11 +110,28 @@ export async function ytUploadVideo(params: {
     snippet?: { title?: string }
     status?: { uploadStatus?: string }
   }
-  return {
+  const result: YouTubeUploadResult = {
     videoId: data.id,
     title: data.snippet?.title || params.title,
     status: data.status?.uploadStatus || 'uploaded',
   }
+  const hasPostUploadActions =
+    Boolean(params.thumbnail) ||
+    Boolean(params.thumbnailUrl) ||
+    Boolean(params.playlistIds?.length)
+  if (!hasPostUploadActions) return result
+
+  const postForm = new FormData()
+  postForm.append('videoId', result.videoId)
+  if (params.thumbnail) postForm.append('thumbnail', params.thumbnail)
+  if (params.thumbnailUrl) postForm.append('thumbnailUrl', params.thumbnailUrl)
+  if (params.playlistIds?.length) postForm.append('playlistIds', params.playlistIds.join(','))
+  const postRes = await fetch(`${YT}/upload-post-processing`, {
+    method: 'POST',
+    body: postForm,
+  })
+  result.postProcessing = await json<YouTubeUploadResult['postProcessing']>(postRes)
+  return result
 }
 
 export async function ytUploadCaption(params: {

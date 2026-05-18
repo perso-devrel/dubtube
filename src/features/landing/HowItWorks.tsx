@@ -1,6 +1,6 @@
 'use client'
 
-import { FileVideo, Languages, FileText, Upload } from 'lucide-react'
+import { FileText, FileVideo, Languages, Upload } from 'lucide-react'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
 const steps = [
@@ -36,29 +36,28 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <h2 className="break-keep text-3xl font-bold text-surface-900 dark:text-white sm:text-4xl">
-            {t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-surface-600 dark:text-surface-300">
+        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <div>
+            <h2 className="max-w-xl break-keep text-3xl font-semibold leading-tight text-surface-900 dark:text-white sm:text-4xl">
+              {t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
+            </h2>
+          </div>
+          <p className="max-w-2xl text-base leading-7 text-surface-600 dark:text-surface-300 lg:justify-self-end">
             {t('features.landing.howItWorks.moveFromVideoSelectionToYouTubeUploadIn')}
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map(({ icon: Icon, step, title, description }, i) => (
-            <div key={step} className="relative text-center">
-              {i < steps.length - 1 && (
-                <div className="absolute left-[calc(50%+40px)] top-10 hidden h-px w-[calc(100%-80px)] bg-surface-200 dark:bg-surface-800 lg:block" />
-              )}
-              <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-lg border border-brand-200 bg-brand-50 text-brand-600 dark:border-brand-900/60 dark:bg-brand-900/20 dark:text-brand-300">
-                <Icon className="h-9 w-9" />
-                <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-brand-600 shadow-sm dark:bg-surface-800 dark:text-brand-400">
-                  {step}
-                </span>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map(({ icon: Icon, step, title, description }) => (
+            <div
+              key={step}
+              className="group relative min-h-64 rounded-2xl border border-surface-200 bg-white p-6 shadow-[0_1px_0_rgba(15,17,21,0.03)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_18px_50px_rgba(15,17,21,0.08)] dark:border-surface-800 dark:bg-surface-900 dark:hover:border-brand-800 dark:hover:shadow-black/20"
+            >
+              <div className="mb-7 flex h-11 w-11 items-center justify-center rounded-lg border border-surface-200 bg-surface-50 text-brand-600 transition-colors group-hover:border-brand-200 group-hover:bg-brand-50 dark:border-surface-800 dark:bg-surface-850 dark:text-brand-400 dark:group-hover:border-brand-800 dark:group-hover:bg-brand-900/20">
+                <Icon className="h-5 w-5" />
               </div>
-              <h3 className="break-keep text-xl font-bold text-surface-900 dark:text-white">{t(title)}</h3>
-              <p className="mt-3 text-surface-600 dark:text-surface-300">{t(description)}</p>
+              <h3 className="break-keep text-lg font-semibold text-surface-900 dark:text-white">{t(title)}</h3>
+              <p className="mt-3 break-keep text-sm leading-6 text-surface-600 dark:text-surface-300">{t(description)}</p>
             </div>
           ))}
         </div>

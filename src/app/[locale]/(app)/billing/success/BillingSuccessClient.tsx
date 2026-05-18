@@ -60,9 +60,9 @@ export function BillingSuccessClient({ paymentKey, orderId, amount }: Props) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Card>
-        <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-xl bg-surface-100 p-3 dark:bg-surface-800">
+      <Card className="overflow-hidden rounded-2xl p-0">
+        <div className="border-b border-surface-200 bg-surface-50 p-6 dark:border-surface-800 dark:bg-surface-950">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900">
             {status === 'confirming' ? (
               <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
             ) : status === 'done' ? (
@@ -71,20 +71,33 @@ export function BillingSuccessClient({ paymentKey, orderId, amount }: Props) {
               <XCircle className="h-6 w-6 text-red-500" />
             )}
           </div>
-          <div>
-            <CardTitle>
-              {status === 'done'
-                ? t('app.app.billing.success.billingSuccessClient.minutesAdded')
-                : status === 'error'
-                  ? t('app.app.billing.success.billingSuccessClient.paymentConfirmationFailed2')
-                  : t('app.app.billing.success.billingSuccessClient.confirmingPayment')}
-            </CardTitle>
-            <p className="mt-1 text-sm text-surface-500 dark:text-surface-300">{message}</p>
-          </div>
+          <CardTitle>
+            {status === 'done'
+              ? t('app.app.billing.success.billingSuccessClient.minutesAdded')
+              : status === 'error'
+                ? t('app.app.billing.success.billingSuccessClient.paymentConfirmationFailed2')
+                : t('app.app.billing.success.billingSuccessClient.confirmingPayment')}
+          </CardTitle>
+          <p className="mt-2 break-keep text-sm leading-6 text-surface-600 dark:text-surface-300">{message}</p>
         </div>
-        <LocaleLink href="/billing">
-          <Button>{t('app.app.billing.success.billingSuccessClient.backToBilling')}</Button>
-        </LocaleLink>
+
+        <div className="p-6">
+          <div className="mb-5 h-2 overflow-hidden rounded-full bg-surface-100 dark:bg-surface-800">
+            <div
+              className={`h-full rounded-full ${
+                status === 'done'
+                  ? 'bg-emerald-500'
+                  : status === 'error'
+                    ? 'bg-red-500'
+                    : 'bg-brand-600'
+              }`}
+              style={{ width: status === 'confirming' ? '62%' : '100%' }}
+            />
+          </div>
+          <LocaleLink href="/billing">
+            <Button className="w-full rounded-xl">{t('app.app.billing.success.billingSuccessClient.backToBilling')}</Button>
+          </LocaleLink>
+        </div>
       </Card>
     </div>
   )

@@ -36,28 +36,30 @@ export function FeatureShowcase() {
   const t = useLocaleText()
 
   return (
-    <section id="features" className="border-y border-surface-200/70 bg-white py-24 dark:border-surface-800 dark:bg-surface-950">
+    <section id="features" className="border-y border-surface-200/70 bg-surface-50 py-24 dark:border-surface-800 dark:bg-surface-950">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-surface-900 dark:text-white sm:text-4xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="max-w-xl break-keep text-3xl font-semibold leading-tight text-surface-900 dark:text-white sm:text-4xl">
             {t('features.landing.featureShowcase.oneWorkflowFromDubbingToPublishing')}
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-surface-600 dark:text-surface-300">
+          <p className="max-w-2xl text-base leading-7 text-surface-600 dark:text-surface-300">
             {t('features.landing.featureShowcase.organizeDubbingCaptionsTitlesAndDescriptionsInOne')}
           </p>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map(({ icon: Icon, title, description }) => (
             <div
               key={title}
-              className="group rounded-lg border border-surface-200 bg-white p-6 shadow-sm transition-colors hover:border-brand-300 dark:border-surface-800 dark:bg-surface-900 dark:hover:border-brand-700"
+              className="group relative min-h-64 rounded-2xl border border-surface-200 bg-white p-6 shadow-[0_1px_0_rgba(15,17,21,0.03)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_18px_50px_rgba(15,17,21,0.08)] dark:border-surface-800 dark:bg-surface-900 dark:hover:border-brand-800 dark:hover:shadow-black/20"
             >
-              <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-3 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-900/20 dark:text-brand-400">
-                <Icon className="h-6 w-6" />
+              <div className="mb-8 flex items-center justify-between">
+                <div className="inline-flex rounded-lg border border-surface-200 bg-white p-3 text-brand-600 transition-colors group-hover:border-brand-200 group-hover:bg-brand-50 dark:border-surface-800 dark:bg-surface-900 dark:text-brand-400 dark:group-hover:border-brand-800 dark:group-hover:bg-brand-900/20">
+                  <Icon className="h-5 w-5" />
+                </div>
               </div>
-              <h3 className="break-keep text-lg font-semibold text-surface-900 dark:text-white">{t(title)}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-surface-600 dark:text-surface-300">{t(description)}</p>
+              <h3 className="break-keep text-lg font-semibold leading-7 text-surface-900 dark:text-white">{t(title)}</h3>
+              <p className="mt-3 break-keep text-sm leading-6 text-surface-600 dark:text-surface-300">{t(description)}</p>
             </div>
           ))}
         </div>

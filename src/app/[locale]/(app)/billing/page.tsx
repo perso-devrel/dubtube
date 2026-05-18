@@ -43,97 +43,132 @@ export default function BillingPage() {
   }
 
   const minutesRemaining = summary ? Number(summary.credits_remaining) : null
+  const selectedPackInfo = selectedPack ? CREDIT_PACKS.find((pack) => pack.minutes === selectedPack) : null
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.billing.page.addDubbingMinutes')}</h1>
-        <p className="text-surface-600 dark:text-surface-400">{t('app.app.billing.page.addDubbingMinutesAndReviewPaymentHistory')}</p>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-surface-900 dark:text-white">{t('app.app.billing.page.addDubbingMinutes')}</h1>
+          <p className="mt-1 text-surface-600 dark:text-surface-400">{t('app.app.billing.page.addDubbingMinutesAndReviewPaymentHistory')}</p>
+        </div>
       </div>
 
-      {/* Remaining time */}
-      <Card className="border-brand-200 dark:border-brand-800">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
-              <Coins className="h-6 w-6 text-amber-500" />
+      <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
+        <Card className="overflow-hidden border-surface-800 bg-surface-950 p-0 text-white dark:border-surface-800">
+          <div className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="rounded-xl border border-white/10 bg-white/10 p-3">
+                <Coins className="h-6 w-6 text-brand-300" />
+              </div>
+              <p className="max-w-40 text-right text-sm leading-6 text-white/55">{t('app.app.billing.page.paymentsAreProcessedInKRW')}</p>
             </div>
-            <div>
-              <p className="text-sm text-surface-600 dark:text-surface-400">{t('app.app.billing.page.remainingDubbingTime')}</p>
+
+            <div className="mt-10">
+              <p className="text-sm text-white/60">{t('app.app.billing.page.remainingDubbingTime')}</p>
               {isLoading ? (
-                <Loader2 className="mt-1 h-6 w-6 animate-spin text-surface-300" />
+                <Loader2 className="mt-3 h-7 w-7 animate-spin text-white/40" />
               ) : (
-                <p className="text-3xl font-bold text-surface-900 dark:text-white">
+                <p className="mt-2 text-5xl font-semibold tracking-normal text-white">
                   {t('common.minutes.value', { count: minutesRemaining ?? 0 })}
                 </p>
               )}
             </div>
+
+            <div className="mt-8 h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-brand-500"
+                style={{ width: `${Math.min(100, ((minutesRemaining ?? 0) / 120) * 100)}%` }}
+              />
+            </div>
           </div>
-          <p className="text-sm text-surface-500 dark:text-surface-300">{t('app.app.billing.page.paymentsAreProcessedInKRW')}</p>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Credit packs */}
-      <Card>
-        <div className="flex items-center gap-2 mb-4">
-          <Coins className="h-5 w-5 text-amber-500" />
-          <CardTitle>{t('app.app.billing.page.chooseAMinutesPack')}</CardTitle>
-        </div>
-        <p className="mb-4 text-sm text-surface-500 dark:text-surface-400">
-          {t('app.app.billing.page.purchasedMinutesDoNotExpire')}
-        </p>
+        <Card className="p-0">
+          <div className="border-b border-surface-200 p-6 dark:border-surface-800">
+            <div className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-brand-600 dark:text-brand-400" />
+              <CardTitle>{t('app.app.billing.page.chooseAMinutesPack')}</CardTitle>
+            </div>
+            <p className="mt-2 text-sm text-surface-500 dark:text-surface-400">
+              {t('app.app.billing.page.purchasedMinutesDoNotExpire')}
+            </p>
+          </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {CREDIT_PACKS.map((pack) => (
-            <button
-              key={pack.minutes}
-              onClick={() => setSelectedPack(pack.minutes)}
-              className={cn(
-                'rounded-lg border-2 p-4 text-left transition-all cursor-pointer focus-ring',
-                selectedPack === pack.minutes
-                  ? 'border-brand-600 bg-brand-50 shadow-sm dark:border-brand-500 dark:bg-brand-900/25'
-                  : 'border-surface-200 bg-white hover:border-surface-300 hover:bg-surface-50 dark:border-surface-700 dark:bg-surface-900 dark:hover:border-surface-600 dark:hover:bg-surface-800/70',
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <p className="whitespace-nowrap text-2xl font-bold text-surface-900 dark:text-white">
-                  {t('common.minutes.value', { count: pack.minutes })}
-                </p>
-                {selectedPack === pack.minutes && <Check className="mt-1 h-4 w-4 text-brand-600 dark:text-brand-400" />}
+          <div className="p-6">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {CREDIT_PACKS.map((pack) => {
+                const isSelected = selectedPack === pack.minutes
+
+                return (
+                  <button
+                    key={pack.minutes}
+                    type="button"
+                    onClick={() => setSelectedPack(pack.minutes)}
+                    className={cn(
+                      'relative overflow-hidden rounded-2xl border p-5 text-left transition-all cursor-pointer focus-ring',
+                      isSelected
+                        ? 'border-brand-500 bg-brand-50 shadow-sm shadow-brand-900/5 dark:border-brand-500 dark:bg-brand-900/20'
+                        : 'border-surface-200 bg-white hover:border-surface-300 hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-950 dark:hover:border-surface-700 dark:hover:bg-surface-900',
+                    )}
+                  >
+                    <div className="mb-6 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="whitespace-nowrap text-3xl font-semibold text-surface-900 dark:text-white">
+                          {t('common.minutes.value', { count: pack.minutes })}
+                        </p>
+                        {pack.labelKey && <p className="mt-1 min-h-5 text-xs text-surface-600 dark:text-surface-300">{t(pack.labelKey)}</p>}
+                      </div>
+                      <span className={cn(
+                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border',
+                        isSelected
+                          ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-400 dark:bg-brand-400 dark:text-surface-950'
+                          : 'border-surface-200 bg-white text-transparent dark:border-surface-700 dark:bg-surface-900',
+                      )}>
+                        <Check className="h-4 w-4" />
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex items-end justify-between gap-3">
+                      <p className="whitespace-nowrap text-xl font-semibold text-surface-900 dark:text-white">
+                        {formatKrw(pack.priceKrw)}
+                      </p>
+                      <p className="whitespace-nowrap text-xs font-medium text-surface-500 dark:text-surface-400">
+                        {formatKrw(Math.round(pack.priceKrw / pack.minutes))} / {t('common.minutes.value', { count: 1 })}
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                {error}
               </div>
-              {pack.labelKey && <p className="mb-2 min-h-5 text-xs text-surface-600 dark:text-surface-300">{t(pack.labelKey)}</p>}
-              <p className="whitespace-nowrap text-lg font-semibold text-surface-900 dark:text-white">
-                {formatKrw(pack.priceKrw)}
-              </p>
-            </button>
-          ))}
-        </div>
-
-        {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </div>
-        )}
-
-        {selectedPack && (
-          <Button className="mt-4" onClick={handleCharge} disabled={isCharging || charged}>
-            {isCharging ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : charged ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <CreditCard className="h-4 w-4" />
             )}
-            {charged
-              ? t('app.app.billing.page.openingCheckout')
-              : t('app.app.billing.page.addValueMinutes', { selectedPack: selectedPack })}
-            {!isCharging && !charged && <ArrowRight className="h-4 w-4" />}
-          </Button>
-        )}
-      </Card>
+
+            {selectedPackInfo && (
+              <Button className="mt-5 h-12 w-full rounded-xl" onClick={handleCharge} disabled={isCharging || charged}>
+                {isCharging ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : charged ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
+                {charged
+                  ? t('app.app.billing.page.openingCheckout')
+                  : t('app.app.billing.page.addValueMinutes', { selectedPack: selectedPackInfo.minutes })}
+                {!isCharging && !charged && <ArrowRight className="h-4 w-4" />}
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
 
       {/* Invoices */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardTitle>{t('app.app.billing.page.paymentHistory')}</CardTitle>
         <div className="mt-4 py-8 text-center text-sm text-surface-500 dark:text-surface-400">
           {t('app.app.billing.page.noPaymentHistoryYet')}

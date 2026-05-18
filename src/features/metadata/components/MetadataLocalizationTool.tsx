@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, FileVideo, Languages, Loader2, RefreshCw, Search, Upload } from 'lucide-react'
+import { Bell, CalendarClock, Check, FileVideo, Image, Languages, ListPlus, Loader2, RefreshCw, Search, ShieldCheck, Sparkles, Tag, Upload } from 'lucide-react'
 import { Badge, Button, Card, CardTitle, Input, Modal, Select, Toggle } from '@/components/ui'
 import { isYouTubeConnectionError, useChannelStats, useMyVideos } from '@/hooks/useYouTubeData'
 import { translateMetadata } from '@/lib/api-client/translate'
@@ -24,6 +24,22 @@ import { useYouTubeSettingsStore } from '@/stores/youtubeSettingsStore'
 import type { PrivacyStatus } from '@/features/dubbing/types/dubbing.types'
 import { SUPPORTED_LANGUAGES, fromBcp47, getLanguageByCode, toBcp47 } from '@/utils/languages'
 import { cn } from '@/utils/cn'
+import {
+  effectivePrivacyStatus,
+  fromDateTimeLocalInputValue,
+  getDefaultPublishTimeZone,
+  getSupportedPublishTimeZones,
+  hasScheduledPublish,
+  isFuturePublishAt,
+  minDateTimeLocalInputValue,
+  normalizePublishTimeZone,
+  toDateTimeLocalInputValue,
+} from '@/lib/youtube/publish-schedule'
+import {
+  DEFAULT_YOUTUBE_CATEGORY_ID,
+  getYouTubeCategoryOptions,
+  parsePlaylistIds,
+} from '@/lib/youtube/upload-options'
 
 type Mode = 'new' | 'existing'
 
@@ -35,6 +51,13 @@ function buildInitialTargets(
 ) {
   return getMetadataTargetLanguageCodes(presetId, customLanguageCodes)
     .filter((code) => code !== sourceLang && !exclude.has(code))
+}
+
+function parseTagsInput(value: string): string[] {
+  return value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
 }
 
 export function MetadataLocalizationTool() {
@@ -59,6 +82,7 @@ export function MetadataLocalizationTool() {
     value: preset.id,
     label: t(preset.labelKey),
   }))
+  const categoryOptions = getYouTubeCategoryOptions(appLocale)
   const { defaultLanguage, defaultTags, defaultPrivacy } = useYouTubeSettingsStore()
 
   const [mode, setMode] = useState<Mode>('existing')
@@ -90,10 +114,7 @@ export function MetadataLocalizationTool() {
     return () => window.clearTimeout(timeout)
   }, [tags])
   const commitTags = () => {
-    const parsed = tagsInput
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean)
+    const parsed = parseTagsInput(tagsInput)
     setTags(parsed)
   }
   const [targetLangs, setTargetLangs] = useState<string[]>(
@@ -109,21 +130,88 @@ export function MetadataLocalizationTool() {
   const [query, setQuery] = useState('')
 
   // 새 영상 업로드 확인 모달 상태. 채널·태그·대상 언어는 읽기전용으로 보여주고,
-  // 공개 범위(기본: 사용자 설정)와 유아용 여부(기본: false)만 모달에서 조정한다.
+  // 업로드 전 YouTube 업로드 옵션을 모달에서 한 번 더 확정한다.
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadPrivacy, setUploadPrivacy] = useState<PrivacyStatus>(defaultPrivacy)
+  const [uploadCategoryId, setUploadCategoryId] = useState(DEFAULT_YOUTUBE_CATEGORY_ID)
+  const [uploadPublishAt, setUploadPublishAt] = useState<string | null>(null)
+  const [uploadPublishAtTimeZone, setUploadPublishAtTimeZone] = useState(getDefaultPublishTimeZone)
+  const [uploadNotifySubscribers, setUploadNotifySubscribers] = useState(true)
+  const [uploadThumbnailUrl, setUploadThumbnailUrl] = useState('')
+  const [uploadThumbnailFile, setUploadThumbnailFile] = useState<File | null>(null)
+  const [uploadPlaylistIdsInput, setUploadPlaylistIdsInput] = useState('')
   const [uploadMadeForKids, setUploadMadeForKids] = useState(false)
+  const [uploadContainsSyntheticMedia, setUploadContainsSyntheticMedia] = useState(false)
   const [uploadConfirmed, setUploadConfirmed] = useState(false)
   const { data: channel } = useChannelStats(mode === 'new' && showUploadModal)
 
+  const publishAtTimeZone = normalizePublishTimeZone(uploadPublishAtTimeZone)
+  const uploadHasPublishSchedule = hasScheduledPublish(uploadPublishAt)
+  const uploadVisibilityValue = effectivePrivacyStatus(uploadPrivacy, uploadPublishAt)
+  const uploadScheduleInvalid = uploadHasPublishSchedule && !isFuturePublishAt(uploadPublishAt)
+  const uploadTagsPreview = parseTagsInput(tagsInput)
+  const uploadText = {
+    category: isEnglish ? 'YouTube category' : 'YouTube \uce74\ud14c\uace0\ub9ac',
+    thumbnailUrl: isEnglish ? 'Thumbnail image URL' : '\uc378\ub124\uc77c \uc774\ubbf8\uc9c0 URL',
+    thumbnailFile: isEnglish ? 'Thumbnail file' : '\uc378\ub124\uc77c \ud30c\uc77c',
+    thumbnailPlaceholder: 'https://.../thumbnail.png',
+    playlists: isEnglish ? 'Playlist IDs to add' : '\ucd94\uac00\ud560 \ud50c\ub808\uc774\ub9ac\uc2a4\ud2b8 ID',
+    playlistsPlaceholder: isEnglish ? 'PL..., UU... separated by commas' : 'PL..., UU... \uc27c\ud45c\ub85c \uad6c\ubd84',
+    notifySubscribers: isEnglish ? 'Notify subscribers' : '\uad6c\ub3c5\uc790\uc5d0\uac8c \uc54c\ub9bc \ubcf4\ub0b4\uae30',
+    schedulePublish: isEnglish ? 'Schedule publish' : '\uc608\uc57d \uacf5\uac1c',
+    scheduleDescription: isEnglish
+      ? 'Upload as private first, then publish at the selected time.'
+      : '\uba3c\uc800 \ube44\uacf5\uac1c\ub85c \uc5c5\ub85c\ub4dc\ud55c \ub4a4 \uc120\ud0dd\ud55c \uc2dc\uac04\uc5d0 \uacf5\uac1c\ud569\ub2c8\ub2e4.',
+    publishTimeZone: isEnglish ? 'Time zone' : '\uae30\uc900 \uc2dc\uac04\ub300',
+    publishTimeMustBeFuture: isEnglish ? 'Scheduled publish time must be in the future.' : '\uc608\uc57d \uacf5\uac1c \uc2dc\uac04\uc740 \ud604\uc7ac \uc774\ud6c4\uc5ec\uc57c \ud569\ub2c8\ub2e4.',
+    scheduledPrivate: isEnglish ? 'Scheduled uploads stay private until publish time.' : '\uc608\uc57d \uacf5\uac1c \uc601\uc0c1\uc740 \uacf5\uac1c \uc804\uae4c\uc9c0 \ube44\uacf5\uac1c\ub85c \uc5c5\ub85c\ub4dc\ub429\ub2c8\ub2e4.',
+    uploadOptions: isEnglish ? 'Category, thumbnail, and playlists' : '\uce74\ud14c\uace0\ub9ac, \uc378\ub124\uc77c, \ud50c\ub808\uc774\ub9ac\uc2a4\ud2b8',
+    syntheticMedia: isEnglish ? 'Synthetic or altered media' : '\ud569\uc131 \ub610\ub294 \ubcc0\ud615 \ubbf8\ub514\uc5b4',
+    syntheticMediaDescription: isEnglish
+      ? 'Mark this when the uploaded video contains realistic synthetic or altered content.'
+      : '\uc5c5\ub85c\ub4dc\ud560 \uc601\uc0c1\uc5d0 \uc0ac\uc2e4\uc801\uc778 \ud569\uc131 \ub610\ub294 \ubcc0\ud615 \ucf58\ud150\uce20\uac00 \uc788\uc744 \ub54c \ucf1c\uc138\uc694.',
+  }
+
   const openUploadModal = () => {
     // 모달 열 때마다 최신 store 값을 가져와 초기화 — 별도의 sync effect 불필요.
+    setTags(parseTagsInput(tagsInput))
     setUploadPrivacy(defaultPrivacy)
+    setUploadCategoryId(DEFAULT_YOUTUBE_CATEGORY_ID)
+    setUploadPublishAt(null)
+    setUploadPublishAtTimeZone(getDefaultPublishTimeZone())
+    setUploadNotifySubscribers(true)
+    setUploadThumbnailUrl('')
+    setUploadThumbnailFile(null)
+    setUploadPlaylistIdsInput('')
     setUploadMadeForKids(false)
+    setUploadContainsSyntheticMedia(false)
     setUploadConfirmed(false)
     setShowUploadModal(true)
   }
   const closeUploadModal = () => setShowUploadModal(false)
+
+  const handlePublishAtChange = (value: string) => {
+    const publishAt = fromDateTimeLocalInputValue(value, publishAtTimeZone)
+    setUploadPublishAt(publishAt)
+    if (publishAt) setUploadPrivacy('private')
+  }
+
+  const handlePublishScheduleToggle = () => {
+    if (uploadHasPublishSchedule) {
+      setUploadPublishAt(null)
+      return
+    }
+
+    setUploadPublishAt(fromDateTimeLocalInputValue(minDateTimeLocalInputValue(1, publishAtTimeZone), publishAtTimeZone))
+    setUploadPrivacy('private')
+  }
+
+  const handlePublishAtTimeZoneChange = (timeZone: string) => {
+    const nextTimeZone = normalizePublishTimeZone(timeZone)
+    const localValue = toDateTimeLocalInputValue(uploadPublishAt, publishAtTimeZone)
+    setUploadPublishAtTimeZone(nextTimeZone)
+    setUploadPublishAt(localValue ? fromDateTimeLocalInputValue(localValue, nextTimeZone) : uploadPublishAt)
+  }
 
   useEffect(() => {
     if (!videosError) return
@@ -295,6 +383,8 @@ export function MetadataLocalizationTool() {
     if (!canUpload || !videoFile) return
     setUploading(true)
     try {
+      const uploadTags = parseTagsInput(tagsInput)
+      const uploadPrivacyStatus = effectivePrivacyStatus(uploadPrivacy, uploadPublishAt)
       const localizations = Object.fromEntries(
         Object.entries(translations).map(([code, value]) => [toBcp47(code), value]),
       )
@@ -302,20 +392,32 @@ export function MetadataLocalizationTool() {
         video: videoFile,
         title: title.trim(),
         description,
-        tags,
-        privacyStatus: uploadPrivacy,
+        tags: uploadTags,
+        categoryId: uploadCategoryId,
+        privacyStatus: uploadPrivacyStatus,
+        publishAt: uploadPublishAt,
+        notifySubscribers: uploadNotifySubscribers,
+        thumbnail: uploadThumbnailFile,
+        thumbnailUrl: uploadThumbnailUrl,
+        playlistIds: parsePlaylistIds(uploadPlaylistIdsInput),
         selfDeclaredMadeForKids: uploadMadeForKids,
+        containsSyntheticMedia: uploadContainsSyntheticMedia,
         language: toBcp47(sourceLang),
         localizations,
       })
       const privacyLabel =
-        uploadPrivacy === 'public' ? t('features.metadata.components.metadataLocalizationTool.public')
-          : uploadPrivacy === 'unlisted' ? t('features.metadata.components.metadataLocalizationTool.unlisted')
+        uploadPrivacyStatus === 'public' ? t('features.metadata.components.metadataLocalizationTool.public')
+          : uploadPrivacyStatus === 'unlisted' ? t('features.metadata.components.metadataLocalizationTool.unlisted')
             : t('features.metadata.components.metadataLocalizationTool.private')
+      const publishLabel = uploadPublishAt
+        ? new Date(uploadPublishAt).toLocaleString(isEnglish ? 'en-US' : 'ko-KR')
+        : null
       addToast({
         type: 'success',
         title: t('features.metadata.components.metadataLocalizationTool.youTubeUploadComplete'),
-        message: t('features.metadata.components.metadataLocalizationTool.videoUploadedAsValue', { privacyLabel: privacyLabel }),
+        message: publishLabel
+          ? (isEnglish ? `Scheduled for ${publishLabel}.` : `${publishLabel} \uc608\uc57d \uacf5\uac1c`)
+          : t('features.metadata.components.metadataLocalizationTool.videoUploadedAsValue', { privacyLabel: privacyLabel }),
       })
       // 업로드 후 폼 초기화 — 같은 파일 중복 업로드 방지.
       setVideoFile(null)
@@ -323,6 +425,7 @@ export function MetadataLocalizationTool() {
       setDescription('')
       setTags([...defaultTags])
       setTranslations({})
+      setUploadThumbnailFile(null)
       setShowUploadModal(false)
     } catch (err) {
       console.error('[MetadataLocalizationTool] Failed to upload YouTube video', err)
@@ -772,30 +875,138 @@ export function MetadataLocalizationTool() {
             <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
               <p className="text-xs font-medium text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.tags2')}</p>
               <p className="mt-1 text-sm text-surface-900 dark:text-surface-100">
-                {tags.length > 0 ? tags.join(', ') : <span className="text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.none')}</span>}
+                {uploadTagsPreview.length > 0 ? uploadTagsPreview.join(', ') : <span className="text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.none')}</span>}
               </p>
+            </div>
+
+            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+              <div className="mb-3 flex min-w-0 items-start gap-2">
+                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.uploadOptions}</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Select
+                  label={uploadText.category}
+                  value={uploadCategoryId}
+                  onChange={(e) => setUploadCategoryId(e.target.value)}
+                  options={categoryOptions}
+                />
+                <Input
+                  label={uploadText.thumbnailUrl}
+                  value={uploadThumbnailUrl}
+                  onChange={(e) => setUploadThumbnailUrl(e.target.value)}
+                  placeholder={uploadText.thumbnailPlaceholder}
+                  icon={<Image className="h-4 w-4" />}
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label={uploadText.playlists}
+                    value={uploadPlaylistIdsInput}
+                    onChange={(e) => setUploadPlaylistIdsInput(e.target.value)}
+                    placeholder={uploadText.playlistsPlaceholder}
+                    icon={<ListPlus className="h-4 w-4" />}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                    {uploadText.thumbnailFile}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    onChange={(e) => setUploadThumbnailFile(e.target.files?.[0] ?? null)}
+                    className="block w-full text-sm text-surface-700 file:mr-3 file:rounded-md file:border-0 file:bg-surface-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-surface-700 hover:file:bg-surface-300 dark:text-surface-300 dark:file:bg-surface-700 dark:file:text-surface-100 dark:hover:file:bg-surface-600"
+                  />
+                </div>
+              </div>
             </div>
 
             <Select
               label={t('features.metadata.components.metadataLocalizationTool.visibility')}
-              value={uploadPrivacy}
+              value={uploadVisibilityValue}
               onChange={(e) => setUploadPrivacy(e.target.value as PrivacyStatus)}
+              disabled={uploadHasPublishSchedule}
               options={[
                 { value: 'private', label: t('features.metadata.components.metadataLocalizationTool.private2') },
                 { value: 'unlisted', label: t('features.metadata.components.metadataLocalizationTool.unlisted2') },
                 { value: 'public', label: t('features.metadata.components.metadataLocalizationTool.public2') },
               ]}
             />
+            {uploadHasPublishSchedule && (
+              <p className="-mt-3 text-xs text-surface-500 dark:text-surface-300">
+                {uploadText.scheduledPrivate}
+              </p>
+            )}
             <p className="-mt-3 text-xs text-surface-500 dark:text-surface-300">
               {t('features.metadata.components.metadataLocalizationTool.theDefaultIsAppliedChangeItForThis')}
             </p>
 
+            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-2">
+                  <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.schedulePublish}</p>
+                    <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-400">{uploadText.scheduleDescription}</p>
+                  </div>
+                </div>
+                <Toggle checked={uploadHasPublishSchedule} onChange={handlePublishScheduleToggle} />
+              </div>
+              {uploadHasPublishSchedule && (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Input
+                    type="datetime-local"
+                    value={toDateTimeLocalInputValue(uploadPublishAt, publishAtTimeZone)}
+                    min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
+                    onChange={(e) => handlePublishAtChange(e.target.value)}
+                    aria-label={uploadText.schedulePublish}
+                  />
+                  <Select
+                    label={uploadText.publishTimeZone}
+                    value={publishAtTimeZone}
+                    onChange={(e) => handlePublishAtTimeZoneChange(e.target.value)}
+                    options={getSupportedPublishTimeZones().map((timeZone) => ({
+                      value: timeZone,
+                      label: timeZone.replaceAll('_', ' '),
+                    }))}
+                  />
+                  {uploadScheduleInvalid && (
+                    <p className="text-xs text-red-500 sm:col-span-2">
+                      {uploadText.publishTimeMustBeFuture}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+              <div className="flex min-w-0 items-start gap-2">
+                <Bell className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.notifySubscribers}</p>
+              </div>
+              <Toggle checked={uploadNotifySubscribers} onChange={setUploadNotifySubscribers} />
+            </div>
+
             <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-surface-900 dark:text-white">{t('features.metadata.components.metadataLocalizationTool.madeForKids')}</p>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 flex-shrink-0 text-surface-400" />
+                  <p className="text-sm font-medium text-surface-900 dark:text-white">{t('features.metadata.components.metadataLocalizationTool.madeForKids')}</p>
+                </div>
                 <p className="text-xs leading-5 text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.setThisAccordingToYouTubeMadeForKids')}</p>
               </div>
               <Toggle checked={uploadMadeForKids} onChange={setUploadMadeForKids} />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.syntheticMedia}</p>
+                </div>
+                <p className="text-xs leading-5 text-surface-500 dark:text-surface-400">{uploadText.syntheticMediaDescription}</p>
+              </div>
+              <Toggle checked={uploadContainsSyntheticMedia} onChange={setUploadContainsSyntheticMedia} />
             </div>
 
             <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
@@ -818,7 +1029,7 @@ export function MetadataLocalizationTool() {
             <Button
               onClick={handleUploadNew}
               loading={uploading}
-              disabled={!uploadConfirmed || uploading}
+              disabled={!uploadConfirmed || uploading || uploadScheduleInvalid}
             >
               <Upload className="h-4 w-4" />
               {t('features.metadata.components.metadataLocalizationTool.uploadWithTheseSettings')}

@@ -362,6 +362,43 @@ describe('ytUploadVideo', () => {
     expect(sessionBody.language).toBeUndefined()
   })
 
+  it('binary mode: sends post-upload actions after direct upload', async () => {
+    mockFetch.mockResolvedValueOnce(okResponse({ uploadUrl: 'https://upload.googleapis.com/x/y' }))
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 'yt-post' }),
+    } as unknown as Response)
+    mockFetch.mockResolvedValueOnce(okResponse({
+      thumbnailUploaded: true,
+      playlistItemIds: ['playlist-item-1'],
+      warnings: [],
+    }))
+
+    const video = new Blob(['fake'], { type: 'video/mp4' })
+    const thumbnail = new Blob(['thumb'], { type: 'image/png' })
+    const result = await ytUploadVideo({
+      video,
+      title: 'Post',
+      description: '',
+      tags: [],
+      notifySubscribers: false,
+      thumbnail,
+      thumbnailUrl: 'https://i.ytimg.com/vi/abc/maxresdefault.jpg',
+      playlistIds: ['PL123'],
+    })
+
+    expect(result.postProcessing?.thumbnailUploaded).toBe(true)
+    const postSessionBody = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+    expect(postSessionBody.notifySubscribers).toBe(false)
+    expect(mockFetch.mock.calls[2][0]).toBe('/api/youtube/upload-post-processing')
+    const postBody = mockFetch.mock.calls[2][1].body as FormData
+    expect(postBody.get('videoId')).toBe('yt-post')
+    expect(postBody.get('thumbnail')).toBeInstanceOf(Blob)
+    expect((postBody.get('thumbnail') as Blob).size).toBe(thumbnail.size)
+    expect(postBody.get('thumbnailUrl')).toBe('https://i.ytimg.com/vi/abc/maxresdefault.jpg')
+    expect(postBody.get('playlistIds')).toBe('PL123')
+  })
+
   it('binary 모드: YouTube 직접 업로드 실패 시 raw 응답을 사용자 메시지에 노출하지 않음', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     mockFetch.mockResolvedValueOnce(okResponse({ uploadUrl: 'https://upload.googleapis.com/x/y' }))
@@ -392,11 +429,15 @@ describe('ytUploadVideo', () => {
 
   it('videoUrl 모드: FormData로 /upload에 POST (서버가 fetch + 업로드)', async () => {
     mockFetch.mockResolvedValueOnce(okResponse({ videoId: 'yt3' }))
+    const thumbnail = new Blob(['thumb'], { type: 'image/png' })
     const result = await ytUploadVideo({
       videoUrl: 'https://example.blob.core.windows.net/x/y.mp4',
       title: 'URL Mode',
       description: 'd',
       tags: ['x'],
+      notifySubscribers: false,
+      thumbnail,
+      playlistIds: ['PL123'],
     })
     expect(result.videoId).toBe('yt3')
     expect(mockFetch.mock.calls[0][0]).toBe('/api/youtube/upload')
@@ -404,6 +445,10 @@ describe('ytUploadVideo', () => {
     expect(body.get('videoUrl')).toBe('https://example.blob.core.windows.net/x/y.mp4')
     expect(body.get('title')).toBe('URL Mode')
     expect(body.get('tags')).toBe('x')
+    expect(body.get('notifySubscribers')).toBe('false')
+    expect(body.get('thumbnail')).toBeInstanceOf(Blob)
+    expect((body.get('thumbnail') as Blob).size).toBe(thumbnail.size)
+    expect(body.get('playlistIds')).toBe('PL123')
   })
 })
 

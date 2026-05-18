@@ -130,13 +130,19 @@ describe('uploadFormSchema', () => {
       tags: 'a,b,c',
       categoryId: '22',
       privacyStatus: 'unlisted',
+      notifySubscribers: 'false',
       selfDeclaredMadeForKids: 'false',
       containsSyntheticMedia: 'true',
       language: 'ko',
+      thumbnailUrl: 'https://i.ytimg.com/vi/abc/maxresdefault.jpg',
+      playlistIds: 'https://www.youtube.com/playlist?list=PL123, UU456',
     })
     expect(result.title).toBe('My Video')
     expect(result.tags).toEqual(['a', 'b', 'c'])
     expect(result.privacyStatus).toBe('unlisted')
+    expect(result.notifySubscribers).toBe(false)
+    expect(result.thumbnailUrl).toBe('https://i.ytimg.com/vi/abc/maxresdefault.jpg')
+    expect(result.playlistIds).toEqual(['PL123', 'UU456'])
     expect(result.selfDeclaredMadeForKids).toBe(false)
     expect(result.containsSyntheticMedia).toBe(true)
   })
@@ -151,6 +157,16 @@ describe('uploadFormSchema', () => {
   it('rejects invalid privacyStatus', () => {
     const result = uploadFormSchema.safeParse({ privacyStatus: 'secret' })
     expect(result.success).toBe(false)
+  })
+
+  it('rejects past scheduled publish times', () => {
+    const result = uploadFormSchema.safeParse({ publishAt: '2000-01-01T00:00:00.000Z' })
+    expect(result.success).toBe(false)
+  })
+
+  it('normalizes future scheduled publish times', () => {
+    const result = uploadFormSchema.parse({ publishAt: '2100-01-01T00:00:00.000Z' })
+    expect(result.publishAt).toBe('2100-01-01T00:00:00.000Z')
   })
 
   it('handles empty tags string', () => {

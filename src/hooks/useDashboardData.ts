@@ -27,13 +27,13 @@ export function useDashboardSummary(initialData?: DashboardSummary | null) {
   })
 }
 
-export function useRecentJobs(initialData?: DubbingJob[]) {
+export function useRecentJobs(initialData?: DubbingJob[], limit = 10) {
   const user = useAuthStore((s) => s.user)
   return useQuery({
-    queryKey: ['recent-jobs', user?.uid],
+    queryKey: ['recent-jobs', user?.uid, limit],
     queryFn: async () => {
       if (!user) return []
-      return fetchJson<DubbingJob[]>(`/api/dashboard/jobs?uid=${user.uid}&limit=10`)
+      return fetchJson<DubbingJob[]>(`/api/dashboard/jobs?uid=${encodeURIComponent(user.uid)}&limit=${limit}`)
     },
     enabled: !!user,
     staleTime: 30_000,

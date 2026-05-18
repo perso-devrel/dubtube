@@ -113,12 +113,12 @@ export const commonMessages = {
     en: 'Remaining dubbing time',
   },
   'features.dubbing.components.steps.languageSelectStep.selectedLanguageCount': {
-    ko: '선택 언어',
-    en: 'Selected languages',
+    ko: '선택한 언어 갯수',
+    en: 'Selected language count',
   },
   'features.dubbing.components.steps.languageSelectStep.videoLengthRounded': {
-    ko: '영상 길이(올림)',
-    en: 'Video length (rounded up)',
+    ko: '올린 영상 길이',
+    en: 'Uploaded video length',
   },
   'features.dubbing.components.steps.translationEditStep.channelWithSubscriberCount': {
     ko: '{title} · 구독자 {count}',

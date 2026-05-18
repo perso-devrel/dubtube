@@ -13,7 +13,6 @@ import {
   CreditCard,
   Layers,
   Settings,
-  Upload,
   Globe2,
   Activity,
 } from 'lucide-react'
@@ -22,8 +21,7 @@ const navItems = [
   { to: '/dashboard', label: 'components.layout.sidebar.labelDashboard', mobileLabel: 'components.layout.sidebar.mobileLabelHome', icon: LayoutDashboard },
   { to: '/dubbing', label: 'components.layout.sidebar.labelNewDubbing', mobileLabel: 'components.layout.sidebar.mobileLabelDub', icon: Languages },
   { to: '/metadata', label: 'components.layout.sidebar.labelTitleDescription', mobileLabel: 'components.layout.sidebar.mobileLabelTitle', icon: Globe2 },
-  { to: '/batch', label: 'components.layout.sidebar.labelDubbingJobs', mobileLabel: 'components.layout.sidebar.mobileLabelJobs', icon: Layers },
-  { to: '/uploads', label: 'components.layout.sidebar.labelYouTubeUploads', mobileLabel: 'components.layout.sidebar.mobileLabelUpload', icon: Upload },
+  { to: '/jobs', label: 'components.layout.sidebar.labelDubbingJobs', mobileLabel: 'components.layout.sidebar.mobileLabelJobs', icon: Layers, activePaths: ['/batch', '/uploads'] },
   { to: '/ops', label: 'components.layout.sidebar.labelOperations', mobileLabel: 'components.layout.sidebar.mobileLabelOps', icon: Activity, opsAdminOnly: true },
   { to: '/billing', label: 'components.layout.sidebar.labelBilling', mobileLabel: 'components.layout.sidebar.mobileLabelBilling', icon: CreditCard },
 ]
@@ -37,8 +35,10 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
   const visibleItems = navItems.filter((item) => !item.opsAdminOnly || canViewOps)
   const settingsLabel = t('components.layout.sidebar.labelSettings')
 
-  const renderNavItem = ({ to, label, icon: Icon }: (typeof navItems)[number]) => {
-    const isActive = activePathname === to || activePathname.startsWith(to + '/')
+  const renderNavItem = ({ to, label, icon: Icon, activePaths }: (typeof navItems)[number]) => {
+    const isActive = activePathname === to ||
+      activePathname.startsWith(to + '/') ||
+      Boolean(activePaths?.some((path) => activePathname === path || activePathname.startsWith(path + '/')))
     return (
       <LocaleLink
         key={to}
@@ -56,8 +56,10 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
     )
   }
 
-  const renderMobileNavItem = ({ to, label, mobileLabel, icon: Icon }: (typeof navItems)[number]) => {
-    const isActive = activePathname === to || activePathname.startsWith(to + '/')
+  const renderMobileNavItem = ({ to, label, mobileLabel, icon: Icon, activePaths }: (typeof navItems)[number]) => {
+    const isActive = activePathname === to ||
+      activePathname.startsWith(to + '/') ||
+      Boolean(activePaths?.some((path) => activePathname === path || activePathname.startsWith(path + '/')))
     return (
       <LocaleLink
         key={to}

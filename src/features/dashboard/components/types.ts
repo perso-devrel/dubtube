@@ -14,6 +14,10 @@ export interface DubbingJob {
   created_at: string
   languages: string
   avg_progress: number
+  language_count: number
+  uploaded_count: number
+  upload_processing_count: number
+  upload_pending_count: number
 }
 
 export interface CreditUsageRow {

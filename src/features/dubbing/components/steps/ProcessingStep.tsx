@@ -46,7 +46,7 @@ function getProgressLabel(t: ReturnType<typeof useLocaleText>, lp: { progressRea
 }
 
 export function ProcessingStep() {
-  const { languageProgress, jobStatus, setStep, isSubmitted, setIsSubmitted, deliverableMode, reset } = useDubbingStore()
+  const { languageProgress, jobStatus, setStep, isSubmitted, setIsSubmitted, reset } = useDubbingStore()
   const { submitDubbing, startPolling, stopPolling, cancelAll } = usePersoFlow()
   const locale = useAppLocale()
   const t = useLocaleText()
@@ -93,19 +93,6 @@ export function ProcessingStep() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">
-          {allCompleted ? t('features.dubbing.components.steps.processingStep.processingComplete') : t('features.dubbing.components.steps.processingStep.processingVideo')}
-        </h2>
-        <p className="mt-1 text-surface-500 dark:text-surface-300">
-          {allCompleted
-            ? t('features.dubbing.components.steps.processingStep.reviewTheFinishedFilesAndContinueWithThe')
-            : deliverableMode === 'originalWithMultiAudio'
-              ? t('features.dubbing.components.steps.processingStep.creatingCaptionsProcessingTimeDependsOnVideoLength')
-              : t('features.dubbing.components.steps.processingStep.creatingCaptionsAndDubbedAudioProcessingTimeDepends')}
-        </p>
-      </div>
-
       {/* Overall progress */}
       <Card>
         <div className="flex items-center justify-between mb-2">

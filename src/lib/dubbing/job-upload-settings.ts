@@ -1,3 +1,6 @@
+import { getDefaultPublishTimeZone, normalizePublishTimeZone } from '@/lib/youtube/publish-schedule'
+import { DEFAULT_YOUTUBE_CATEGORY_ID, parsePlaylistIds } from '@/lib/youtube/upload-options'
+
 export type PersistedDeliverableMode = 'newDubbedVideos' | 'originalWithMultiAudio' | 'downloadOnly'
 
 export type PersistedPrivacyStatus = 'public' | 'unlisted' | 'private'
@@ -8,7 +11,13 @@ export interface PersistedUploadSettings {
   title: string
   description: string
   tags: string[]
+  categoryId: string
   privacyStatus: PersistedPrivacyStatus
+  publishAt: string | null
+  publishAtTimeZone: string | null
+  notifySubscribers: boolean
+  thumbnailUrl: string
+  playlistIds: string[]
   uploadCaptions: boolean
   selfDeclaredMadeForKids: boolean
   containsSyntheticMedia: boolean
@@ -29,7 +38,13 @@ const DEFAULT_UPLOAD_SETTINGS: PersistedUploadSettings = {
   title: '',
   description: '',
   tags: [],
+  categoryId: DEFAULT_YOUTUBE_CATEGORY_ID,
   privacyStatus: 'private',
+  publishAt: null,
+  publishAtTimeZone: getDefaultPublishTimeZone(),
+  notifySubscribers: true,
+  thumbnailUrl: '',
+  playlistIds: [],
   uploadCaptions: true,
   selfDeclaredMadeForKids: false,
   containsSyntheticMedia: true,
@@ -58,6 +73,13 @@ function asNullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null
 }
 
+function asPublishAt(value: unknown): string | null {
+  const raw = asNullableString(value)
+  if (!raw) return null
+  const date = new Date(raw)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
 function asBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback
 }
@@ -68,6 +90,11 @@ function asTags(value: unknown): string[] {
     .filter((tag): tag is string => typeof tag === 'string')
     .map((tag) => tag.trim())
     .filter(Boolean)
+}
+
+function asPlaylistIds(value: unknown): string[] {
+  if (Array.isArray(value)) return parsePlaylistIds(value.filter((item): item is string => typeof item === 'string'))
+  return parsePlaylistIds(typeof value === 'string' ? value : '')
 }
 
 function asPrivacy(value: unknown): PersistedPrivacyStatus {
@@ -95,7 +122,13 @@ export function normalizeJobUploadSettings(value: unknown): PersistedJobUploadSe
       title: asString(uploadSettings.title),
       description: asString(uploadSettings.description),
       tags: asTags(uploadSettings.tags),
+      categoryId: asString(uploadSettings.categoryId, DEFAULT_UPLOAD_SETTINGS.categoryId).trim() || DEFAULT_UPLOAD_SETTINGS.categoryId,
       privacyStatus: asPrivacy(uploadSettings.privacyStatus),
+      publishAt: asPublishAt(uploadSettings.publishAt),
+      publishAtTimeZone: normalizePublishTimeZone(uploadSettings.publishAtTimeZone),
+      notifySubscribers: asBoolean(uploadSettings.notifySubscribers, DEFAULT_UPLOAD_SETTINGS.notifySubscribers),
+      thumbnailUrl: asString(uploadSettings.thumbnailUrl),
+      playlistIds: asPlaylistIds(uploadSettings.playlistIds),
       uploadCaptions: asBoolean(uploadSettings.uploadCaptions, DEFAULT_UPLOAD_SETTINGS.uploadCaptions),
       selfDeclaredMadeForKids: asBoolean(
         uploadSettings.selfDeclaredMadeForKids,

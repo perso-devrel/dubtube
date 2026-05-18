@@ -27,16 +27,20 @@ import { SubtitleScriptEditor } from '../SubtitleScriptEditor'
 import { appendAiDisclosureFooter, appendTextFooter, stripAiDisclosureFooter } from '../../utils/aiDisclosure'
 import type { YouTubeUploadState } from '../../types/dubbing.types'
 import { resolveCaptionTrackName } from '@/lib/youtube/captions'
+import { effectivePrivacyStatus } from '@/lib/youtube/publish-schedule'
 import { cn } from '@/utils/cn'
 
 type UploadStatus = 'idle' | 'uploading' | 'done' | 'error'
 
 type JobLanguageUploadStatusResponse = {
   jobId: number
+  originalYouTubeUrl: string | null
   languages: {
     languageCode: string
     youtubeVideoId: string | null
     youtubeUploadStatus: string | null
+    originalCaptionUploaded?: boolean
+    originalCaptionVideoId?: string | null
   }[]
 }
 
@@ -69,7 +73,12 @@ export function UploadStep() {
     title: settingsTitle,
     description: settingsDescription,
     tags: settingsTags,
+    categoryId,
     privacyStatus,
+    publishAt,
+    notifySubscribers,
+    thumbnailUrl,
+    playlistIds,
     metadataLanguage,
     uploadCaptions: uploadCaptionsEnabled,
     selfDeclaredMadeForKids,
@@ -77,6 +86,7 @@ export function UploadStep() {
     uploadReviewConfirmed,
   } = uploadSettings
   const editableDescription = stripAiDisclosureFooter(settingsDescription || '')
+  const uploadPrivacyStatus = effectivePrivacyStatus(privacyStatus, publishAt)
   const shouldUploadCaptions = autoUpload && uploadCaptionsEnabled
   const shouldApplyAiDisclosure = deliverableMode === 'newDubbedVideos' && containsSyntheticMedia
   const videoMetaTitle = videoMeta?.title
@@ -87,8 +97,6 @@ export function UploadStep() {
   const autoChainTriggered = useRef(false)
   const existingVideoMetadataSyncRef = useRef<Set<string>>(new Set())
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const user = useAuthStore((s) => s.user)
-  const userId = user?.uid
   const videoSourceType = videoSource?.type
   const getDisplayLanguageName = useCallback((langCode: string) => {
     const language = getLanguageByCode(langCode)
@@ -156,10 +164,77 @@ export function UploadStep() {
     videoId?: string
     error?: string
   }>({ status: videoSource?.type === 'channel' ? 'skipped' : 'idle' })
+  const serverUploadStatusKey = `${dbJobId ?? 'none'}:${deliverableMode}`
+  const [serverUploadStatusLoadedKey, setServerUploadStatusLoadedKey] = useState<string | null>(null)
+  const serverUploadStatusLoaded = serverUploadStatusLoadedKey === serverUploadStatusKey
 
   // Resolve the target videoId for multi-audio
   const multiAudioVideoId =
     originalUploadState.videoId || channelVideoId || null
+
+  const syncServerUploadStatus = useCallback(async (): Promise<JobLanguageUploadStatusResponse | null> => {
+    await Promise.resolve()
+
+    if (!dbJobId) {
+      setServerUploadStatusLoadedKey(serverUploadStatusKey)
+      return null
+    }
+
+    try {
+      const res = await fetch(`/api/dashboard/job-language-status?jobId=${dbJobId}`, {
+        cache: 'no-store',
+      })
+      const json = await res.json()
+      if (!json.ok) throw new Error(json.error?.message || 'status_check_failed')
+
+      const data = json.data as JobLanguageUploadStatusResponse
+      const persistedOriginalVideoId = data.originalYouTubeUrl ? extractVideoId(data.originalYouTubeUrl) : null
+      if (persistedOriginalVideoId) {
+        setOriginalUploadState({ status: 'done', videoId: persistedOriginalVideoId })
+      }
+
+      for (const item of data.languages) {
+        const languageUploadDone = Boolean(item.youtubeVideoId || item.youtubeUploadStatus === 'uploaded')
+        if (deliverableMode === 'newDubbedVideos') {
+          if (languageUploadDone) {
+            setYouTubeUploadState(item.languageCode, {
+              status: 'done',
+              progress: 100,
+              videoId: item.youtubeVideoId || undefined,
+            })
+          } else if (item.youtubeUploadStatus === 'failed') {
+            setYouTubeUploadState(item.languageCode, {
+              status: 'error',
+              progress: 0,
+              error: t('features.dubbing.components.steps.uploadStep.couldNotCompleteTheYouTubeUploadPleaseTry'),
+            })
+          }
+        }
+
+        if (
+          item.originalCaptionUploaded ||
+          (deliverableMode === 'originalWithMultiAudio' && languageUploadDone)
+        ) {
+          setCaptionUploads((prev) => ({ ...prev, [item.languageCode]: 'done' }))
+        }
+      }
+
+      return data
+    } catch (err) {
+      console.warn('[sub2tube] Could not check YouTube upload status', err)
+      return null
+    } finally {
+      setServerUploadStatusLoadedKey(serverUploadStatusKey)
+    }
+  }, [dbJobId, deliverableMode, serverUploadStatusKey, setYouTubeUploadState, t])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void syncServerUploadStatus()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [syncServerUploadStatus])
 
   /** 번역되었거나 원문인 description에 공통 footer를 붙여 준다. AI 고지는 더빙 영상 업로드에만 붙인다. */
   const applyDescriptionFooter = useCallback(
@@ -253,6 +328,17 @@ export function UploadStep() {
     const cachedVideoId = originalUploadState.videoId
     if (!cachedVideoId && !originalVideoUrl) return null
 
+    if (!cachedVideoId && dbJobId) {
+      const serverStatus = await syncServerUploadStatus()
+      const persistedOriginalVideoId = serverStatus?.originalYouTubeUrl
+        ? extractVideoId(serverStatus.originalYouTubeUrl)
+        : null
+      if (persistedOriginalVideoId) {
+        setOriginalUploadState({ status: 'done', videoId: persistedOriginalVideoId })
+        return persistedOriginalVideoId
+      }
+    }
+
     setOriginalUploadState({ status: 'uploading', videoId: cachedVideoId })
     try {
       const persistOriginalVideoId = async (youtubeVideoId: string) => {
@@ -294,10 +380,15 @@ export function UploadStep() {
         title: settingsTitle?.trim() || videoMeta?.title || t('features.dubbing.components.steps.uploadStep.originalVideo2'),
         description: applyDescriptionFooter(editableDescription, metadataLanguage),
         tags: settingsTags,
-        privacyStatus,
+        categoryId,
+        privacyStatus: uploadPrivacyStatus,
+        publishAt,
+        notifySubscribers,
         selfDeclaredMadeForKids,
         containsSyntheticMedia: shouldApplyAiDisclosure,
         language: toBcp47(metadataLanguage),
+        thumbnailUrl,
+        playlistIds,
         localizations: Object.keys(localizations).length > 0 ? localizations : undefined,
       })
       setOriginalUploadState({ status: 'uploading', videoId: result.videoId })
@@ -313,7 +404,7 @@ export function UploadStep() {
       addToast({ type: 'error', title: t('features.dubbing.components.steps.uploadStep.originalUploadFailed'), message: msg })
       return null
     }
-  }, [isAuthenticated, originalUploadState.videoId, originalVideoUrl, settingsTitle, editableDescription, settingsTags, privacyStatus, selfDeclaredMadeForKids, shouldApplyAiDisclosure, videoMeta, dbJobId, addToast, ensureTranslations, selectedLanguages, metadataLanguage, applyDescriptionFooter, t])
+  }, [isAuthenticated, originalUploadState.videoId, originalVideoUrl, dbJobId, syncServerUploadStatus, settingsTitle, editableDescription, settingsTags, categoryId, uploadPrivacyStatus, publishAt, notifySubscribers, selfDeclaredMadeForKids, shouldApplyAiDisclosure, thumbnailUrl, playlistIds, videoMeta, addToast, ensureTranslations, selectedLanguages, metadataLanguage, applyDescriptionFooter, t])
 
   // ─── File download ──────────────────────────────────────────────────
   const handleDownload = useCallback(async (langCode: string, type: 'video' | 'voiceAudio' | 'translatedSubtitle') => {
@@ -375,6 +466,21 @@ export function UploadStep() {
 
     if (!dbJobId) return
 
+    const serverStatus = await syncServerUploadStatus()
+    const serverLanguage = serverStatus?.languages.find((item) => item.languageCode === langCode)
+    if (serverLanguage?.youtubeVideoId || serverLanguage?.youtubeUploadStatus === 'uploaded') {
+      setYouTubeUploadState(langCode, {
+        status: 'done',
+        progress: 100,
+        videoId: serverLanguage.youtubeVideoId || undefined,
+      })
+      return
+    }
+    if (serverLanguage?.youtubeUploadStatus === 'uploading') {
+      setYouTubeUploadState(langCode, { status: 'uploading', progress: 10 })
+      return
+    }
+
     setYouTubeUploadState(langCode, { status: 'uploading', progress: 10 })
 
     try {
@@ -410,7 +516,7 @@ export function UploadStep() {
       setYouTubeUploadState(langCode, { status: 'error', progress: 0, error: msg })
       addToast({ type: 'error', title: t('features.dubbing.components.steps.uploadStep.valueUploadSchedulingFailed', { getDisplayLanguageNameLangCode: getDisplayLanguageName(langCode) }), message: msg })
     }
-  }, [addToast, dbJobId, isAuthenticated, setYouTubeUploadState, getDisplayLanguageName, t])
+  }, [addToast, dbJobId, isAuthenticated, setYouTubeUploadState, getDisplayLanguageName, syncServerUploadStatus, t])
 
   // ─── Queue upload (background — survives tab close) ─────────────────
   const queueYouTubeUpload = useCallback(async (langCode: string) => {
@@ -430,6 +536,8 @@ export function UploadStep() {
   const anyUploading = Object.values(ytUploads).some((s) => s.status === 'uploading')
   const hasPendingYouTubeUploads = completedLangs.some((code) => !isYouTubeUploadLocked(ytUploads[code]))
   const hasAutoUploadCandidates = completedLangs.some((code) => !ytUploads[code])
+  const hasYouTubeUploadFailures = completedLangs.some((code) => ytUploads[code]?.status === 'error')
+  const showBulkYouTubeUploadActions = !autoUpload || hasYouTubeUploadFailures
 
   const handleUploadAll = useCallback(async () => {
     const pending = completedLangs.filter((code) => !isYouTubeUploadLocked(ytUploads[code]))
@@ -440,36 +548,30 @@ export function UploadStep() {
     }
   }, [completedLangs, ytUploads, handleYouTubeUpload])
 
-  const handleQueueAll = useCallback(async () => {
-    const pending = completedLangs.filter((code) => !isYouTubeUploadLocked(ytUploads[code]))
-    for (const code of pending) {
-      await queueYouTubeUpload(code)
-    }
-  }, [completedLangs, ytUploads, queueYouTubeUpload])
-
   const persistOriginalCaptionUpload = useCallback(async (targetVideoId: string, langCode: string) => {
-    if (deliverableMode !== 'originalWithMultiAudio' || !dbJobId) return
+    if (deliverableMode === 'downloadOnly' || !dbJobId) return
 
-    await dbMutationStrict({
-      type: 'updateJobLanguageYouTube',
-      payload: {
-        jobId: dbJobId,
-        langCode,
-        youtubeVideoId: targetVideoId,
-      },
-    })
-
-    if (!userId) return
+    if (deliverableMode === 'originalWithMultiAudio') {
+      await dbMutationStrict({
+        type: 'updateJobLanguageYouTube',
+        payload: {
+          jobId: dbJobId,
+          langCode,
+          youtubeVideoId: targetVideoId,
+        },
+      })
+    }
 
     try {
       await dbMutationStrict({
-        type: 'createYouTubeUpload',
+        type: 'recordJobLanguageCaptionUpload',
         payload: {
-          userId,
+          jobId: dbJobId,
+          langCode,
           youtubeVideoId: targetVideoId,
           title: settingsTitle?.trim() || videoMetaTitle || t('features.dubbing.components.steps.uploadStep.untitled'),
           languageCode: langCode,
-          privacyStatus,
+          privacyStatus: uploadPrivacyStatus,
           isShort,
           uploadKind: videoSourceType === 'channel'
             ? 'my_video_original_captions'
@@ -483,21 +585,35 @@ export function UploadStep() {
     dbJobId,
     deliverableMode,
     isShort,
-    privacyStatus,
+    uploadPrivacyStatus,
     settingsTitle,
     t,
-    userId,
     videoMetaTitle,
     videoSourceType,
   ])
 
   // ─── Caption upload to YouTube ───────────────────────────────────────
   const uploadCaptions = useCallback(async (targetVideoId: string, langs: string[]) => {
+    const serverStatus = await syncServerUploadStatus()
+    const alreadyUploadedCaptionLangs = new Set(
+      (serverStatus?.languages ?? [])
+        .filter((item) =>
+          item.originalCaptionUploaded ||
+          (deliverableMode === 'originalWithMultiAudio' && Boolean(item.youtubeVideoId || item.youtubeUploadStatus === 'uploaded')),
+        )
+        .map((item) => item.languageCode),
+    )
+
     for (const langCode of langs) {
       const lang = getLanguageByCode(langCode)
       if (!lang) continue
       const pSeq = projectMap[langCode]
       if (!pSeq || !spaceSeq) continue
+
+      if (alreadyUploadedCaptionLangs.has(langCode)) {
+        setCaptionUploads((prev) => ({ ...prev, [langCode]: 'done' }))
+        continue
+      }
 
       setCaptionUploads((prev) => ({ ...prev, [langCode]: 'uploading' }))
       try {
@@ -521,7 +637,7 @@ export function UploadStep() {
         addToast({ type: 'error', title: t('features.dubbing.components.steps.uploadStep.valueCaptionUploadFailed', { getDisplayLanguageNameLangCode: getDisplayLanguageName(langCode) }), message: msg })
       }
     }
-  }, [projectMap, spaceSeq, persistOriginalCaptionUpload, addToast, getDisplayLanguageName, t])
+  }, [deliverableMode, projectMap, spaceSeq, persistOriginalCaptionUpload, addToast, getDisplayLanguageName, syncServerUploadStatus, t])
 
   const uploadCaptionsWithMetadata = useCallback(async (targetVideoId: string, langs: string[]) => {
     if (deliverableMode === 'originalWithMultiAudio' && videoSource?.type === 'channel') {
@@ -541,6 +657,7 @@ export function UploadStep() {
     if (deliverableMode !== 'originalWithMultiAudio') return
     if (!autoUpload || !isAuthenticated) return
     if (!uploadReviewConfirmed) return
+    if (!serverUploadStatusLoaded) return
     if (completedLangs.length === 0) return
     if (autoChainTriggered.current) return
     autoChainTriggered.current = true
@@ -565,16 +682,17 @@ export function UploadStep() {
 
     chain()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deliverableMode, autoUpload, isAuthenticated, uploadReviewConfirmed, completedLangs.length])
+  }, [deliverableMode, autoUpload, isAuthenticated, uploadReviewConfirmed, serverUploadStatusLoaded, completedLangs.length])
 
   // ─── Auto-upload: newDubbedVideos ────────────────────────────────────
   useEffect(() => {
     if (deliverableMode !== 'newDubbedVideos') return
     if (!uploadReviewConfirmed) return
+    if (!serverUploadStatusLoaded) return
     if (autoUpload && isAuthenticated && hasAutoUploadCandidates && !anyUploading) {
       handleUploadAll()
     }
-  }, [deliverableMode, autoUpload, isAuthenticated, uploadReviewConfirmed, hasAutoUploadCandidates, anyUploading, handleUploadAll])
+  }, [deliverableMode, autoUpload, isAuthenticated, uploadReviewConfirmed, serverUploadStatusLoaded, hasAutoUploadCandidates, anyUploading, handleUploadAll])
 
   useEffect(() => {
     if (!dbJobId || !anyUploading) return
@@ -582,38 +700,7 @@ export function UploadStep() {
     let cancelled = false
 
     const syncUploadStatus = async () => {
-      try {
-        const res = await fetch(`/api/dashboard/job-language-status?jobId=${dbJobId}`, {
-          cache: 'no-store',
-        })
-        const json = await res.json()
-        if (!json.ok) throw new Error(json.error?.message || 'status_check_failed')
-        if (cancelled) return
-
-        const data = json.data as JobLanguageUploadStatusResponse
-        const currentUploads = useDubbingStore.getState().youtubeUploads
-
-        for (const item of data.languages) {
-          const current = currentUploads[item.languageCode]
-          if (current?.status !== 'uploading') continue
-
-          if (item.youtubeVideoId || item.youtubeUploadStatus === 'uploaded') {
-            setYouTubeUploadState(item.languageCode, {
-              status: 'done',
-              progress: 100,
-              videoId: item.youtubeVideoId || undefined,
-            })
-          } else if (item.youtubeUploadStatus === 'failed') {
-            setYouTubeUploadState(item.languageCode, {
-              status: 'error',
-              progress: 0,
-              error: t('features.dubbing.components.steps.uploadStep.couldNotCompleteTheYouTubeUploadPleaseTry'),
-            })
-          }
-        }
-      } catch (err) {
-        console.warn('[sub2tube] Could not check YouTube upload status', err)
-      }
+      if (!cancelled) await syncServerUploadStatus()
     }
 
     syncUploadStatus()
@@ -622,32 +709,10 @@ export function UploadStep() {
       cancelled = true
       window.clearInterval(interval)
     }
-  }, [anyUploading, dbJobId, setYouTubeUploadState, t])
+  }, [anyUploading, dbJobId, syncServerUploadStatus])
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/20">
-          <Check className="h-8 w-8 text-emerald-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">
-          {failedLangs.length > 0
-            ? t('features.dubbing.components.steps.uploadStep.someLanguagesFinished')
-            : t('features.dubbing.components.steps.uploadStep.dubbingFilesAreReady')}
-        </h2>
-        <p className="mt-1 text-surface-500 dark:text-surface-300">
-          {t('features.dubbing.components.steps.uploadStep.completedLanguageProgress', {
-            completed: completedLangs.length,
-            total: selectedLanguages.length,
-          })}
-          {deliverableMode === 'downloadOnly'
-            ? t('features.dubbing.components.steps.uploadStep.downloadTheFilesYouNeed')
-            : deliverableMode === 'originalWithMultiAudio'
-              ? t('features.dubbing.components.steps.uploadStep.youCanAddCaptionsToTheOriginalVideo')
-              : t('features.dubbing.components.steps.uploadStep.downloadThemOrUploadToYouTube')}
-        </p>
-      </div>
-
       {/* ─── originalWithMultiAudio: Original upload + extension auto ─── */}
       {deliverableMode === 'originalWithMultiAudio' && completedLangs.length > 0 && (
         <>
@@ -898,8 +963,8 @@ export function UploadStep() {
                 })}
               </div>
 
-              {completedLangs.length > 1 && (
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {completedLangs.length > 1 && showBulkYouTubeUploadActions && (
+                <div className="mt-3 grid grid-cols-1 gap-2">
                   <Button
                     className="min-w-0 justify-center"
                     onClick={handleUploadAll}
@@ -908,15 +973,6 @@ export function UploadStep() {
                   >
                     <Upload className="h-4 w-4" />
                     {t('features.dubbing.components.steps.uploadStep.uploadAllNow')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="min-w-0 justify-center"
-                    onClick={handleQueueAll}
-                    disabled={anyUploading || !hasPendingYouTubeUploads}
-                  >
-                    <Upload className="h-4 w-4" />
-                    {t('features.dubbing.components.steps.uploadStep.queueAllForLater')}
                   </Button>
                 </div>
               )}

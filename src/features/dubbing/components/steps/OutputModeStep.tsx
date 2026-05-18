@@ -90,13 +90,6 @@ export function OutputModeStep() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.dubbing.components.steps.outputModeStep.chooseOutput')}</h2>
-        <p className="mt-1 text-surface-600 dark:text-surface-400">
-          {t('features.dubbing.components.steps.outputModeStep.chooseWhatYouWantToDoWithThe')}
-        </p>
-      </div>
-
       {isExternalUrl && (
         <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />

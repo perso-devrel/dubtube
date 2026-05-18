@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Image from 'next/image'
 import { AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button, Card, Badge } from '@/components/ui'
 import { cn } from '@/utils/cn'
@@ -9,6 +10,8 @@ import { useLocaleRouter } from '@/hooks/useLocalePath'
 import { getLanguageByCode } from '@/utils/languages'
 import { useAuthStore } from '@/stores/authStore'
 import { useChannelStats } from '@/hooks/useYouTubeData'
+import { getYouTubeCategoryLabel } from '@/lib/youtube/upload-options'
+import { effectivePrivacyStatus, hasScheduledPublish, normalizePublishTimeZone } from '@/lib/youtube/publish-schedule'
 import { useDubbingStore } from '../../store/dubbingStore'
 import type { PrivacyStatus } from '../../types/dubbing.types'
 
@@ -34,6 +37,13 @@ export function TranslationEditStep() {
   const locale = useAppLocale()
   const t = useLocaleText()
   const router = useLocaleRouter()
+  const summaryText = {
+    scheduledPublish: locale === 'ko' ? '예약 공개' : 'Scheduled publish',
+    category: locale === 'ko' ? '카테고리' : 'Category',
+    thumbnail: locale === 'ko' ? '썸네일' : 'Thumbnail',
+    playlists: locale === 'ko' ? '플레이리스트' : 'Playlists',
+    notifySubscribers: locale === 'ko' ? '구독자 알림' : 'Subscriber notifications',
+  }
 
   const needsAutoUploadReview = uploadSettings.autoUpload && deliverableMode !== 'downloadOnly'
   const needsYouTubeConnection = deliverableMode !== 'downloadOnly'
@@ -43,7 +53,8 @@ export function TranslationEditStep() {
     !checkingYouTubeConnection &&
     !youtubeConnectionMissing &&
     (!needsAutoUploadReview || uploadSettings.uploadReviewConfirmed)
-  const privacyLabel = t(PRIVACY_LABELS[uploadSettings.privacyStatus] ?? uploadSettings.privacyStatus)
+  const effectivePrivacy = effectivePrivacyStatus(uploadSettings.privacyStatus, uploadSettings.publishAt)
+  const privacyLabel = t(PRIVACY_LABELS[effectivePrivacy] ?? effectivePrivacy)
   const targetChannelLabel = channel
     ? t('features.dubbing.components.steps.translationEditStep.channelWithSubscriberCount', {
       title: channel.title,
@@ -55,6 +66,9 @@ export function TranslationEditStep() {
     (deliverableMode === 'originalWithMultiAudio' && videoSource?.type === 'upload')
   const showsAiDisclosureSetting = deliverableMode === 'newDubbedVideos'
   const showsCaptionSetting = deliverableMode === 'newDubbedVideos' || deliverableMode === 'originalWithMultiAudio'
+  const publishAt = uploadSettings.publishAt
+  const hasPublishSchedule = hasScheduledPublish(publishAt)
+  const publishAtTimeZone = normalizePublishTimeZone(uploadSettings.publishAtTimeZone)
   const deliverableModeLabel = deliverableMode === 'newDubbedVideos'
     ? t('features.dubbing.components.steps.translationEditStep.uploadNewDubbedVideos')
     : deliverableMode === 'originalWithMultiAudio'
@@ -67,19 +81,23 @@ export function TranslationEditStep() {
       return locale === 'ko' ? language.nativeName : language.name
     })()
   const tagsLabel = uploadSettings.tags.length > 0 ? uploadSettings.tags.join(', ') : t('features.dubbing.components.steps.translationEditStep.none')
+  const categoryLabel = `${getYouTubeCategoryLabel(uploadSettings.categoryId, locale)} (${uploadSettings.categoryId})`
+  const scheduledPublishLabel = hasPublishSchedule
+    ? `${new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: publishAtTimeZone,
+    }).format(new Date(publishAt))} (${publishAtTimeZone})`
+    : null
+  const playlistLabel = uploadSettings.playlistIds.length > 0
+    ? uploadSettings.playlistIds.join(', ')
+    : t('features.dubbing.components.steps.translationEditStep.none')
   const autoUploadConfirmationText = uploadsVideoToYouTube
     ? t('features.dubbing.components.steps.translationEditStep.iReviewedTheSettingsAndWantToUpload')
     : t('features.dubbing.components.steps.translationEditStep.iReviewedTheSettingsAndWantToUpload2')
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.dubbing.components.steps.translationEditStep.reviewSettings')}</h2>
-        <p className="mt-1 text-surface-500 dark:text-surface-300">
-          {t('features.dubbing.components.steps.translationEditStep.reviewUploadSettingsBeforeStartingDubbing')}
-        </p>
-      </div>
-
       {/* Summary card */}
       <Card>
         {youtubeConnectionMissing && (
@@ -139,7 +157,13 @@ export function TranslationEditStep() {
           */}
 
           {uploadsVideoToYouTube && (
-            <SummaryRow label={t('features.dubbing.components.steps.translationEditStep.visibility')} value={privacyLabel} />
+            <>
+              <SummaryRow
+                label={summaryText.scheduledPublish}
+                value={scheduledPublishLabel ?? <StatusValue active={false} />}
+              />
+              <SummaryRow label={t('features.dubbing.components.steps.translationEditStep.visibility')} value={privacyLabel} />
+            </>
           )}
 
           <SummaryRow label={t('features.dubbing.components.steps.translationEditStep.output')} value={deliverableModeLabel} />
@@ -167,6 +191,37 @@ export function TranslationEditStep() {
               <SummaryRow
                 label={t('features.dubbing.components.steps.translationEditStep.tags')}
                 value={tagsLabel}
+              />
+              <SummaryRow
+                label={summaryText.category}
+                value={categoryLabel}
+              />
+              <SummaryRow
+                label={summaryText.thumbnail}
+                value={
+                  uploadSettings.thumbnailUrl
+                    ? (
+                      <span className="relative block h-10 w-16 shrink-0 overflow-hidden rounded-md border border-surface-200 bg-surface-100 dark:border-surface-700 dark:bg-surface-900">
+                        <Image
+                          src={uploadSettings.thumbnailUrl}
+                          alt=""
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </span>
+                    )
+                    : <StatusValue active={false} />
+                }
+              />
+              <SummaryRow
+                label={summaryText.playlists}
+                value={playlistLabel}
+              />
+              <SummaryRow
+                label={summaryText.notifySubscribers}
+                value={<StatusValue active={uploadSettings.notifySubscribers} />}
               />
               <SummaryRow
                 label={t('features.dubbing.components.steps.translationEditStep.madeForKids')}

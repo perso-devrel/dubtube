@@ -5,6 +5,7 @@ export {
   uploadVideoToYouTube,
   uploadCaptionToYouTube,
   initYouTubeResumableUpload,
+  applyYouTubePostUploadActions,
   listCaptionsForVideo,
 } from '@/lib/youtube/upload'
 export {

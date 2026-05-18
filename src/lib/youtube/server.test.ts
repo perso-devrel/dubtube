@@ -503,6 +503,92 @@ describe('uploadVideoToYouTube', () => {
     expect(initBody.localizations.en.title).toBe('English title')
   })
 
+  it('sets publishAt and forces private visibility for scheduled uploads', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({}, 200, { Location: 'https://upload.example.com/resume' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ id: 'yt-scheduled', status: { uploadStatus: 'uploaded' } }),
+      )
+
+    await uploadVideoToYouTube({
+      accessToken: 'tok',
+      videoBlob: new Blob(['video'], { type: 'video/mp4' }),
+      title: 'Scheduled Vid',
+      description: '',
+      tags: [],
+      privacyStatus: 'public',
+      publishAt: '2030-01-02T03:04:05.000Z',
+    })
+
+    const initBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string)
+    expect(initBody.status).toMatchObject({
+      privacyStatus: 'private',
+      publishAt: '2030-01-02T03:04:05.000Z',
+    })
+  })
+
+  it('passes notifySubscribers and applies thumbnail and playlist actions after upload', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({}, 200, { Location: 'https://upload.example.com/resume' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ id: 'yt-post', snippet: { title: 'Post Vid' }, status: { uploadStatus: 'uploaded' } }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ items: [] }))
+      .mockResolvedValueOnce(jsonResponse({ id: 'playlist-item-1' }))
+
+    const thumbnailBlob = new Blob(['thumbnail'], { type: 'image/png' })
+    const result = await uploadVideoToYouTube({
+      accessToken: 'tok',
+      videoBlob: new Blob(['video'], { type: 'video/mp4' }),
+      title: 'Post Vid',
+      description: '',
+      tags: [],
+      notifySubscribers: false,
+      thumbnailBlob,
+      playlistIds: ['PL123'],
+    })
+
+    expect(result.postProcessing).toEqual({
+      thumbnailUploaded: true,
+      playlistItemIds: ['playlist-item-1'],
+      warnings: [],
+    })
+    expect(String(mockFetch.mock.calls[0][0])).toContain('notifySubscribers=false')
+    expect(String(mockFetch.mock.calls[2][0])).toContain('/thumbnails/set?')
+    expect(mockFetch.mock.calls[2][1]).toMatchObject({
+      method: 'POST',
+      body: thumbnailBlob,
+    })
+    expect(String(mockFetch.mock.calls[3][0])).toContain('/playlistItems?part=snippet')
+    expect(JSON.parse(mockFetch.mock.calls[3][1]?.body as string)).toMatchObject({
+      snippet: {
+        playlistId: 'PL123',
+        resourceId: {
+          kind: 'youtube#video',
+          videoId: 'yt-post',
+        },
+      },
+    })
+  })
+
+  it('rejects past scheduled publish times before upload init', async () => {
+    await expect(
+      uploadVideoToYouTube({
+        accessToken: 'tok',
+        videoBlob: new Blob(['video'], { type: 'video/mp4' }),
+        title: 'Past Scheduled Vid',
+        description: '',
+        tags: [],
+        publishAt: '2000-01-01T00:00:00.000Z',
+      }),
+    ).rejects.toThrow('Scheduled publish time must be in the future')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('throws on init failure', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse('Bad request', 400))
     await expect(

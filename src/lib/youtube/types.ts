@@ -6,6 +6,18 @@ export interface YouTubeUploadResult {
   videoId: string
   title: string
   status: string
+  postProcessing?: YouTubePostUploadResult
+}
+
+export interface YouTubePostUploadWarning {
+  action: 'thumbnail' | 'playlist'
+  message: string
+}
+
+export interface YouTubePostUploadResult {
+  thumbnailUploaded: boolean
+  playlistItemIds: string[]
+  warnings: YouTubePostUploadWarning[]
 }
 
 export interface YouTubeLocalization {

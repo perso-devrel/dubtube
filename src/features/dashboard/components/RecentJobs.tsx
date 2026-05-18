@@ -30,7 +30,7 @@ export function RecentJobs({ initialData }: RecentJobsProps) {
     <Card>
       <div className="mb-4 flex items-center justify-between">
         <CardTitle>{t('features.dashboard.components.recentJobs.recentJobs')}</CardTitle>
-        <LocaleLink href="/batch" aria-label={t('features.dashboard.components.recentJobs.viewAllRecentJobs')} className="text-sm text-brand-500 hover:text-brand-600">{t('features.dashboard.components.recentJobs.viewAll')}</LocaleLink>
+        <LocaleLink href="/jobs" aria-label={t('features.dashboard.components.recentJobs.viewAllRecentJobs')} className="text-sm text-brand-500 hover:text-brand-600">{t('features.dashboard.components.recentJobs.viewAll')}</LocaleLink>
       </div>
 
       {!jobs || jobs.length === 0 ? (

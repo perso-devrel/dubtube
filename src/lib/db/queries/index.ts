@@ -49,6 +49,7 @@ export type {
 
 export {
   createYouTubeUpload,
+  createJobLanguageYouTubeUpload,
   startJobLanguageYouTubeUpload,
   failJobLanguageYouTubeUpload,
   updateYouTubeStats,

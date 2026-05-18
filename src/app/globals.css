@@ -30,9 +30,7 @@
   --color-surface-950: #0f1115;
 
   /* Fonts */
-  --font-ko: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-  --font-latin: var(--font-geist-sans), Inter, system-ui, -apple-system, sans-serif;
-  --font-sans: var(--font-latin), var(--font-ko);
+  --font-sans: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Animations */

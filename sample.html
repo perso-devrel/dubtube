@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sub2tube - YouTube 다국어 더빙 작업공간</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f4;
+      --bg-2: #ffffff;
+      --bg-3: #eef1f4;
+      --panel: #ffffff;
+      --panel-2: #f7f8fa;
+      --ink: #101114;
+      --ink-2: #2e3238;
+      --muted: #626974;
+      --faint: #8d95a1;
+      --line: #dfe3e8;
+      --line-2: #c9d0d8;
+      --accent: #d91f18;
+      --accent-2: #5e6ad2;
+      --accent-soft: #fff0ee;
+      --success: #198754;
+      --warning: #b7791f;
+      --shadow: 0 1px 0 rgba(16,17,20,.04), 0 18px 54px rgba(16,17,20,.10);
+      --shadow-strong: 0 1px 0 rgba(16,17,20,.05), 0 34px 90px rgba(16,17,20,.16);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --pill: 999px;
+      --sans: Pretendard, "Noto Sans KR", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", "JetBrains Mono", "Geist Mono", Consolas, monospace;
+      --max: 1200px;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #06070a;
+      --bg-2: #0a0b0f;
+      --bg-3: #0e1016;
+      --panel: #101217;
+      --panel-2: #151923;
+      --ink: #f6f7f9;
+      --ink-2: #d8dde6;
+      --muted: #9aa3b1;
+      --faint: #687180;
+      --line: #262c37;
+      --line-2: #3a414f;
+      --accent: #ff4b43;
+      --accent-2: #8b93ff;
+      --accent-soft: rgba(255,75,67,.12);
+      --success: #56d58f;
+      --warning: #f2bd58;
+      --shadow: 0 0 0 1px rgba(255,255,255,.04), 0 22px 70px rgba(0,0,0,.42);
+      --shadow-strong: 0 0 0 1px rgba(255,255,255,.05), 0 38px 110px rgba(0,0,0,.62);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% -10%, color-mix(in srgb, var(--accent), transparent 78%), transparent 34rem),
+        radial-gradient(circle at 88% 4%, color-mix(in srgb, var(--accent-2), transparent 82%), transparent 32rem),
+        linear-gradient(180deg, var(--bg), var(--bg-2) 64%, var(--bg));
+      color: var(--ink);
+      font-family: var(--sans);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+
+    .wrap {
+      width: min(100% - 48px, var(--max));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid color-mix(in srgb, var(--line), transparent 18%);
+      background: color-mix(in srgb, var(--bg), transparent 12%);
+      backdrop-filter: blur(18px);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      gap: 20px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 760;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-mark {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: var(--bg);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bg), transparent 80%);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 560;
+    }
+
+    .nav a,
+    .theme-button,
+    .small-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      border-radius: var(--pill);
+      border: 1px solid transparent;
+      padding: 0 13px;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .nav a:hover,
+    .theme-button:hover,
+    .small-button:hover {
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--panel), transparent 8%);
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .small-button {
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--panel), transparent 6%);
+      color: var(--ink);
+      font-weight: 650;
+    }
+
+    .hero {
+      padding: 72px 0 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .88fr) minmax(560px, 1.12fr);
+      gap: 34px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--pill);
+      background: color-mix(in srgb, var(--panel), transparent 7%);
+      padding: 7px 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 680;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px var(--accent-soft);
+    }
+
+    h1 {
+      margin: 22px 0 0;
+      font-size: clamp(48px, 6vw, 88px);
+      line-height: .96;
+      letter-spacing: -.06em;
+      font-weight: 760;
+      text-wrap: balance;
+    }
+
+    .hero-copy {
+      margin: 22px 0 0;
+      max-width: 610px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.72;
+      word-break: keep-all;
+    }
+
+    .hero-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 30px;
+      max-width: 620px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel), transparent 2%);
+      padding: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-form .icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .hero-form input {
+      min-width: 0;
+      flex: 1;
+      height: 42px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .hero-form input::placeholder {
+      color: var(--faint);
+    }
+
+    .primary-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 0 16px;
+      font-weight: 760;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .proof-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      max-width: 620px;
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--line);
+    }
+
+    .proof {
+      background: color-mix(in srgb, var(--panel), transparent 3%);
+      padding: 15px;
+    }
+
+    .proof strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -.04em;
+    }
+
+    .proof span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .workspace-frame {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow-strong);
+    }
+
+    .frame-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 46px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-2), transparent 2%);
+      padding: 0 14px;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .window-dots i {
+      display: block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--line-2);
+    }
+
+    .frame-title {
+      color: var(--faint);
+      font: 12px/1 var(--mono);
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 138px minmax(0, 1fr) 220px;
+      min-height: 540px;
+    }
+
+    .rail {
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-2), var(--bg) 18%);
+      padding: 14px 10px;
+    }
+
+    .rail-group + .rail-group {
+      margin-top: 22px;
+    }
+
+    .rail-label {
+      padding: 0 9px 8px;
+      color: var(--faint);
+      font: 10px/1 var(--mono);
+      text-transform: uppercase;
+    }
+
+    .rail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      border-radius: 9px;
+      padding: 0 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .rail-item.active {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+
+    .rail-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .72;
+    }
+
+    .stage {
+      padding: 18px;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel), transparent 0), color-mix(in srgb, var(--panel-2), transparent 0));
+    }
+
+    .command {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      padding: 8px;
+    }
+
+    .command code {
+      flex: 1;
+      color: var(--muted);
+      font: 12px/1.4 var(--mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .command .run {
+      min-height: 34px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--accent);
+      color: white;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .video-panel {
+      overflow: hidden;
+      margin-top: 14px;
+      border: 1px solid color-mix(in srgb, white, transparent 86%);
+      border-radius: 18px;
+      background: #08090c;
+      color: white;
+    }
+
+    .video-art {
+      position: relative;
+      min-height: 190px;
+      background:
+        linear-gradient(135deg, rgba(255, 75, 67, .82), rgba(36, 38, 46, .22) 48%, rgba(7,8,11,.98)),
+        radial-gradient(circle at 70% 16%, rgba(255,255,255,.24), transparent 8rem),
+        #111319;
+    }
+
+    .play {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.94);
+      color: #0b0c0f;
+      font-weight: 900;
+    }
+
+    .wave {
+      position: absolute;
+      right: 18px;
+      bottom: 22px;
+      display: flex;
+      align-items: end;
+      gap: 4px;
+      height: 42px;
+    }
+
+    .wave i {
+      display: block;
+      width: 4px;
+      border-radius: 5px;
+      background: rgba(255,255,255,.72);
+    }
+
+    .video-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      background: rgba(8,9,12,.96);
+      padding: 14px;
+    }
+
+    .video-info strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .video-info span {
+      color: rgba(255,255,255,.58);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--pill);
+      background: rgba(86, 213, 143, .12);
+      color: #8ee9b6;
+      padding: 6px 8px;
+      font: 11px/1 var(--mono);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .step {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--panel);
+      padding: 13px;
+    }
+
+    .step small {
+      color: var(--faint);
+      font: 11px/1 var(--mono);
+      text-transform: uppercase;
+    }
+
+    .step strong {
+      display: block;
+      margin-top: 9px;
+      font-size: 14px;
+      line-height: 1.32;
+      letter-spacing: -.02em;
+    }
+
+    .step p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .queue {
+      border-left: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-2), var(--bg) 12%);
+      padding: 16px 12px;
+    }
+
+    .queue-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .queue h2 {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: -.02em;
+    }
+
+    .queue-head span {
+      color: var(--faint);
+      font: 11px/1 var(--mono);
+    }
+
+    .lang {
+      margin-bottom: 9px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--panel);
+      padding: 10px;
+    }
+
+    .lang-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .lang-top span {
+      color: var(--success);
+      font: 11px/1 var(--mono);
+    }
+
+    .progress {
+      overflow: hidden;
+      height: 5px;
+      margin-top: 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--line), transparent 24%);
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .review-card {
+      margin-top: 15px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--panel);
+      padding: 12px;
+    }
+
+    .review-card strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .review-card p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    .section {
+      padding: 70px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(32px, 4vw, 56px);
+      line-height: 1.02;
+      letter-spacing: -.05em;
+      text-wrap: balance;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .flow-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      padding: 18px;
+      min-height: 220px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+
+    .flow-card .num {
+      color: var(--accent);
+      font: 13px/1 var(--mono);
+    }
+
+    .flow-card h3 {
+      margin: 38px 0 0;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: -.035em;
+    }
+
+    .flow-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .showcase {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .showcase-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .showcase-card.large {
+      grid-row: span 2;
+    }
+
+    .showcase-content {
+      padding: 20px;
+    }
+
+    .showcase h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -.04em;
+    }
+
+    .showcase p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.62;
+    }
+
+    .table-ui {
+      margin-top: 20px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .table-row:last-child {
+      border-bottom: 0;
+    }
+
+    .table-row span:last-child {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .media-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 20px;
+      background: color-mix(in srgb, var(--panel-2), var(--bg) 10%);
+      border-top: 1px solid var(--line);
+    }
+
+    .media-tile {
+      min-height: 132px;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 15%), rgba(15,17,22,.88)),
+        radial-gradient(circle at 70% 10%, rgba(255,255,255,.24), transparent 7rem);
+    }
+
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .price-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      padding: 22px;
+    }
+
+    .price-card.featured {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+
+    .price-card h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .price {
+      margin-top: 24px;
+      font-size: 42px;
+      letter-spacing: -.055em;
+      font-weight: 760;
+    }
+
+    .price small {
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    .featured .price small,
+    .featured li {
+      color: color-mix(in srgb, var(--bg), transparent 22%);
+    }
+
+    .price-card ul {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .price-card li::before {
+      content: "✓";
+      margin-right: 8px;
+      color: var(--success);
+    }
+
+    .price-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      margin-top: 22px;
+      border-radius: var(--pill);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .featured .price-button {
+      border-color: color-mix(in srgb, var(--bg), transparent 78%);
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .final-cta {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--ink), transparent 0), color-mix(in srgb, var(--ink), var(--accent) 18%));
+      color: var(--bg);
+      padding: 44px;
+      box-shadow: var(--shadow-strong);
+    }
+
+    .final-cta h2 {
+      color: inherit;
+    }
+
+    .final-cta p {
+      max-width: 620px;
+      color: color-mix(in srgb, var(--bg), transparent 24%);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .final-cta .hero-form {
+      background: color-mix(in srgb, var(--bg), transparent 92%);
+      border-color: color-mix(in srgb, var(--bg), transparent 82%);
+      box-shadow: none;
+    }
+
+    .footer {
+      padding: 32px 0 52px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .workspace-grid,
+      .showcase {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace-grid {
+        min-height: 0;
+      }
+
+      .rail,
+      .queue {
+        border: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .rail {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+      }
+
+      .rail-group {
+        display: contents;
+      }
+
+      .rail-label {
+        display: none;
+      }
+
+      .rail-item {
+        white-space: nowrap;
+      }
+
+      .workflow,
+      .pricing {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .wrap { width: min(100% - 32px, var(--max)); }
+      .nav { display: none; }
+      .hero { padding-top: 46px; }
+      .hero-form { align-items: stretch; flex-direction: column; }
+      .hero-form .icon { display: none; }
+      .primary-cta { width: 100%; }
+      .proof-row,
+      .steps,
+      .workflow,
+      .pricing,
+      .media-strip {
+        grid-template-columns: 1fr;
+      }
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+      .final-cta { padding: 28px; border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="#">
+        <span class="logo-mark">▶</span>
+        <span>sub2tube</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#workflow">작업 흐름</a>
+        <a href="#review">검수</a>
+        <a href="#pricing">요금</a>
+        <a href="#start">시작</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-button" id="themeButton" type="button">Light</button>
+        <a class="small-button" href="#start">체험하기</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow"><span class="pulse"></span>YouTube 영상 현지화 작업공간</span>
+          <h1>영상 하나로 자막, 더빙, 업로드까지.</h1>
+          <p class="hero-copy">
+            YouTube 링크나 파일을 넣으면 언어별 자막, AI 더빙, 제목과 설명을 검수 가능한 작업공간으로 정리합니다. 업로드 전에는 비공개 상태로 결과를 확인하고 필요한 언어만 다시 시도할 수 있습니다.
+          </p>
+          <form class="hero-form" action="#start" method="get">
+            <span class="icon">▶</span>
+            <input aria-label="YouTube link" placeholder="YouTube 링크를 붙여넣으세요">
+            <button class="primary-cta" type="submit">새 작업 시작</button>
+          </form>
+          <div class="proof-row" aria-label="sub2tube highlights">
+            <div class="proof"><strong>33+</strong><span>자막, 더빙, 제목과 설명을 준비할 대상 언어</span></div>
+            <div class="proof"><strong>1 flow</strong><span>영상 선택부터 YouTube 게시 전 검수까지</span></div>
+            <div class="proof"><strong>Private</strong><span>업로드 전 검수 중심의 기본 워크플로</span></div>
+          </div>
+        </div>
+
+        <div class="workspace-frame" aria-label="sub2tube workspace preview">
+          <div class="frame-top">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="frame-title">localization-workspace</div>
+          </div>
+          <div class="workspace-grid">
+            <aside class="rail">
+              <div class="rail-group">
+                <div class="rail-label">Flow</div>
+                <div class="rail-item active"><span class="rail-dot"></span>Source</div>
+                <div class="rail-item"><span class="rail-dot"></span>Translate</div>
+                <div class="rail-item"><span class="rail-dot"></span>Dub</div>
+                <div class="rail-item"><span class="rail-dot"></span>Publish</div>
+              </div>
+              <div class="rail-group">
+                <div class="rail-label">Output</div>
+                <div class="rail-item"><span class="rail-dot"></span>SRT</div>
+                <div class="rail-item"><span class="rail-dot"></span>Video</div>
+                <div class="rail-item"><span class="rail-dot"></span>Metadata</div>
+              </div>
+            </aside>
+
+            <section class="stage">
+              <div class="command">
+                <code>youtube.com/watch?v=travel-vlog-0842</code>
+                <button class="run" type="button">준비 완료</button>
+              </div>
+
+              <div class="video-panel">
+                <div class="video-art">
+                  <div class="play">▶</div>
+                  <div class="wave" aria-hidden="true">
+                    <i style="height:18px"></i><i style="height:36px"></i><i style="height:24px"></i><i style="height:42px"></i><i style="height:16px"></i><i style="height:30px"></i><i style="height:20px"></i><i style="height:34px"></i>
+                  </div>
+                </div>
+                <div class="video-info">
+                  <div>
+                    <strong>원본 영상 · 08:42</strong>
+                    <span>한국어 음성, 자동 자막 초안 생성됨</span>
+                  </div>
+                  <span class="badge">ready</span>
+                </div>
+              </div>
+
+              <div class="steps">
+                <article class="step">
+                  <small>Translate</small>
+                  <strong>자막과 제목 초안 생성</strong>
+                  <p>언어별 문맥을 유지한 제목, 설명, SRT를 함께 준비합니다.</p>
+                </article>
+                <article class="step">
+                  <small>Voice</small>
+                  <strong>AI 더빙 결과 검수</strong>
+                  <p>음성 톤, 길이, 자막 싱크를 언어별로 확인합니다.</p>
+                </article>
+                <article class="step">
+                  <small>Upload</small>
+                  <strong>YouTube 게시 전 확인</strong>
+                  <p>비공개 업로드, AI 음성 표시, 자막 업로드 상태를 검수합니다.</p>
+                </article>
+              </div>
+            </section>
+
+            <aside class="queue">
+              <div class="queue-head">
+                <h2>Language queue</h2>
+                <span>4 active</span>
+              </div>
+              <div class="lang">
+                <div class="lang-top">English <span>done</span></div>
+                <div class="progress"><i style="width:100%"></i></div>
+              </div>
+              <div class="lang">
+                <div class="lang-top">Japanese <span>82%</span></div>
+                <div class="progress"><i style="width:82%"></i></div>
+              </div>
+              <div class="lang">
+                <div class="lang-top">Spanish <span>64%</span></div>
+                <div class="progress"><i style="width:64%"></i></div>
+              </div>
+              <div class="lang">
+                <div class="lang-top">Thai <span>queued</span></div>
+                <div class="progress"><i style="width:20%"></i></div>
+              </div>
+              <div class="review-card">
+                <strong>게시 전 체크</strong>
+                <p>AI 음성 고지, 공개 범위, 아동용 여부, 언어별 자막 파일을 한 번에 확인합니다.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>복잡한 다국어 영상 작업을 하나의 흐름으로.</h2>
+          <p>더빙 도구처럼 보이는 것보다, 실제 YouTube 게시까지 이어지는 운영 콘솔처럼 보이게 구성했습니다.</p>
+        </div>
+        <div class="workflow">
+          <article class="flow-card">
+            <span class="num">01</span>
+            <h3>링크 또는 파일 추가</h3>
+            <p>원본 영상 길이, 언어, 자막 가능 여부를 먼저 확인합니다.</p>
+          </article>
+          <article class="flow-card">
+            <span class="num">02</span>
+            <h3>대상 언어 선택</h3>
+            <p>언어마다 자막, 제목, 설명, 더빙 결과가 별도로 생성됩니다.</p>
+          </article>
+          <article class="flow-card">
+            <span class="num">03</span>
+            <h3>결과 검수</h3>
+            <p>자막 싱크, 음성 톤, 제목과 설명을 게시 전에 확인합니다.</p>
+          </article>
+          <article class="flow-card">
+            <span class="num">04</span>
+            <h3>YouTube 업로드</h3>
+            <p>비공개 업로드 후 필요한 언어만 다시 시도하거나 공개 전환합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="review">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>언어별 결과를 카드가 아니라 검수 표처럼.</h2>
+          <p>AI가 만든 결과를 그대로 올리는 느낌을 줄이고, 사람이 확인하는 전문 도구의 밀도를 만듭니다.</p>
+        </div>
+        <div class="showcase">
+          <article class="showcase-card large">
+            <div class="showcase-content">
+              <h3>언어별 게시 준비 상태</h3>
+              <p>진행 중, 검수 필요, 업로드 완료 상태를 한 화면에서 비교합니다.</p>
+              <div class="table-ui">
+                <div class="table-row"><span>English · title, SRT, dub</span><span>ready</span></div>
+                <div class="table-row"><span>Japanese · voice rendering</span><span>82%</span></div>
+                <div class="table-row"><span>Spanish · metadata review</span><span>needs edit</span></div>
+                <div class="table-row"><span>Thai · queued</span><span>waiting</span></div>
+              </div>
+            </div>
+            <div class="media-strip" aria-hidden="true">
+              <div class="media-tile"></div>
+              <div class="media-tile"></div>
+              <div class="media-tile"></div>
+            </div>
+          </article>
+          <article class="showcase-card">
+            <div class="showcase-content">
+              <h3>자막과 제목을 함께</h3>
+              <p>번역 결과를 영상, SRT, 제목, 설명으로 따로 흩뜨리지 않고 언어 단위로 묶습니다.</p>
+            </div>
+          </article>
+          <article class="showcase-card">
+            <div class="showcase-content">
+              <h3>게시 전 안전장치</h3>
+              <p>공개 범위, AI 음성 표시, 아동용 여부를 업로드 직전에 다시 확인합니다.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>필요한 시간만 충전하세요.</h2>
+          <p>구독형 SaaS보다 영상 작업량에 맞춘 충전 흐름이 더 자연스럽습니다.</p>
+        </div>
+        <div class="pricing">
+          <article class="price-card">
+            <h3>Starter</h3>
+            <div class="price">30<small> min</small></div>
+            <ul>
+              <li>짧은 영상 테스트</li>
+              <li>자막과 더빙 결과 다운로드</li>
+              <li>기본 YouTube 업로드 검수</li>
+            </ul>
+            <a class="price-button" href="#start">시작하기</a>
+          </article>
+          <article class="price-card featured">
+            <h3>Creator</h3>
+            <div class="price">120<small> min</small></div>
+            <ul>
+              <li>정기 업로드 채널에 적합</li>
+              <li>언어별 재시도와 검수 큐</li>
+              <li>제목, 설명, 자막 현지화</li>
+            </ul>
+            <a class="price-button" href="#start">추천 플랜</a>
+          </article>
+          <article class="price-card">
+            <h3>Team</h3>
+            <div class="price">Custom</div>
+            <ul>
+              <li>여러 채널 운영</li>
+              <li>작업 내역과 업로드 상태 관리</li>
+              <li>운영 리포트와 지원</li>
+            </ul>
+            <a class="price-button" href="#start">문의하기</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="start">
+      <div class="wrap">
+        <div class="final-cta">
+          <span class="eyebrow"><span class="pulse"></span>Start with one video</span>
+          <h2>다음 영상은 여러 언어로 준비하세요.</h2>
+          <p>링크 하나로 자막 번역, AI 더빙, 제목과 설명 현지화, YouTube 업로드 검수까지 같은 흐름에서 시작합니다.</p>
+          <form class="hero-form" action="#start" method="get">
+            <span class="icon">▶</span>
+            <input aria-label="YouTube link bottom" placeholder="YouTube 링크를 붙여넣으세요">
+            <button class="primary-cta" type="submit">체험하기</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>sub2tube</span>
+      <span style="margin-left:16px">개인정보처리방침</span>
+      <span style="margin-left:16px">서비스 약관</span>
+      <span style="margin-left:16px">문의</span>
+    </div>
+  </footer>
+
+  <script>
+    const root = document.documentElement;
+    const button = document.getElementById('themeButton');
+
+    button.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      button.textContent = next === 'dark' ? 'Light' : 'Dark';
+    });
+  </script>
+</body>
+</html>

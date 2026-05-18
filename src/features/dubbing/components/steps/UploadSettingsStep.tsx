@@ -1,11 +1,12 @@
 'use client'
 
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Bell, CalendarClock, Captions, ChevronDown, Image, Languages, Link2, ListPlus, ShieldCheck, Sparkles, Upload } from 'lucide-react'
 import { Button, Input, Select } from '@/components/ui'
 import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
 import { extractVideoId } from '@/utils/validators'
 import { SUPPORTED_LANGUAGES } from '@/utils/languages'
+import { getSasToken, uploadFileToBlob } from '@/lib/api-client'
 import {
   effectivePrivacyStatus,
   fromDateTimeLocalInputValue,
@@ -54,18 +55,25 @@ export function UploadSettingsStep() {
   const categoryOptions = getYouTubeCategoryOptions(locale)
   const uploadOptionText = {
     category: locale === 'ko' ? 'YouTube 카테고리' : 'YouTube category',
-    thumbnailUrl: locale === 'ko' ? '썸네일 이미지 URL' : 'Thumbnail image URL',
+    thumbnailUrl: locale === 'ko' ? '썸네일 이미지' : 'Thumbnail image',
     thumbnailPlaceholder: locale === 'ko'
       ? 'https://.../thumbnail.png'
       : 'https://.../thumbnail.png',
+    thumbnailUpload: locale === 'ko' ? '이미지 업로드' : 'Upload image',
+    thumbnailUploading: locale === 'ko' ? '썸네일 업로드 중' : 'Uploading thumbnail',
+    thumbnailHelp: locale === 'ko' ? 'JPEG 또는 PNG, 2MB 이하 이미지를 업로드하거나 URL을 입력하세요.' : 'Upload a JPEG or PNG image up to 2MB, or enter an image URL.',
+    thumbnailRemove: locale === 'ko' ? '삭제' : 'Remove',
+    thumbnailInvalidType: locale === 'ko' ? '썸네일은 JPEG 또는 PNG 이미지만 사용할 수 있습니다.' : 'Thumbnail must be a JPEG or PNG image.',
+    thumbnailTooLarge: locale === 'ko' ? '썸네일 이미지는 2MB 이하여야 합니다.' : 'Thumbnail image must be 2MB or smaller.',
+    thumbnailUploadFailed: locale === 'ko' ? '썸네일 이미지를 업로드하지 못했습니다. 다시 시도해 주세요.' : 'Could not upload the thumbnail image. Please try again.',
     playlists: locale === 'ko' ? '추가할 플레이리스트 ID' : 'Playlist IDs to add',
     playlistsPlaceholder: locale === 'ko'
       ? 'PL..., UU... 쉼표로 구분'
       : 'PL..., UU... separated by commas',
     notifySubscribers: locale === 'ko' ? '구독자에게 알림 보내기' : 'Notify subscribers',
     notifySubscribersDescription: locale === 'ko'
-      ? 'YouTube 업로드 시 notifySubscribers 값을 함께 전달합니다.'
-      : 'Pass notifySubscribers when creating the YouTube video.',
+      ? 'YouTube 업로드 시 알림 설정을 해둔 구독자들에게 알림이 갑니다.'
+      : 'Notify subscribers who have enabled upload notifications when the video is uploaded.',
     postUploadOptions: locale === 'ko'
       ? '카테고리, 썸네일, 플레이리스트'
       : 'Category, thumbnail, and playlists',
@@ -136,6 +144,10 @@ export function UploadSettingsStep() {
     setUploadSettings({ tags: parsed })
   }
   const [playlistInput, setPlaylistInput] = useState(() => formatPlaylistIds(uploadSettings.playlistIds))
+  const thumbnailFileInputRef = useRef<HTMLInputElement>(null)
+  const [thumbnailUploading, setThumbnailUploading] = useState(false)
+  const [thumbnailProgress, setThumbnailProgress] = useState(0)
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null)
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setPlaylistInput(formatPlaylistIds(uploadSettings.playlistIds))
@@ -180,6 +192,17 @@ export function UploadSettingsStep() {
       ...(publishAt ? { privacyStatus: 'private' as PrivacyStatus } : {}),
     })
   }
+  const handlePublishScheduleToggle = () => {
+    if (hasPublishSchedule) {
+      setUploadSettings({ publishAt: null })
+      return
+    }
+
+    setUploadSettings({
+      publishAt: fromDateTimeLocalInputValue(minDateTimeLocalInputValue(60, publishAtTimeZone), publishAtTimeZone),
+      privacyStatus: 'private',
+    })
+  }
   const handlePublishAtTimeZoneChange = (timeZone: string) => {
     const nextTimeZone = normalizePublishTimeZone(timeZone)
     const localValue = toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)
@@ -191,11 +214,47 @@ export function UploadSettingsStep() {
   const captionUploadDisabled =
     deliverableMode === 'newDubbedVideos' && !uploadSettings.autoUpload
 
+  const handleThumbnailFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+      setThumbnailError(uploadOptionText.thumbnailInvalidType)
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setThumbnailError(uploadOptionText.thumbnailTooLarge)
+      return
+    }
+
+    setThumbnailError(null)
+    setThumbnailUploading(true)
+    setThumbnailProgress(0)
+    try {
+      const { blobSasUrl } = await getSasToken(file.name)
+      await uploadFileToBlob(blobSasUrl, file, setThumbnailProgress, file.type)
+      setUploadSettings({ thumbnailUrl: blobSasUrl.split('?')[0] })
+      setThumbnailProgress(100)
+    } catch (err) {
+      console.warn('[sub2tube] Thumbnail upload failed', err)
+      setThumbnailError(uploadOptionText.thumbnailUploadFailed)
+    } finally {
+      setThumbnailUploading(false)
+    }
+  }
+
   useEffect(() => {
     if (!uploadsVideoToYouTube && uploadSettings.publishAt) {
       setUploadSettings({ publishAt: null })
     }
   }, [uploadsVideoToYouTube, uploadSettings.publishAt, setUploadSettings])
+
+  useEffect(() => {
+    if (hasPublishSchedule && uploadSettings.privacyStatus !== 'private') {
+      setUploadSettings({ privacyStatus: 'private' })
+    }
+  }, [hasPublishSchedule, uploadSettings.privacyStatus, setUploadSettings])
 
   const hasMetadataSection = deliverableMode === 'newDubbedVideos' || (isMultiAudio && videoSource?.type === 'upload')
   const sectionOrder = [
@@ -274,15 +333,6 @@ export function UploadSettingsStep() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.dubbing.components.steps.uploadSettingsStep.uploadSettings')}</h2>
-        <p className="mt-1 text-surface-600 dark:text-surface-400">
-          {isMultiAudio
-            ? t('features.dubbing.components.steps.uploadSettingsStep.reviewTheSettingsBeforeAddingCaptionsToThe')
-            : t('features.dubbing.components.steps.uploadSettingsStep.chooseHowTheFinishedDubbingShouldBeUploaded')}
-        </p>
-      </div>
-
       {hasMetadataSection && (
         <SettingsSection
           id="metadata"
@@ -453,6 +503,19 @@ export function UploadSettingsStep() {
           onContinue={canAdvanceSettingsSection('publish') ? () => advanceSettingsSection('publish') : undefined}
           continueLabel={settingsSectionText.continueLabel}
         >
+          <SchedulePublishRow
+            active={hasPublishSchedule}
+            value={toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)}
+            min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
+            timeZone={publishAtTimeZone}
+            invalid={scheduleInvalid}
+            activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on5')}
+            inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off4')}
+            onToggle={handlePublishScheduleToggle}
+            onChange={handlePublishAtChange}
+            onTimeZoneChange={handlePublishAtTimeZoneChange}
+          />
+
           <Select
             label={deliverableMode === 'newDubbedVideos'
               ? t('features.dubbing.components.steps.uploadSettingsStep.visibility')
@@ -467,15 +530,6 @@ export function UploadSettingsStep() {
               {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
             </p>
           )}
-
-          <SchedulePublishRow
-            value={toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)}
-            min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
-            timeZone={publishAtTimeZone}
-            invalid={scheduleInvalid}
-            onChange={handlePublishAtChange}
-            onTimeZoneChange={handlePublishAtTimeZoneChange}
-          />
 
           <ToggleRow
             icon={<Bell className="h-4 w-4 text-surface-400" />}
@@ -506,13 +560,60 @@ export function UploadSettingsStep() {
               onChange={(e) => setUploadSettings({ categoryId: e.target.value })}
               options={categoryOptions}
             />
-            <Input
-              label={uploadOptionText.thumbnailUrl}
-              value={uploadSettings.thumbnailUrl}
-              onChange={(e) => setUploadSettings({ thumbnailUrl: e.target.value })}
-              placeholder={uploadOptionText.thumbnailPlaceholder}
-              icon={<Image className="h-4 w-4" />}
-            />
+            <div className="space-y-2">
+              <Input
+                label={uploadOptionText.thumbnailUrl}
+                value={uploadSettings.thumbnailUrl}
+                onChange={(e) => {
+                  setThumbnailError(null)
+                  setUploadSettings({ thumbnailUrl: e.target.value })
+                }}
+                placeholder={uploadOptionText.thumbnailPlaceholder}
+                icon={<Image className="h-4 w-4" />}
+              />
+              <input
+                ref={thumbnailFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={handleThumbnailFileChange}
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => thumbnailFileInputRef.current?.click()}
+                  loading={thumbnailUploading}
+                  disabled={thumbnailUploading}
+                >
+                  <Image className="h-4 w-4" />
+                  {uploadOptionText.thumbnailUpload}
+                </Button>
+                {uploadSettings.thumbnailUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setThumbnailError(null)
+                      setUploadSettings({ thumbnailUrl: '' })
+                    }}
+                    disabled={thumbnailUploading}
+                  >
+                    {uploadOptionText.thumbnailRemove}
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs leading-5 text-surface-500 dark:text-surface-300">
+                {thumbnailUploading
+                  ? `${uploadOptionText.thumbnailUploading} ${thumbnailProgress}%`
+                  : uploadOptionText.thumbnailHelp}
+              </p>
+              {thumbnailError && (
+                <p className="text-xs leading-5 text-red-500">{thumbnailError}</p>
+              )}
+            </div>
             <div className="sm:col-span-2">
               <Input
                 label={uploadOptionText.playlists}
@@ -666,23 +767,38 @@ function SettingsSection({
 }
 
 interface SchedulePublishRowProps {
+  active: boolean
   value: string
   min: string
   timeZone: string
   invalid: boolean
+  activeLabel: string
+  inactiveLabel: string
+  onToggle: () => void
   onChange: (value: string) => void
   onTimeZoneChange: (timeZone: string) => void
 }
 
-function SchedulePublishRow({ value, min, timeZone, invalid, onChange, onTimeZoneChange }: SchedulePublishRowProps) {
+function SchedulePublishRow({
+  active,
+  value,
+  min,
+  timeZone,
+  invalid,
+  activeLabel,
+  inactiveLabel,
+  onToggle,
+  onChange,
+  onTimeZoneChange,
+}: SchedulePublishRowProps) {
   const t = useLocaleText()
 
   return (
     <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
-      <div className="flex min-w-0 items-start gap-2">
-        <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
-        <div className="min-w-0 flex-1 space-y-2">
-          <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-2">
+          <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+          <div className="min-w-0 flex-1">
             <p className="text-sm text-surface-700 dark:text-surface-300">
               {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublish')}
             </p>
@@ -690,6 +806,31 @@ function SchedulePublishRow({ value, min, timeZone, invalid, onChange, onTimeZon
               {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublishDescription')}
             </p>
           </div>
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={active}
+          aria-label={`${t('features.dubbing.components.steps.uploadSettingsStep.schedulePublish')}: ${active ? activeLabel : inactiveLabel}`}
+          className="inline-flex shrink-0 self-start rounded-full transition-opacity hover:opacity-85 focus-ring sm:self-auto"
+        >
+          <span
+            className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
+              active ? 'bg-brand-600' : 'bg-surface-300 dark:bg-surface-600'
+            }`}
+            aria-hidden="true"
+          >
+            <span
+              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                active ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </span>
+        </button>
+      </div>
+
+      {active && (
+        <div className="mt-3 space-y-2 pl-0 sm:pl-6">
           <Input
             type="datetime-local"
             value={value}
@@ -712,7 +853,7 @@ function SchedulePublishRow({ value, min, timeZone, invalid, onChange, onTimeZon
             </p>
           )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -754,15 +895,28 @@ function ToggleRow({ icon, label, description, active, activeLabel, inactiveLabe
         type="button"
         onClick={disabled ? undefined : onToggle}
         disabled={disabled}
-        className={`shrink-0 self-start rounded-full px-3 py-1 text-xs font-medium transition-all sm:self-auto ${
+        aria-pressed={active}
+        aria-label={`${label}: ${active ? activeLabel : inactiveLabel}`}
+        className={`inline-flex shrink-0 self-start rounded-full transition-opacity focus-ring sm:self-auto ${
           disabled
-            ? 'bg-surface-200 text-surface-500 dark:bg-surface-700 dark:text-surface-300 cursor-not-allowed'
-            : `cursor-pointer ${active
-              ? 'bg-brand-600 text-white'
-              : 'bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-400'}`
+            ? 'cursor-not-allowed opacity-60'
+            : 'cursor-pointer hover:opacity-85'
         }`}
       >
-        {active ? activeLabel : inactiveLabel}
+        <span
+          className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
+            active && !disabled
+              ? 'bg-brand-600'
+              : 'bg-surface-300 dark:bg-surface-600'
+          }`}
+          aria-hidden="true"
+        >
+          <span
+            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+              active ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </span>
       </button>
     </div>
   )

@@ -65,12 +65,13 @@ export async function uploadFileToBlob(
   sasUrl: string,
   file: File,
   onProgress?: (pct: number) => void,
+  contentType = 'application/octet-stream',
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('PUT', sasUrl)
     xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob')
-    xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+    xhr.setRequestHeader('Content-Type', contentType)
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) {
         onProgress(Math.round((e.loaded / e.total) * 100))

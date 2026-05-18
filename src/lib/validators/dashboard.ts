@@ -130,6 +130,21 @@ const updateJobLanguageYouTubeSchema = z.object({
   }),
 })
 
+const recordJobLanguageCaptionUploadSchema = z.object({
+  type: z.literal('recordJobLanguageCaptionUpload'),
+  payload: z.object({
+    jobId: z.number().int(),
+    langCode: z.string().min(1),
+    youtubeVideoId: z.string().min(1),
+    title: z.string().min(1),
+    languageCode: z.string().min(1),
+    privacyStatus: z.string().min(1),
+    isShort: z.boolean(),
+    uploadKind: z.enum(['new_video_original_captions', 'my_video_original_captions']),
+    metadataJson: z.string().nullable().optional(),
+  }),
+})
+
 const startJobLanguageYouTubeUploadSchema = z.object({
   type: z.literal('startJobLanguageYouTubeUpload'),
   payload: z.object({
@@ -259,6 +274,7 @@ export const mutationActionSchema = z.discriminatedUnion('type', [
   updateDubbingJobOriginalYouTubeUrlSchema,
   createYouTubeUploadSchema,
   updateJobLanguageYouTubeSchema,
+  recordJobLanguageCaptionUploadSchema,
   startJobLanguageYouTubeUploadSchema,
   failJobLanguageYouTubeUploadSchema,
   deductUserMinutesSchema,
@@ -309,6 +325,8 @@ export function getJobIdFromAction(action: MutationAction): number | null {
     case 'updateDubbingJobOriginalYouTubeUrl':
       return action.payload.jobId
     case 'updateJobLanguageYouTube':
+      return action.payload.jobId
+    case 'recordJobLanguageCaptionUpload':
       return action.payload.jobId
     case 'startJobLanguageYouTubeUpload':
       return action.payload.jobId

@@ -26,6 +26,7 @@ vi.mock('@/lib/db/queries', () => ({
   updateJobStatus: vi.fn(),
   updateDubbingJobOriginalYouTubeUrl: vi.fn(),
   createYouTubeUpload: vi.fn(async () => 10),
+  createJobLanguageYouTubeUpload: vi.fn(async () => ({ id: 12, status: 'created' })),
   updateJobLanguageYouTube: vi.fn(),
   startJobLanguageYouTubeUpload: vi.fn(async () => ({ status: 'reserved' })),
   failJobLanguageYouTubeUpload: vi.fn(),
@@ -667,6 +668,30 @@ describe('/api/dashboard/mutations', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.data).toEqual({ jobId: 1, langCode: 'ko' })
+  })
+
+  it('records a caption upload for a job language', async () => {
+    mockAuth('user1')
+    const req = new NextRequest('http://localhost/api/dashboard/mutations', {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'recordJobLanguageCaptionUpload',
+        payload: {
+          jobId: 1,
+          langCode: 'ko',
+          youtubeVideoId: 'xyz789',
+          title: 'Caption target',
+          languageCode: 'ko',
+          privacyStatus: 'private',
+          isShort: false,
+          uploadKind: 'new_video_original_captions',
+        },
+      }),
+    })
+    const res = await POST(req)
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.data).toEqual({ id: 12, status: 'created' })
   })
 
   it('returns upload reservation status for startJobLanguageYouTubeUpload', async () => {

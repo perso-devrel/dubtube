@@ -9,6 +9,7 @@ import {
   updateDubbingJobOriginalYouTubeUrl,
   updateJobLanguageProjects,
   createYouTubeUpload,
+  createJobLanguageYouTubeUpload,
   updateJobLanguageYouTube,
   startJobLanguageYouTubeUpload,
   failJobLanguageYouTubeUpload,
@@ -173,6 +174,13 @@ export async function POST(req: NextRequest) {
         const { jobId, langCode, youtubeVideoId } = action.payload
         await updateJobLanguageYouTube(jobId, langCode, youtubeVideoId)
         return apiOk({ jobId, langCode })
+      }
+      case 'recordJobLanguageCaptionUpload': {
+        const result = await createJobLanguageYouTubeUpload({
+          userId: auth.session.uid,
+          ...action.payload,
+        })
+        return apiOk(result)
       }
       case 'startJobLanguageYouTubeUpload': {
         const { jobId, langCode } = action.payload

@@ -1,8 +1,8 @@
 'use client'
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Bell, CalendarClock, Captions, Image, Languages, Link2, ListPlus, ShieldCheck, Sparkles, Tag, Upload } from 'lucide-react'
-import { Button, Card, CardTitle, Input, Select } from '@/components/ui'
+import { ArrowLeft, ArrowRight, Bell, CalendarClock, Captions, ChevronDown, Image, Languages, Link2, ListPlus, ShieldCheck, Sparkles, Upload } from 'lucide-react'
+import { Button, Input, Select } from '@/components/ui'
 import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
 import { extractVideoId } from '@/utils/validators'
 import { SUPPORTED_LANGUAGES } from '@/utils/languages'
@@ -197,6 +197,81 @@ export function UploadSettingsStep() {
     }
   }, [uploadsVideoToYouTube, uploadSettings.publishAt, setUploadSettings])
 
+  const hasMetadataSection = deliverableMode === 'newDubbedVideos' || (isMultiAudio && videoSource?.type === 'upload')
+  const sectionOrder = [
+    ...(hasMetadataSection ? ['metadata'] : []),
+    'automation',
+    ...(uploadsVideoToYouTube ? ['publish', 'youtube'] : []),
+    ...(uploadsVideoToYouTube || isMultiAudio ? ['policy'] : []),
+  ]
+  const sectionOrderKey = sectionOrder.join('|')
+  const [sectionState, setSectionState] = useState<{ key: string; open: Set<string> }>(() => ({
+    key: sectionOrderKey,
+    open: new Set(sectionOrder.slice(0, 1)),
+  }))
+  const openSections = sectionState.key === sectionOrderKey
+    ? sectionState.open
+    : new Set(sectionOrder.slice(0, 1))
+  const updateOpenSections = (updater: (current: Set<string>) => Set<string>) => {
+    setSectionState((current) => {
+      const currentOpen = current.key === sectionOrderKey
+        ? current.open
+        : new Set(sectionOrder.slice(0, 1))
+      return { key: sectionOrderKey, open: updater(currentOpen) }
+    })
+  }
+
+  const isSectionOpen = (id: string) => openSections.has(id)
+  const toggleSettingsSection = (id: string) => {
+    updateOpenSections((current) => {
+      const next = new Set(current)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+  const advanceSettingsSection = (id: string) => {
+    const currentIndex = sectionOrder.indexOf(id)
+    const nextId = sectionOrder[currentIndex + 1]
+    updateOpenSections((current) => {
+      const next = new Set([...current].filter((sectionId) => sectionOrder.includes(sectionId)))
+      next.delete(id)
+      if (nextId) next.add(nextId)
+      return next
+    })
+  }
+  const canAdvanceSettingsSection = (id: string) => {
+    const currentIndex = sectionOrder.indexOf(id)
+    return currentIndex >= 0 && currentIndex < sectionOrder.length - 1
+  }
+  const settingsSectionText = {
+    metadataTitle: deliverableMode === 'newDubbedVideos'
+      ? t('features.dubbing.components.steps.uploadSettingsStep.titleDescriptionAndTags')
+      : t('features.dubbing.components.steps.uploadSettingsStep.originalVideoUploadSettings'),
+    metadataDescription: locale === 'ko'
+      ? '업로드에 사용할 제목, 설명, 태그 언어를 먼저 정리합니다.'
+      : 'Prepare the title, description, tags, and metadata language first.',
+    automationTitle: locale === 'ko' ? '업로드 방식' : 'Upload flow',
+    automationDescription: locale === 'ko'
+      ? '자동 업로드, 자막 업로드, 원본 링크 첨부 여부를 고릅니다.'
+      : 'Choose auto-upload, caption upload, and original link attachment.',
+    publishTitle: locale === 'ko' ? '공개/예약' : 'Visibility and schedule',
+    publishDescription: locale === 'ko'
+      ? '공개 범위, 예약 공개 시간, 구독자 알림을 설정합니다.'
+      : 'Set visibility, scheduled publish time, and subscriber notifications.',
+    youtubeDescription: locale === 'ko'
+      ? '카테고리, 썸네일, 플레이리스트를 업로드 요청에 함께 보냅니다.'
+      : 'Send category, thumbnail, and playlist details with the upload request.',
+    policyTitle: locale === 'ko' ? '자막/정책' : 'Captions and policy',
+    policyDescription: locale === 'ko'
+      ? '자막 업로드와 YouTube 정책 관련 값을 확인합니다.'
+      : 'Review caption upload and YouTube policy fields.',
+    continueLabel: locale === 'ko' ? '다음 설정' : 'Next setting',
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="text-center">
@@ -208,243 +283,260 @@ export function UploadSettingsStep() {
         </p>
       </div>
 
-      {/* Title/Desc/Tags — for new dubbed video uploads */}
-      {deliverableMode === 'newDubbedVideos' && (
-        <Card>
-          <CardTitle>{t('features.dubbing.components.steps.uploadSettingsStep.titleDescriptionAndTags')}</CardTitle>
-          <div className="space-y-4">
-            <Select
-              label={t('features.dubbing.components.steps.uploadSettingsStep.titleAndDescriptionLanguage')}
-              value={uploadSettings.metadataLanguage}
-              onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
-              options={languageOptions}
-            />
-            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-              {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles')}
-            </p>
-
-            <Input
-              label={t('features.dubbing.components.steps.uploadSettingsStep.title')}
-              value={uploadSettings.title}
-              onChange={(e) => setUploadSettings({ title: e.target.value })}
-              placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoTitle')}
-            />
-
-            <div className="w-full">
-              <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
-                {t('features.dubbing.components.steps.uploadSettingsStep.description')}
-              </label>
-              <textarea
-                id="upload-description"
-                rows={4}
-                value={uploadSettings.description}
-                onChange={(e) => setUploadSettings({ description: e.target.value })}
-                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription')}
-                className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+      {hasMetadataSection && (
+        <SettingsSection
+          id="metadata"
+          title={settingsSectionText.metadataTitle}
+          description={settingsSectionText.metadataDescription}
+          open={isSectionOpen('metadata')}
+          onToggle={toggleSettingsSection}
+          onContinue={canAdvanceSettingsSection('metadata') ? () => advanceSettingsSection('metadata') : undefined}
+          continueLabel={settingsSectionText.continueLabel}
+        >
+          {deliverableMode === 'newDubbedVideos' ? (
+            <>
+              <Select
+                label={t('features.dubbing.components.steps.uploadSettingsStep.titleAndDescriptionLanguage')}
+                value={uploadSettings.metadataLanguage}
+                onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
+                options={languageOptions}
               />
-              {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
-                <AiDisclosurePreview text={aiDisclosureText} />
-              )}
-            </div>
-
-            <Input
-              label={t('features.dubbing.components.steps.uploadSettingsStep.tagsCommaSeparated')}
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              onBlur={commitTags}
-              placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingReview')}
-            />
-            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-              {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot')}
-            </p>
-
-            <Select
-              label={t('features.dubbing.components.steps.uploadSettingsStep.visibility')}
-              value={visibilityValue}
-              onChange={(e) => setUploadSettings({ privacyStatus: e.target.value as PrivacyStatus })}
-              disabled={hasPublishSchedule}
-              options={privacyOptions}
-            />
-            {hasPublishSchedule && (
               <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-                {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
+                {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles')}
               </p>
-            )}
-          </div>
-        </Card>
+
+              <Input
+                label={t('features.dubbing.components.steps.uploadSettingsStep.title')}
+                value={uploadSettings.title}
+                onChange={(e) => setUploadSettings({ title: e.target.value })}
+                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoTitle')}
+              />
+
+              <div className="w-full">
+                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                  {t('features.dubbing.components.steps.uploadSettingsStep.description')}
+                </label>
+                <textarea
+                  id="upload-description"
+                  rows={4}
+                  value={uploadSettings.description}
+                  onChange={(e) => setUploadSettings({ description: e.target.value })}
+                  placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription')}
+                  className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+                />
+                {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
+                  <AiDisclosurePreview text={aiDisclosureText} />
+                )}
+              </div>
+
+              <Input
+                label={t('features.dubbing.components.steps.uploadSettingsStep.tagsCommaSeparated')}
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                onBlur={commitTags}
+                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingReview')}
+              />
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot')}
+              </p>
+            </>
+          ) : (
+            <>
+              <Select
+                label={t('features.dubbing.components.steps.uploadSettingsStep.titleAndDescriptionLanguage2')}
+                value={uploadSettings.metadataLanguage}
+                onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
+                options={languageOptions}
+              />
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles2')}
+              </p>
+
+              <Input
+                label={t('features.dubbing.components.steps.uploadSettingsStep.title2')}
+                value={uploadSettings.title}
+                onChange={(e) => setUploadSettings({ title: e.target.value })}
+                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoTitle2')}
+              />
+
+              <div className="w-full">
+                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                  {t('features.dubbing.components.steps.uploadSettingsStep.description2')}
+                </label>
+                <textarea
+                  id="upload-description"
+                  rows={3}
+                  value={uploadSettings.description}
+                  onChange={(e) => setUploadSettings({ description: e.target.value })}
+                  placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription2')}
+                  className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+                />
+                {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
+                  <AiDisclosurePreview text={aiDisclosureText} />
+                )}
+              </div>
+
+              <Input
+                label={t('features.dubbing.components.steps.uploadSettingsStep.tagsCommaSeparated2')}
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                onBlur={commitTags}
+                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingCaptions')}
+              />
+              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+                {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot2')}
+              </p>
+            </>
+          )}
+        </SettingsSection>
       )}
 
-      {/* Multi-audio: show privacy for original upload if source is file upload */}
-      {isMultiAudio && videoSource?.type === 'upload' && (
-        <Card>
-          <CardTitle>{t('features.dubbing.components.steps.uploadSettingsStep.originalVideoUploadSettings')}</CardTitle>
-          <div className="space-y-4">
-            <Select
-              label={t('features.dubbing.components.steps.uploadSettingsStep.titleAndDescriptionLanguage2')}
-              value={uploadSettings.metadataLanguage}
-              onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
-              options={languageOptions}
-            />
-            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-              {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles2')}
-            </p>
+      <SettingsSection
+        id="automation"
+        title={settingsSectionText.automationTitle}
+        description={settingsSectionText.automationDescription}
+        open={isSectionOpen('automation')}
+        onToggle={toggleSettingsSection}
+        onContinue={canAdvanceSettingsSection('automation') ? () => advanceSettingsSection('automation') : undefined}
+        continueLabel={settingsSectionText.continueLabel}
+      >
+        <ToggleRow
+          icon={<Upload className="h-4 w-4 text-emerald-500" />}
+          label={t('features.dubbing.components.steps.uploadSettingsStep.autoUploadWhenFinished')}
+          description={isMultiAudio
+            ? t('features.dubbing.components.steps.uploadSettingsStep.automaticallyUploadTranslatedCaptionsWhenProcessingFinishes')
+            : t('features.dubbing.components.steps.uploadSettingsStep.automaticallyUploadEachDubbedVideoWhenProcessingFinishes')}
+          active={uploadSettings.autoUpload}
+          activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on')}
+          inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off')}
+          onToggle={handleAutoUploadToggle}
+        />
 
-            <Input
-              label={t('features.dubbing.components.steps.uploadSettingsStep.title2')}
-              value={uploadSettings.title}
-              onChange={(e) => setUploadSettings({ title: e.target.value })}
-              placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoTitle2')}
-            />
-
-            <div className="w-full">
-              <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
-                {t('features.dubbing.components.steps.uploadSettingsStep.description2')}
-              </label>
-              <textarea
-                id="upload-description"
-                rows={3}
-                value={uploadSettings.description}
-                onChange={(e) => setUploadSettings({ description: e.target.value })}
-                placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription2')}
-                className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
-              />
-              {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
-                <AiDisclosurePreview text={aiDisclosureText} />
-              )}
-            </div>
-
-            <Input
-              label={t('features.dubbing.components.steps.uploadSettingsStep.tagsCommaSeparated2')}
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              onBlur={commitTags}
-              placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingCaptions')}
-            />
-            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-              {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot2')}
-            </p>
-
-            <Select
-              label={t('features.dubbing.components.steps.uploadSettingsStep.visibility2')}
-              value={visibilityValue}
-              onChange={(e) => setUploadSettings({ privacyStatus: e.target.value as PrivacyStatus })}
-              disabled={hasPublishSchedule}
-              options={privacyOptions}
-            />
-            {hasPublishSchedule && (
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
-                {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
-              </p>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* Upload options — for both newDubbedVideos and originalWithMultiAudio */}
-      <Card>
-        <CardTitle>{t('features.dubbing.components.steps.uploadSettingsStep.uploadOptions')}</CardTitle>
-        <div className="mt-4 space-y-2">
+        {(deliverableMode === 'newDubbedVideos' || isMultiAudio) && (
           <ToggleRow
-            icon={<Upload className="h-4 w-4 text-emerald-500" />}
-            label={t('features.dubbing.components.steps.uploadSettingsStep.autoUploadWhenFinished')}
+            icon={<Captions className="h-4 w-4 text-surface-400" />}
+            label={isMultiAudio
+              ? t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRT')
+              : t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRTWithDubbedVideos')}
             description={isMultiAudio
-              ? t('features.dubbing.components.steps.uploadSettingsStep.automaticallyUploadTranslatedCaptionsWhenProcessingFinishes')
-              : t('features.dubbing.components.steps.uploadSettingsStep.automaticallyUploadEachDubbedVideoWhenProcessingFinishes')}
-            active={uploadSettings.autoUpload}
-            activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on')}
-            inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off')}
-            onToggle={handleAutoUploadToggle}
+              ? t('features.dubbing.components.steps.uploadSettingsStep.uploadTranslatedCaptionsForEachCompletedLanguageTo')
+              : t('features.dubbing.components.steps.uploadSettingsStep.uploadMatchingCaptionsWithEachSelectedLanguageVideo')}
+            active={captionUploadDisabled ? false : uploadSettings.uploadCaptions}
+            activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on2')}
+            inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off2')}
+            onToggle={() => setUploadSettings({ uploadCaptions: !uploadSettings.uploadCaptions })}
+            disabled={captionUploadDisabled}
+            disabledBadgeLabel={t('features.dubbing.components.steps.uploadSettingsStep.autoUploadOff')}
+          />
+        )}
+
+        {originalYouTubeUrl && deliverableMode === 'newDubbedVideos' && (
+          <ToggleRow
+            icon={<Link2 className="h-4 w-4 text-surface-400" />}
+            label={t('features.dubbing.components.steps.uploadSettingsStep.addOriginalYouTubeLinkToDescription')}
+            description={originalYouTubeUrl}
+            active={uploadSettings.attachOriginalLink}
+            activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on3')}
+            inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off3')}
+            onToggle={() => setUploadSettings({ attachOriginalLink: !uploadSettings.attachOriginalLink })}
+          />
+        )}
+      </SettingsSection>
+
+      {uploadsVideoToYouTube && (
+        <SettingsSection
+          id="publish"
+          title={settingsSectionText.publishTitle}
+          description={settingsSectionText.publishDescription}
+          open={isSectionOpen('publish')}
+          onToggle={toggleSettingsSection}
+          onContinue={canAdvanceSettingsSection('publish') ? () => advanceSettingsSection('publish') : undefined}
+          continueLabel={settingsSectionText.continueLabel}
+        >
+          <Select
+            label={deliverableMode === 'newDubbedVideos'
+              ? t('features.dubbing.components.steps.uploadSettingsStep.visibility')
+              : t('features.dubbing.components.steps.uploadSettingsStep.visibility2')}
+            value={visibilityValue}
+            onChange={(e) => setUploadSettings({ privacyStatus: e.target.value as PrivacyStatus })}
+            disabled={hasPublishSchedule}
+            options={privacyOptions}
+          />
+          {hasPublishSchedule && (
+            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
+            </p>
+          )}
+
+          <SchedulePublishRow
+            value={toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)}
+            min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
+            timeZone={publishAtTimeZone}
+            invalid={scheduleInvalid}
+            onChange={handlePublishAtChange}
+            onTimeZoneChange={handlePublishAtTimeZoneChange}
           />
 
-          {uploadsVideoToYouTube && (
-            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
-              <div className="mb-3 flex min-w-0 items-start gap-2">
-                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
-                <p className="text-sm text-surface-700 dark:text-surface-300">
-                  {uploadOptionText.postUploadOptions}
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Select
-                  label={uploadOptionText.category}
-                  value={uploadSettings.categoryId}
-                  onChange={(e) => setUploadSettings({ categoryId: e.target.value })}
-                  options={categoryOptions}
-                />
-                <Input
-                  label={uploadOptionText.thumbnailUrl}
-                  value={uploadSettings.thumbnailUrl}
-                  onChange={(e) => setUploadSettings({ thumbnailUrl: e.target.value })}
-                  placeholder={uploadOptionText.thumbnailPlaceholder}
-                  icon={<Image className="h-4 w-4" />}
-                />
-                <div className="sm:col-span-2">
-                  <Input
-                    label={uploadOptionText.playlists}
-                    value={playlistInput}
-                    onChange={(e) => setPlaylistInput(e.target.value)}
-                    onBlur={commitPlaylists}
-                    placeholder={uploadOptionText.playlistsPlaceholder}
-                    icon={<ListPlus className="h-4 w-4" />}
-                  />
-                </div>
-              </div>
+          <ToggleRow
+            icon={<Bell className="h-4 w-4 text-surface-400" />}
+            label={uploadOptionText.notifySubscribers}
+            description={uploadOptionText.notifySubscribersDescription}
+            active={uploadSettings.notifySubscribers}
+            activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on5')}
+            inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off4')}
+            onToggle={() => setUploadSettings({ notifySubscribers: !uploadSettings.notifySubscribers })}
+          />
+        </SettingsSection>
+      )}
+
+      {uploadsVideoToYouTube && (
+        <SettingsSection
+          id="youtube"
+          title={uploadOptionText.postUploadOptions}
+          description={settingsSectionText.youtubeDescription}
+          open={isSectionOpen('youtube')}
+          onToggle={toggleSettingsSection}
+          onContinue={canAdvanceSettingsSection('youtube') ? () => advanceSettingsSection('youtube') : undefined}
+          continueLabel={settingsSectionText.continueLabel}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Select
+              label={uploadOptionText.category}
+              value={uploadSettings.categoryId}
+              onChange={(e) => setUploadSettings({ categoryId: e.target.value })}
+              options={categoryOptions}
+            />
+            <Input
+              label={uploadOptionText.thumbnailUrl}
+              value={uploadSettings.thumbnailUrl}
+              onChange={(e) => setUploadSettings({ thumbnailUrl: e.target.value })}
+              placeholder={uploadOptionText.thumbnailPlaceholder}
+              icon={<Image className="h-4 w-4" />}
+            />
+            <div className="sm:col-span-2">
+              <Input
+                label={uploadOptionText.playlists}
+                value={playlistInput}
+                onChange={(e) => setPlaylistInput(e.target.value)}
+                onBlur={commitPlaylists}
+                placeholder={uploadOptionText.playlistsPlaceholder}
+                icon={<ListPlus className="h-4 w-4" />}
+              />
             </div>
-          )}
+          </div>
+        </SettingsSection>
+      )}
 
-          {uploadsVideoToYouTube && (
-            <ToggleRow
-              icon={<Bell className="h-4 w-4 text-surface-400" />}
-              label={uploadOptionText.notifySubscribers}
-              description={uploadOptionText.notifySubscribersDescription}
-              active={uploadSettings.notifySubscribers}
-              activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on5')}
-              inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off4')}
-              onToggle={() => setUploadSettings({ notifySubscribers: !uploadSettings.notifySubscribers })}
-            />
-          )}
-
-          {uploadsVideoToYouTube && (
-            <SchedulePublishRow
-              value={toDateTimeLocalInputValue(uploadSettings.publishAt, publishAtTimeZone)}
-              min={minDateTimeLocalInputValue(1, publishAtTimeZone)}
-              timeZone={publishAtTimeZone}
-              invalid={scheduleInvalid}
-              onChange={handlePublishAtChange}
-              onTimeZoneChange={handlePublishAtTimeZoneChange}
-            />
-          )}
-
-          {(deliverableMode === 'newDubbedVideos' || isMultiAudio) && (
-            <ToggleRow
-              icon={<Captions className="h-4 w-4 text-surface-400" />}
-              label={isMultiAudio
-                ? t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRT')
-                : t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRTWithDubbedVideos')}
-              description={isMultiAudio
-                ? t('features.dubbing.components.steps.uploadSettingsStep.uploadTranslatedCaptionsForEachCompletedLanguageTo')
-                : t('features.dubbing.components.steps.uploadSettingsStep.uploadMatchingCaptionsWithEachSelectedLanguageVideo')}
-              active={captionUploadDisabled ? false : uploadSettings.uploadCaptions}
-              activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on2')}
-              inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off2')}
-              onToggle={() => setUploadSettings({ uploadCaptions: !uploadSettings.uploadCaptions })}
-              disabled={captionUploadDisabled}
-              disabledBadgeLabel={t('features.dubbing.components.steps.uploadSettingsStep.autoUploadOff')}
-            />
-          )}
-
-          {originalYouTubeUrl && deliverableMode === 'newDubbedVideos' && (
-            <ToggleRow
-              icon={<Link2 className="h-4 w-4 text-surface-400" />}
-              label={t('features.dubbing.components.steps.uploadSettingsStep.addOriginalYouTubeLinkToDescription')}
-              description={originalYouTubeUrl}
-              active={uploadSettings.attachOriginalLink}
-              activeLabel={t('features.dubbing.components.steps.uploadSettingsStep.on3')}
-              inactiveLabel={t('features.dubbing.components.steps.uploadSettingsStep.off3')}
-              onToggle={() => setUploadSettings({ attachOriginalLink: !uploadSettings.attachOriginalLink })}
-            />
-          )}
-
+      {(uploadsVideoToYouTube || isMultiAudio) && (
+        <SettingsSection
+          id="policy"
+          title={settingsSectionText.policyTitle}
+          description={settingsSectionText.policyDescription}
+          open={isSectionOpen('policy')}
+          onToggle={toggleSettingsSection}
+          onContinue={canAdvanceSettingsSection('policy') ? () => advanceSettingsSection('policy') : undefined}
+          continueLabel={settingsSectionText.continueLabel}
+        >
           {uploadsVideoToYouTube && (
             <>
               <ToggleRow
@@ -471,7 +563,6 @@ export function UploadSettingsStep() {
             </>
           )}
 
-          {/* 다국어 오디오 트랙: 자막 모드에서만 노출. 실서비스 검증 전이라 비활성. */}
           {isMultiAudio && (
             <ToggleRow
               icon={<Languages className="h-4 w-4 text-surface-400" />}
@@ -484,8 +575,8 @@ export function UploadSettingsStep() {
               disabled
             />
           )}
-        </div>
-      </Card>
+        </SettingsSection>
+      )}
 
       <div className="flex justify-between">
         <Button variant="secondary" onClick={prevStep}>
@@ -513,6 +604,64 @@ function AiDisclosurePreview({ text }: { text: string }) {
         {text}
       </p>
     </div>
+  )
+}
+
+interface SettingsSectionProps {
+  id: string
+  title: string
+  description?: string
+  open: boolean
+  onToggle: (id: string) => void
+  onContinue?: () => void
+  continueLabel: string
+  children: ReactNode
+}
+
+function SettingsSection({
+  id,
+  title,
+  description,
+  open,
+  onToggle,
+  onContinue,
+  continueLabel,
+  children,
+}: SettingsSectionProps) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900">
+      <button
+        type="button"
+        onClick={() => onToggle(id)}
+        className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-50 focus-ring dark:hover:bg-surface-850"
+        aria-expanded={open}
+      >
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-surface-900 dark:text-white">{title}</span>
+          {description && (
+            <span className="mt-1 block text-xs leading-5 text-surface-500 dark:text-surface-300">
+              {description}
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          className={`mt-0.5 h-4 w-4 shrink-0 text-surface-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        />
+      </button>
+      {open && (
+        <div className="border-t border-surface-100 p-4 dark:border-surface-800">
+          <div className="space-y-4">{children}</div>
+          {onContinue && (
+            <div className="mt-4 flex justify-end">
+              <Button type="button" variant="secondary" onClick={onContinue}>
+                {continueLabel}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   )
 }
 

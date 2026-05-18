@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Check } from 'lucide-react'
-import { cn } from '@/utils/cn'
 import { useLocaleText } from '@/hooks/useLocaleText'
 import { useDubbingStore } from '../store/dubbingStore'
 
@@ -72,6 +70,7 @@ const steps = [
 export function DubbingWizard() {
   const currentStep = useDubbingStore((s) => s.currentStep)
   const t = useLocaleText()
+  const currentStepInfo = steps.find((step) => step.num === currentStep) ?? steps[0]
 
   useEffect(() => {
     window.requestAnimationFrame(() => {
@@ -90,47 +89,30 @@ export function DubbingWizard() {
 
   return (
     <div className="space-y-8">
-      {/* Step indicator */}
-      <nav className="flex items-center justify-start gap-1 overflow-x-auto px-1 pb-1 sm:gap-2 sm:px-0 xl:justify-center">
-        {steps.map(({ num, label }, i) => {
-          const isActive = currentStep === num
-          const isCompleted = currentStep > num
-          return (
-            <div key={num} className="flex shrink-0 items-center gap-1 sm:gap-2">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all sm:h-8 sm:w-8 sm:text-sm',
-                    isCompleted
-                      ? 'bg-brand-600 text-white'
-                      : isActive
-                        ? 'bg-brand-600 text-white shadow-sm'
-                        : 'bg-surface-200 text-surface-700 dark:bg-surface-800 dark:text-surface-300',
-                  )}
-                >
-                  {isCompleted ? <Check className="h-4 w-4" /> : num}
-                </div>
-                <span
-                  className={cn(
-                    'hidden text-sm font-medium xl:block',
-                    isActive ? 'text-surface-900 dark:text-white' : 'text-surface-500 dark:text-surface-300',
-                  )}
-                >
-                  {t(label)}
-                </span>
-              </div>
-              {i < steps.length - 1 && (
-                <div
-                  className={cn(
-                    'h-0.5 w-3 rounded-full min-[380px]:w-4 sm:w-8 xl:w-16',
-                    currentStep > num ? 'bg-brand-600' : 'bg-surface-200 dark:bg-surface-800',
-                  )}
-                />
-              )}
-            </div>
-          )
-        })}
-      </nav>
+      <div className="rounded-lg border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-surface-500 dark:text-surface-400">
+              {currentStep} / {steps.length}
+            </p>
+            <p className="mt-1 truncate text-base font-semibold text-surface-900 dark:text-white">
+              {t(currentStepInfo.label)}
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-7 gap-1.5" aria-hidden="true">
+          {steps.map(({ num }) => (
+            <div
+              key={num}
+              className={`h-1.5 rounded-full transition-colors ${
+                currentStep >= num
+                  ? 'bg-brand-600'
+                  : 'bg-surface-200 dark:bg-surface-800'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Step content */}
       <div className="animate-fade-in">

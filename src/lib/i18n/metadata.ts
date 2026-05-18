@@ -58,6 +58,7 @@ const appRouteMetadata = {
   billing: { title: 'lib.i18n.metadata.titleBilling', path: '/billing' },
   dashboard: { title: 'lib.i18n.metadata.titleDashboard', path: '/dashboard' },
   dubbing: { title: 'lib.i18n.metadata.titleNewDubbing', path: '/dubbing' },
+  jobs: { title: 'lib.i18n.metadata.titleDubbingJobs', path: '/jobs' },
   metadata: { title: 'lib.i18n.metadata.titleTitleDescription', path: '/metadata' },
   ops: { title: 'lib.i18n.metadata.titleOperations', path: '/ops' },
   settings: { title: 'lib.i18n.metadata.titleSettings', path: '/settings' },

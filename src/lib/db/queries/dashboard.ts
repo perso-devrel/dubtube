@@ -26,7 +26,25 @@ export async function getUserDubbingJobs(userId: string, limit = 10): Promise<Du
   const db = getDb()
   const result = await db.execute({
     sql: `SELECT dj.*, GROUP_CONCAT(jl.language_code) as languages,
-          AVG(jl.progress) as avg_progress
+          AVG(jl.progress) as avg_progress,
+          COUNT(jl.id) as language_count,
+          COALESCE(SUM(CASE
+            WHEN COALESCE(jl.youtube_video_id, '') != ''
+              OR COALESCE(jl.youtube_upload_status, '') = 'uploaded'
+            THEN 1 ELSE 0
+          END), 0) as uploaded_count,
+          COALESCE(SUM(CASE
+            WHEN COALESCE(jl.youtube_upload_status, '') = 'uploading'
+            THEN 1 ELSE 0
+          END), 0) as upload_processing_count,
+          COALESCE(SUM(CASE
+            WHEN (dj.status = 'completed'
+              OR jl.status = 'completed'
+              OR COALESCE(jl.progress, 0) >= 100)
+              AND COALESCE(jl.youtube_video_id, '') = ''
+              AND COALESCE(jl.youtube_upload_status, '') NOT IN ('uploaded', 'uploading')
+            THEN 1 ELSE 0
+          END), 0) as upload_pending_count
           FROM dubbing_jobs dj
           LEFT JOIN job_languages jl ON jl.job_id = dj.id
           WHERE dj.user_id = ?

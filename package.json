@@ -32,7 +32,7 @@
   "dependencies": {
     "@fontsource/pretendard": "^5.2.5",
     "@libsql/client": "^0.17.3",
-    "@tanstack/react-query": "^5.100.10",
+    "@tanstack/react-query": "^5.100.11",
     "clsx": "^2.1.1",
     "google-auth-library": "^10.6.2",
     "lucide-react": "^1.16.0",
@@ -63,7 +63,7 @@
     "lighthouse": "^13.3.0",
     "tailwindcss": "^4.2.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.3",
+    "typescript-eslint": "^8.59.4",
     "vitest": "^4.1.4"
   },
   "overrides": {

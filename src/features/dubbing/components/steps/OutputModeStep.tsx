@@ -135,18 +135,18 @@ export function OutputModeStep() {
                 disabled && 'cursor-not-allowed opacity-60',
                 !disabled && 'cursor-pointer',
                 selected
-                  ? 'border-brand-600 bg-brand-50 shadow-sm dark:bg-brand-900/10'
+                  ? 'border-clay-500 bg-clay-50 shadow-sm dark:bg-clay-800/10'
                   : disabled
-                    ? 'border-surface-200 bg-surface-50 dark:border-surface-700 dark:bg-surface-800/60'
-                    : 'border-surface-200 bg-white hover:border-surface-300 dark:border-surface-700 dark:bg-surface-800 dark:hover:border-surface-600',
+                    ? 'border-paper-200 bg-paper-100 dark:border-paper-700 dark:bg-paper-800/60'
+                    : 'border-paper-200 bg-paper-50 hover:border-paper-300 dark:border-paper-700 dark:bg-paper-800 dark:hover:border-paper-600',
               )}
             >
               <div
                 className={cn(
                   'flex h-14 w-14 items-center justify-center rounded-full',
                   selected
-                    ? 'bg-brand-600 text-white'
-                    : 'bg-surface-100 text-surface-500 dark:bg-surface-700 dark:text-surface-400',
+                    ? 'bg-clay-500 text-paper-50'
+                    : 'bg-paper-100 text-ink-500 dark:bg-paper-700 dark:text-paper-400',
                 )}
               >
                 <Icon className="h-7 w-7" />
@@ -155,7 +155,7 @@ export function OutputModeStep() {
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <p className={cn(
                     'text-base font-semibold leading-snug break-keep',
-                    selected ? 'text-brand-700 dark:text-brand-300' : 'text-surface-900 dark:text-white',
+                    selected ? 'text-clay-700 dark:text-clay-200' : 'text-ink-900 dark:text-ink-50',
                   )}>
                     {t(title)}
                   </p>
@@ -165,7 +165,7 @@ export function OutputModeStep() {
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-sm leading-6 text-surface-600 dark:text-surface-300 break-keep">{t(description)}</p>
+                <p className="mt-2 text-sm leading-6 text-ink-500 dark:text-ink-200 break-keep">{t(description)}</p>
               </div>
             </button>
           )

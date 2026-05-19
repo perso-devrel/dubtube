@@ -21,14 +21,14 @@ export default function AppError({
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-12 text-center min-h-[60vh]">
       <AlertCircle className="h-12 w-12 text-red-500" />
-      <h2 className="text-lg font-semibold text-surface-900 dark:text-surface-100">
+      <h2 className="text-lg font-semibold text-ink-900 dark:text-ink-50">
         {t('app.app.error.somethingWentWrong')}
       </h2>
-      <p className="max-w-md text-sm text-surface-600 dark:text-surface-400">
+      <p className="max-w-md text-sm text-ink-500 dark:text-paper-400">
         {t('app.app.error.pleaseTryAgainInAMomentContactSupport')}
       </p>
       {error.digest && (
-        <p className="text-xs text-surface-500 dark:text-surface-400">
+        <p className="text-xs text-ink-500 dark:text-paper-400">
           {t('app.app.error.errorCodeForSupportValue', { errorDigest: error.digest })}
         </p>
       )}

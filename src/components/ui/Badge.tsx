@@ -2,8 +2,8 @@ import type { HTMLAttributes } from 'react'
 import { cn } from '@/utils/cn'
 
 const variants = {
-  default: 'bg-surface-100 text-surface-700 dark:bg-surface-800 dark:text-surface-300',
-  brand: 'bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400',
+  default: 'bg-paper-100 text-ink-600 ring-1 ring-paper-200 dark:bg-paper-800 dark:text-ink-100 dark:ring-paper-700',
+  brand: 'bg-clay-50 text-clay-700 ring-1 ring-clay-100 dark:bg-clay-800/35 dark:text-clay-200 dark:ring-clay-700/60',
   success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -19,7 +19,7 @@ export function Badge({ className, variant = 'default', truncate, ...props }: Ba
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap',
+        'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap',
         truncate && 'max-w-full overflow-hidden text-ellipsis',
         variants[variant],
         className,

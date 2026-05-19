@@ -723,7 +723,7 @@ export function UploadStep() {
               <div className="mt-3">
                 {originalUploadState.status === 'idle' && (
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-surface-500 dark:text-surface-300">
+                    <p className="text-sm text-ink-500 dark:text-ink-200">
                       {t('features.dubbing.components.steps.uploadStep.afterTheOriginalVideoIsUploadedToYouTube')}
                     </p>
                     <Button
@@ -738,8 +738,8 @@ export function UploadStep() {
                 )}
                 {originalUploadState.status === 'uploading' && (
                   <div className="flex items-center gap-3">
-                    <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
-                    <p className="text-sm text-surface-600 dark:text-surface-400">{t('features.dubbing.components.steps.uploadStep.uploadingOriginalVideo')}</p>
+                    <Loader2 className="h-5 w-5 animate-spin text-clay-500" />
+                    <p className="text-sm text-ink-500 dark:text-paper-400">{t('features.dubbing.components.steps.uploadStep.uploadingOriginalVideo')}</p>
                   </div>
                 )}
                 {originalUploadState.status === 'done' && originalUploadState.videoId && (
@@ -770,14 +770,14 @@ export function UploadStep() {
             <Card>
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-emerald-500" />
-                <p className="text-sm text-surface-700 dark:text-surface-300">
+                <p className="text-sm text-ink-600 dark:text-ink-200">
                   {t('features.dubbing.components.steps.uploadStep.translatedCaptionsWillBeAddedToTheExisting')}
                 </p>
                 <a
                   href={`https://youtube.com/watch?v=${channelVideoId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-brand-500 underline"
+                  className="text-xs text-clay-500 underline"
                 >
                   {t('features.dubbing.components.steps.uploadStep.viewVideo2')}
                 </a>
@@ -796,7 +796,7 @@ export function UploadStep() {
                   <Badge variant="warning">{t('features.dubbing.components.steps.uploadStep.signInRequired')}</Badge>
                 )}
               </div>
-              <p className="mb-4 text-sm text-surface-500 dark:text-surface-300">
+              <p className="mb-4 text-sm text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadStep.uploadTranslatedCaptionsToTheOriginalVideo')}
               </p>
               <div className="space-y-2">
@@ -805,12 +805,12 @@ export function UploadStep() {
                   if (!lang) return null
                   const status = captionUploads[code]
                   return (
-                    <div key={code} className="flex items-center justify-between rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+                    <div key={code} className="flex items-center justify-between rounded-lg border border-paper-200 p-3 dark:border-paper-800">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-lg">{lang.flag}</span>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-surface-900 dark:text-white">{getDisplayLanguageName(code)}</p>
-                          {status === 'uploading' && <p className="text-xs text-brand-500">{t('features.dubbing.components.steps.uploadStep.uploading')}</p>}
+                          <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{getDisplayLanguageName(code)}</p>
+                          {status === 'uploading' && <p className="text-xs text-clay-500">{t('features.dubbing.components.steps.uploadStep.uploading')}</p>}
                           {status === 'done' && <p className="text-xs text-emerald-600">{t('features.dubbing.components.steps.uploadStep.captionsUploaded')}</p>}
                           {status === 'error' && <p className="text-xs text-red-500">{t('features.dubbing.components.steps.uploadStep.uploadFailed')}</p>}
                         </div>
@@ -818,7 +818,7 @@ export function UploadStep() {
                       {status === 'done' ? (
                         <Badge variant="success">{t('features.dubbing.components.steps.uploadStep.done2')}</Badge>
                       ) : status === 'uploading' ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                        <Loader2 className="h-4 w-4 animate-spin text-clay-500" />
                       ) : (
                         <Button
                           variant="outline"
@@ -855,7 +855,7 @@ export function UploadStep() {
       {!autoUpload && completedLangs.length > 0 && (
         <Card>
           <CardTitle>{t('features.dubbing.components.steps.uploadStep.reviewDubbedAudio')}</CardTitle>
-          <p className="mb-4 mt-1 text-xs text-surface-500 dark:text-surface-300">
+          <p className="mb-4 mt-1 text-xs text-ink-500 dark:text-ink-200">
             {t('features.dubbing.components.steps.uploadStep.reviewTheDubbedAudioBeforeUploading')}
           </p>
           <div className="space-y-3">
@@ -864,10 +864,10 @@ export function UploadStep() {
               const lp = languageProgress.find((p) => p.langCode === code)
               if (!lang || !lp?.audioUrl) return null
               return (
-                <div key={code} className="flex items-center gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+                <div key={code} className="flex items-center gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
                   <span className="text-lg">{lang.flag}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-surface-900 dark:text-white mb-1">{getDisplayLanguageName(code)}</p>
+                    <p className="text-sm font-medium text-ink-900 dark:text-ink-50 mb-1">{getDisplayLanguageName(code)}</p>
                     <audio controls preload="none" className="w-full h-8" src={lp.audioUrl}>
                       <track kind="captions" />
                     </audio>
@@ -881,7 +881,7 @@ export function UploadStep() {
 
       {/* ─── newDubbedVideos: YouTube Auto Upload ─── */}
       {deliverableMode === 'newDubbedVideos' && (
-        <Card className="border-brand-200 dark:border-brand-800">
+        <Card className="border-clay-200 dark:border-clay-800">
           <div className="flex items-center justify-between mb-4">
             <CardTitle>{t('features.dubbing.components.steps.uploadStep.youTubeUpload')}</CardTitle>
             {isAuthenticated ? (
@@ -893,7 +893,7 @@ export function UploadStep() {
 
           {isAuthenticated ? (
             <>
-              <p className="mb-4 text-sm text-surface-500 dark:text-surface-300">
+              <p className="mb-4 text-sm text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadStep.uploadEachLanguageAsANewDubbedYouTube')}
               </p>
 
@@ -906,12 +906,12 @@ export function UploadStep() {
                   return (
                     <div
                       key={code}
-                      className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-lg">{lang.flag}</span>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-surface-900 dark:text-white">{getDisplayLanguageName(code)}</p>
+                          <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{getDisplayLanguageName(code)}</p>
                           {state?.status === 'uploading' && (
                             <Progress value={state.progress} size="sm" className="mt-1 w-32" />
                           )}
@@ -934,7 +934,7 @@ export function UploadStep() {
                       {state?.status === 'done' ? (
                         <Badge variant="success">{t('features.dubbing.components.steps.uploadStep.uploaded3')}</Badge>
                       ) : state?.status === 'uploading' ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                        <Loader2 className="h-4 w-4 animate-spin text-clay-500" />
                       ) : (
                         <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
                           <Button
@@ -978,7 +978,7 @@ export function UploadStep() {
               )}
             </>
           ) : (
-            <p className="text-sm text-surface-500 dark:text-surface-300">
+            <p className="text-sm text-ink-500 dark:text-ink-200">
               {t('features.dubbing.components.steps.uploadStep.signInToYouTubeToUploadDubbedVideos')}
             </p>
           )}
@@ -989,7 +989,7 @@ export function UploadStep() {
       {deliverableMode === 'newDubbedVideos' && originalYouTubeId && completedLangs.length > 0 && isAuthenticated && (
         <Card>
           <CardTitle>{t('features.dubbing.components.steps.uploadStep.addCaptionsToOriginalVideo')}</CardTitle>
-          <p className="mb-4 mt-1 text-sm text-surface-500 dark:text-surface-300">
+          <p className="mb-4 mt-1 text-sm text-ink-500 dark:text-ink-200">
             {t('features.dubbing.components.steps.uploadStep.uploadTranslatedCaptionsSRTToTheOriginalYouTube')}
           </p>
           <div className="space-y-2">
@@ -998,11 +998,11 @@ export function UploadStep() {
               if (!lang) return null
               const status = captionUploads[code]
               return (
-                <div key={code} className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800 sm:flex-row sm:items-center sm:justify-between">
+                <div key={code} className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{lang.flag}</span>
                     <div>
-                      <p className="text-sm font-medium text-surface-900 dark:text-white">{getDisplayLanguageName(code)}</p>
+                      <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{getDisplayLanguageName(code)}</p>
                       {status === 'done' && <p className="text-xs text-emerald-600">{t('features.dubbing.components.steps.uploadStep.captionsUploaded2')}</p>}
                       {status === 'error' && <p className="text-xs text-red-500">{t('features.dubbing.components.steps.uploadStep.uploadFailed2')}</p>}
                     </div>
@@ -1010,7 +1010,7 @@ export function UploadStep() {
                   {status === 'done' ? (
                     <Badge variant="success">{t('features.dubbing.components.steps.uploadStep.done3')}</Badge>
                   ) : status === 'uploading' ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                    <Loader2 className="h-4 w-4 animate-spin text-clay-500" />
                   ) : (
                     <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => uploadCaptions(originalYouTubeId, [code])}>
                       <Upload className="h-3.5 w-3.5" />
@@ -1036,13 +1036,13 @@ export function UploadStep() {
               return (
                 <div
                   key={code}
-                  className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{lang.flag}</span>
                     <div>
-                      <p className="text-sm font-medium text-surface-900 dark:text-white">{getDisplayLanguageName(code)}</p>
-                      <p className="text-xs text-surface-500 dark:text-surface-300">
+                      <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{getDisplayLanguageName(code)}</p>
+                      <p className="text-xs text-ink-500 dark:text-ink-200">
                         {deliverableMode === 'originalWithMultiAudio'
                           ? t('features.dubbing.components.steps.uploadStep.audioCaptions')
                           : t('features.dubbing.components.steps.uploadStep.videoAudioCaptions')}
@@ -1087,7 +1087,7 @@ export function UploadStep() {
               return lang ? <Badge key={code} variant="error">{lang.flag} {getDisplayLanguageName(code)}</Badge> : null
             })}
           </div>
-          <p className="mt-2 text-xs text-surface-500 dark:text-surface-300">
+          <p className="mt-2 text-xs text-ink-500 dark:text-ink-200">
             {t('features.dubbing.components.steps.uploadStep.theseLanguagesFailedYouCanTryThemAgain')}
           </p>
         </Card>
@@ -1103,7 +1103,7 @@ export function UploadStep() {
                 : 'features.dubbing.components.steps.uploadStep.editCaptionsOnly',
             )}
           </CardTitle>
-          <p className="mb-4 mt-1 text-xs text-surface-500 dark:text-surface-300">
+          <p className="mb-4 mt-1 text-xs text-ink-500 dark:text-ink-200">
             {t(
               allowDialogueEditingInOutput
                 ? 'features.dubbing.components.steps.uploadStep.textEditsApplyToRegeneratedDubbingAudioTiming'

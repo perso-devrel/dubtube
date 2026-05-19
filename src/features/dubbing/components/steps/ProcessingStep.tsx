@@ -96,8 +96,8 @@ export function ProcessingStep() {
       {/* Overall progress */}
       <Card>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-surface-700 dark:text-surface-300">{t('features.dubbing.components.steps.processingStep.overallProgress')}</span>
-          <span className="text-sm font-bold text-surface-900 dark:text-white">{overallProgress}%</span>
+          <span className="text-sm font-medium text-ink-600 dark:text-ink-200">{t('features.dubbing.components.steps.processingStep.overallProgress')}</span>
+          <span className="text-sm font-bold text-ink-900 dark:text-ink-50">{overallProgress}%</span>
         </div>
         <Progress value={overallProgress} size="lg" />
       </Card>
@@ -148,8 +148,8 @@ export function ProcessingStep() {
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-xl">{lang.flag}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-surface-900 dark:text-white">{locale === 'ko' ? lang.nativeName : lang.name}</p>
-                  <p className="text-xs text-surface-500 dark:text-surface-300">
+                  <p className="text-sm font-semibold text-ink-900 dark:text-ink-50">{locale === 'ko' ? lang.nativeName : lang.name}</p>
+                  <p className="text-xs text-ink-500 dark:text-ink-200">
                 {getProgressLabel(t, lp)}
                   </p>
                 </div>
@@ -158,7 +158,7 @@ export function ProcessingStep() {
                 ) : isFailed ? (
                   <AlertCircle className="h-5 w-5 text-red-500" />
                 ) : (
-                  <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+                  <Loader2 className="h-5 w-5 animate-spin text-clay-500" />
                 )}
               </div>
 
@@ -172,7 +172,7 @@ export function ProcessingStep() {
                 >
                   {t(statusLabels[lp.status])}
                 </Badge>
-                <span className="text-xs text-surface-500 dark:text-surface-300">{Math.round(lp.progress)}%</span>
+                <span className="text-xs text-ink-500 dark:text-ink-200">{Math.round(lp.progress)}%</span>
               </div>
 
             </Card>

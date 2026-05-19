@@ -46,8 +46,8 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
         className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
           isActive
-            ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
-            : 'text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800',
+            ? 'bg-ink-900 text-paper-50 dark:bg-paper-50 dark:text-ink-900'
+            : 'text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50',
         )}
       >
         <Icon className="h-5 w-5 shrink-0" />
@@ -67,8 +67,8 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
         className={cn(
           'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors',
           isActive
-            ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-300'
-            : 'text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800',
+            ? 'bg-ink-900 text-paper-50 dark:bg-paper-50 dark:text-ink-900'
+            : 'text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50',
         )}
       >
         <Icon className="h-5 w-5" />
@@ -79,21 +79,21 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
 
   return (
     <>
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900 lg:flex">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-paper-200 bg-paper-50/95 backdrop-blur dark:border-paper-800 dark:bg-paper-950/95 lg:flex">
         <LocaleLink
           href="/dashboard"
-          className="flex h-16 items-center gap-2.5 border-b border-surface-200 px-6 transition-colors hover:bg-surface-50 focus-ring dark:border-surface-800 dark:hover:bg-surface-850"
+          className="flex h-16 items-center gap-2.5 border-b border-paper-200 px-6 transition-colors hover:bg-paper-100 focus-ring dark:border-paper-800 dark:hover:bg-paper-900"
         >
           <Image
             src="/logo.png"
             alt="sub2tube"
             width={36}
             height={36}
-            className="rounded-lg"
+            className="rounded-md"
             priority
           />
-          <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
-            sub<span className="text-brand-600 dark:text-brand-400">2tube</span>
+          <span className="text-lg font-semibold text-ink-900 dark:text-ink-50">
+            sub<span className="text-clay-500 dark:text-clay-300">2tube</span>
           </span>
         </LocaleLink>
 
@@ -101,10 +101,10 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
           {visibleItems.map(renderNavItem)}
         </nav>
 
-        <div className="border-t border-surface-200 p-3 dark:border-surface-800">
+        <div className="border-t border-paper-200 p-3 dark:border-paper-800">
           <LocaleLink
             href="/settings"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50"
           >
             <Settings className="h-5 w-5 shrink-0" />
             {settingsLabel}
@@ -114,7 +114,7 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
 
       <nav
         aria-label={t('components.layout.sidebar.appNavigation')}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-200 bg-white/95 px-2 py-2 backdrop-blur-md dark:border-surface-800 dark:bg-surface-900/95 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-paper-200 bg-paper-50/95 px-2 py-2 backdrop-blur-md dark:border-paper-800 dark:bg-paper-950/95 lg:hidden"
       >
         <div className="flex gap-0.5">
           {visibleItems.map(renderMobileNavItem)}
@@ -123,8 +123,8 @@ export function Sidebar({ isOpsAdmin = false }: { isOpsAdmin?: boolean }) {
             className={cn(
               'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors',
               activePathname === '/settings' || activePathname.startsWith('/settings/')
-                ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-300'
-              : 'text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800',
+                ? 'bg-ink-900 text-paper-50 dark:bg-paper-50 dark:text-ink-900'
+              : 'text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50',
             )}
           >
             <Settings className="h-5 w-5" />

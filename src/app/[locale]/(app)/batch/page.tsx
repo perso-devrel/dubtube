@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { LocaleLink } from '@/components/i18n/LocaleLink'
 import { Plus, GripVertical, Layers, Loader2, Trash2 } from 'lucide-react'
 import { Card, CardTitle, Button, Badge, Progress } from '@/components/ui'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { formatDuration } from '@/utils/formatters'
@@ -72,11 +73,11 @@ export default function BatchPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.batch.page.dubbingJobs')}</h1>
-          <p className="text-surface-600 dark:text-surface-400">{t('app.app.batch.page.reviewActiveDubbingJobs')}</p>
-        </div>
-        <div className="flex items-center gap-2 text-surface-500 dark:text-surface-400">
+        <PageHeader
+          title={t('app.app.batch.page.dubbingJobs')}
+          description={t('app.app.batch.page.reviewActiveDubbingJobs')}
+        />
+        <div className="flex items-center gap-2 text-ink-500 dark:text-ink-200">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">{t('app.app.batch.page.loading')}</span>
         </div>
@@ -87,10 +88,10 @@ export default function BatchPage() {
   if (activeJobs.length === 0) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.batch.page.dubbingJobs2')}</h1>
-          <p className="text-surface-600 dark:text-surface-400">{t('app.app.batch.page.reviewActiveDubbingJobs2')}</p>
-        </div>
+        <PageHeader
+          title={t('app.app.batch.page.dubbingJobs2')}
+          description={t('app.app.batch.page.reviewActiveDubbingJobs2')}
+        />
         <EmptyState
           icon={<Layers className="h-12 w-12" />}
           title={t('app.app.batch.page.noActiveJobs')}
@@ -107,10 +108,10 @@ export default function BatchPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-paper-200 pb-5 dark:border-paper-800 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.batch.page.dubbingJobs3')}</h1>
-          <p className="text-surface-600 dark:text-surface-400">
+          <h1 className="text-[26px] font-semibold leading-tight text-ink-900 dark:text-ink-50 sm:text-[30px]">{t('app.app.batch.page.dubbingJobs3')}</h1>
+          <p className="mt-2 max-w-3xl break-keep text-sm leading-6 text-ink-500 dark:text-ink-200">
             {processing > 0 && t('app.app.batch.page.valueProcessing', { processing: processing })}
             {processing > 0 && queued > 0 && ' · '}
             {queued > 0 && t('app.app.batch.page.valueQueued', { queued: queued })}
@@ -135,16 +136,16 @@ export default function BatchPage() {
             return (
               <div
                 key={job.id}
-                className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:hover:bg-surface-800/50 sm:flex-row sm:items-center"
+                className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 transition-colors hover:bg-paper-100/70 dark:border-paper-800 dark:hover:bg-paper-800/55 sm:flex-row sm:items-center"
               >
-                <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-surface-300" />
+                <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-paper-400" />
 
-                <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-md bg-surface-200 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-300">
+                <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-md bg-paper-200 text-xs text-ink-500 dark:bg-paper-800 dark:text-ink-200">
                   {formatDuration(Math.round(job.video_duration_ms / 1000))}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-surface-900 dark:text-white">
+                  <p className="truncate text-sm font-medium text-ink-900 dark:text-ink-50">
                     {job.video_title}
                   </p>
                   <div className="mt-1 flex flex-wrap gap-1">
@@ -152,7 +153,7 @@ export default function BatchPage() {
                       <LanguageBadge key={lang} code={lang} />
                     ))}
                     {langList.length > 3 && (
-                      <span className="text-xs text-surface-500 dark:text-surface-400">+{langList.length - 3}</span>
+                      <span className="text-xs text-ink-500 dark:text-ink-200">+{langList.length - 3}</span>
                     )}
                   </div>
                 </div>
@@ -171,8 +172,8 @@ export default function BatchPage() {
                   aria-label={t('app.app.batch.page.deleteJob')}
                   className={`shrink-0 rounded-md p-1.5 transition-colors ${
                     deletingId === job.id
-                      ? 'cursor-not-allowed text-surface-300'
-                      : 'text-surface-500 hover:bg-red-50 hover:text-red-600 dark:text-surface-400 dark:hover:bg-red-900/20 dark:hover:text-red-400'
+                      ? 'cursor-not-allowed text-paper-400'
+                      : 'text-ink-500 hover:bg-red-50 hover:text-red-600 dark:text-ink-200 dark:hover:bg-red-900/20 dark:hover:text-red-400'
                   }`}
                   title={deletingId === job.id
                     ? t('app.app.batch.page.deleting')

@@ -7,12 +7,12 @@ import { useDubbingStore } from '../store/dubbingStore'
 
 function StepLoading() {
   return (
-    <div className="min-h-[24rem] rounded-lg border border-surface-200 bg-white p-6 dark:border-surface-800 dark:bg-surface-900">
-      <div className="h-6 w-40 animate-pulse rounded bg-surface-200 dark:bg-surface-800" />
+    <div className="min-h-[24rem] rounded-lg border border-paper-200 bg-paper-50 p-6 dark:border-paper-800 dark:bg-paper-900">
+      <div className="h-6 w-40 animate-pulse rounded bg-paper-200 dark:bg-paper-800" />
       <div className="mt-6 space-y-3">
-        <div className="h-10 animate-pulse rounded bg-surface-100 dark:bg-surface-850" />
-        <div className="h-10 animate-pulse rounded bg-surface-100 dark:bg-surface-850" />
-        <div className="h-24 animate-pulse rounded bg-surface-100 dark:bg-surface-850" />
+        <div className="h-10 animate-pulse rounded bg-paper-100 dark:bg-paper-800" />
+        <div className="h-10 animate-pulse rounded bg-paper-100 dark:bg-paper-800" />
+        <div className="h-24 animate-pulse rounded bg-paper-100 dark:bg-paper-800" />
       </div>
     </div>
   )
@@ -158,19 +158,19 @@ export function DubbingWizard() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-lg border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900">
+      <div className="rounded-lg border border-paper-200 bg-paper-50 p-4 shadow-[0_1px_0_rgb(20_19_15/0.04),0_18px_50px_-34px_rgb(20_19_15/0.32)] dark:border-paper-800 dark:bg-paper-900 dark:shadow-none">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-surface-900 dark:text-white">
+            <p className="truncate text-base font-semibold text-ink-900 dark:text-ink-50">
               {stepTitle}
             </p>
             {stepDescription && (
-              <p className="mt-1 text-sm text-surface-600 dark:text-surface-400">
+              <p className="mt-1 text-sm leading-6 text-ink-500 dark:text-ink-200">
                 {stepDescription}
               </p>
             )}
           </div>
-          <div className="shrink-0 rounded-full bg-surface-100 px-2.5 py-1 text-xs font-medium text-surface-600 dark:bg-surface-800 dark:text-surface-300">
+          <div className="shrink-0 rounded-md bg-paper-100 px-2.5 py-1 text-xs font-medium text-ink-500 ring-1 ring-paper-200 dark:bg-paper-800 dark:text-ink-200 dark:ring-paper-700">
             {currentStep} / {steps.length}
           </div>
         </div>
@@ -180,8 +180,8 @@ export function DubbingWizard() {
               key={num}
               className={`h-1.5 rounded-full transition-colors ${
                 currentStep >= num
-                  ? 'bg-brand-600'
-                  : 'bg-surface-200 dark:bg-surface-800'
+                  ? 'bg-clay-500'
+                  : 'bg-paper-200 dark:bg-paper-800'
               }`}
             />
           ))}

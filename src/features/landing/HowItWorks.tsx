@@ -1,6 +1,7 @@
 'use client'
 
 import { FileVideo, Languages, FileText, Upload } from 'lucide-react'
+import { SectionHeading } from './_shared'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
 const steps = [
@@ -34,34 +35,39 @@ export function HowItWorks() {
   const t = useLocaleText()
 
   return (
-    <section id="how-it-works" className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <h2 className="break-keep text-3xl font-bold text-surface-900 dark:text-white sm:text-4xl">
-            {t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-surface-600 dark:text-surface-300">
-            {t('features.landing.howItWorks.moveFromVideoSelectionToYouTubeUploadIn')}
-          </p>
-        </div>
+    <section id="how-it-works" className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <SectionHeading
+          kr="작동 방식"
+          en="Process"
+          title={t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
+        />
 
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map(({ icon: Icon, step, title, description }, i) => (
-            <div key={step} className="relative text-center">
-              {i < steps.length - 1 && (
-                <div className="absolute left-[calc(50%+40px)] top-10 hidden h-px w-[calc(100%-80px)] bg-surface-200 dark:bg-surface-800 lg:block" />
-              )}
-              <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-lg border border-brand-200 bg-brand-50 text-brand-600 dark:border-brand-900/60 dark:bg-brand-900/20 dark:text-brand-300">
-                <Icon className="h-9 w-9" />
-                <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-brand-600 shadow-sm dark:bg-surface-800 dark:text-brand-400">
+            <li
+              key={step}
+              className="group relative flex min-h-[240px] flex-col rounded-xl border border-paper-200 bg-paper-50 p-6 shadow-[0_1px_0_rgba(20,19,15,0.03)] transition-colors hover:border-ink-900 dark:border-paper-800 dark:bg-paper-900 dark:shadow-[0_1px_0_rgba(0,0,0,0.2)] dark:hover:border-paper-200"
+            >
+              <div className="flex items-start justify-between">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-paper-200 bg-paper-100 text-ink-700 transition-colors group-hover:border-clay-500 group-hover:bg-clay-500 group-hover:text-paper-50 dark:border-paper-800 dark:bg-paper-800 dark:text-ink-100 dark:group-hover:border-clay-400 dark:group-hover:bg-clay-400 dark:group-hover:text-paper-950">
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="font-mono text-[11px] tracking-wider text-ink-300 dark:text-ink-300">
                   {step}
+                  {i < steps.length - 1 ? <span className="ml-1.5 text-ink-300/60 dark:text-ink-300/60">→</span> : null}
                 </span>
               </div>
-              <h3 className="break-keep text-xl font-bold text-surface-900 dark:text-white">{t(title)}</h3>
-              <p className="mt-3 text-surface-600 dark:text-surface-300">{t(description)}</p>
-            </div>
+
+              <h3 className="display-tight mt-8 break-keep text-[19px] font-medium leading-tight text-ink-900 dark:text-ink-50">
+                {t(title)}
+              </h3>
+              <p className="mt-2.5 break-keep text-[13.5px] leading-[1.6] text-ink-500 dark:text-ink-200">
+                {t(description)}
+              </p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   )

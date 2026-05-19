@@ -5,6 +5,7 @@ import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from '
 import { Upload, Loader2, CheckCircle2, ExternalLink, Video, Settings2, Lock, CalendarClock, Bell, Image, ListPlus, Tag } from 'lucide-react'
 import { Card, CardTitle, Button, Badge, Select, Input } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { formatDuration } from '@/utils/formatters'
@@ -229,10 +230,10 @@ function isCaptionUploadFlow(snapshot: YouTubeUploadSnapshot): boolean {
 function ReadOnlyField({ label, value, multiline = false }: { label: string; value: string; multiline?: boolean }) {
   return (
     <div className="w-full">
-      <p className="mb-1.5 text-sm font-medium text-surface-600 dark:text-surface-400">{label}</p>
+      <p className="mb-1.5 text-sm font-medium text-ink-500 dark:text-ink-200">{label}</p>
       <div
         className={[
-          'rounded-lg border border-surface-200 bg-surface-100 px-3 py-2 text-sm text-surface-700 dark:border-surface-800 dark:bg-surface-900/60 dark:text-surface-300',
+          'rounded-lg border border-paper-200 bg-paper-100 px-3 py-2 text-sm text-ink-600 dark:border-paper-800 dark:bg-paper-900/60 dark:text-ink-200',
           multiline ? 'min-h-24 whitespace-pre-wrap' : 'min-h-10 truncate',
         ].join(' ')}
       >
@@ -322,9 +323,9 @@ function UploadSettingsModal({
     >
       <div className="space-y-4">
         {previewLoading ? (
-          <div className="aspect-video w-full animate-pulse rounded-lg bg-surface-100 dark:bg-surface-800" />
+          <div className="aspect-video w-full animate-pulse rounded-lg bg-paper-100 dark:bg-paper-800" />
         ) : previewSource ? (
-          <div className="aspect-video w-full overflow-hidden rounded-lg border border-surface-200 bg-black dark:border-surface-800">
+          <div className="aspect-video w-full overflow-hidden rounded-lg border border-paper-200 bg-black dark:border-paper-800">
             {previewSource.kind === 'youtube' ? (
               <iframe
                 className="h-full w-full"
@@ -346,9 +347,9 @@ function UploadSettingsModal({
 
         {videoUploadFlow ? (
           <>
-            <div className="rounded-lg border border-surface-200 bg-surface-50 p-3 text-sm text-surface-600 dark:border-surface-800 dark:bg-surface-900/40 dark:text-surface-300">
+            <div className="rounded-lg border border-paper-200 bg-paper-100 p-3 text-sm text-ink-500 dark:border-paper-800 dark:bg-paper-900/40 dark:text-ink-200">
               <div className="flex items-start gap-2">
-                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-surface-400" />
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-paper-500 dark:text-paper-300" />
                 <p>{t('app.app.uploads.page.lockedMetadataNotice')}</p>
               </div>
             </div>
@@ -368,20 +369,20 @@ function UploadSettingsModal({
               }))}
             />
             {hasPublishSchedule && (
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
                 {t('app.app.uploads.page.scheduledUploadsArePrivateUntilPublish')}
               </p>
             )}
 
-            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+            <div className="rounded-lg bg-paper-100 p-3 dark:bg-paper-800/50">
               <div className="flex min-w-0 items-start gap-2">
-                <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-500 dark:text-paper-300" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <div>
-                    <p className="text-sm text-surface-700 dark:text-surface-300">
+                    <p className="text-sm text-ink-600 dark:text-ink-200">
                       {t('app.app.uploads.page.schedulePublish')}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-300">
+                    <p className="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-200">
                       {t('app.app.uploads.page.schedulePublishDescription')}
                     </p>
                   </div>
@@ -410,10 +411,10 @@ function UploadSettingsModal({
               </div>
             </div>
 
-            <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+            <div className="rounded-lg bg-paper-100 p-3 dark:bg-paper-800/50">
               <div className="mb-3 flex min-w-0 items-start gap-2">
-                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
-                <p className="text-sm text-surface-700 dark:text-surface-300">
+                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-500 dark:text-paper-300" />
+                <p className="text-sm text-ink-600 dark:text-ink-200">
                   {labels.postUploadOptions}
                 </p>
               </div>
@@ -441,51 +442,51 @@ function UploadSettingsModal({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                  <label className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
                     {labels.thumbnailFile}
                   </label>
                   <input
                     type="file"
                     accept="image/png,image/jpeg"
                     onChange={(e) => onChange({ ...settings, thumbnailFile: e.target.files?.[0] ?? null })}
-                    className="block w-full text-sm text-surface-700 file:mr-3 file:rounded-md file:border-0 file:bg-surface-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-surface-700 hover:file:bg-surface-300 dark:text-surface-300 dark:file:bg-surface-700 dark:file:text-surface-100 dark:hover:file:bg-surface-600"
+                    className="block w-full text-sm text-ink-600 file:mr-3 file:rounded-md file:border-0 file:bg-paper-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink-600 hover:file:bg-paper-300 dark:text-ink-200 dark:file:bg-paper-700 dark:file:text-ink-50 dark:hover:file:bg-paper-600"
                   />
                 </div>
               </div>
             </div>
 
-            <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
+            <label className="flex items-start gap-3 rounded-lg bg-paper-100 p-3 text-sm text-ink-600 dark:bg-paper-800/50 dark:text-ink-200">
               <input
                 type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500"
+                className="mt-0.5 h-4 w-4 rounded border-paper-300 text-clay-600 focus:ring-clay-500"
                 checked={settings.notifySubscribers}
                 onChange={(e) => onChange({ ...settings, notifySubscribers: e.target.checked })}
               />
-              <Bell className="mt-0.5 h-4 w-4 shrink-0 text-surface-400" />
+              <Bell className="mt-0.5 h-4 w-4 shrink-0 text-paper-500 dark:text-paper-300" />
               <span>{labels.notifySubscribers}</span>
             </label>
 
-            <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
+            <label className="flex items-start gap-3 rounded-lg bg-paper-100 p-3 text-sm text-ink-600 dark:bg-paper-800/50 dark:text-ink-200">
               <input
                 type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500"
+                className="mt-0.5 h-4 w-4 rounded border-paper-300 text-clay-600 focus:ring-clay-500"
                 checked={settings.uploadCaptions}
                 onChange={(e) => onChange({ ...settings, uploadCaptions: e.target.checked })}
               />
               <span>{t('app.app.uploads.page.uploadTranslatedSRTCaptionsWithTheVideo')}</span>
             </label>
 
-            <label className="flex items-start gap-3 rounded-lg bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
+            <label className="flex items-start gap-3 rounded-lg bg-paper-100 p-3 text-sm text-ink-600 dark:bg-paper-800/50 dark:text-ink-200">
               <input
                 type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500"
+                className="mt-0.5 h-4 w-4 rounded border-paper-300 text-clay-600 focus:ring-clay-500"
                 checked={settings.selfDeclaredMadeForKids}
                 onChange={(e) => onChange({ ...settings, selfDeclaredMadeForKids: e.target.checked })}
               />
               <span>{t('app.app.uploads.page.madeForKids')}</span>
             </label>
 
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 bg-surface-100 p-3 text-sm text-surface-600 dark:border-surface-800 dark:bg-surface-900/60 dark:text-surface-300">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-paper-200 bg-paper-100 p-3 text-sm text-ink-500 dark:border-paper-800 dark:bg-paper-900/60 dark:text-ink-200">
               <span>{t('app.app.uploads.page.discloseAIVoiceUse')}</span>
               <Badge variant={settings.containsSyntheticMedia ? 'warning' : 'default'}>
                 {settings.containsSyntheticMedia ? t('app.app.uploads.page.on') : t('app.app.uploads.page.off')}
@@ -495,14 +496,14 @@ function UploadSettingsModal({
         ) : null}
 
         {!captionUploadFlow && (
-          <div className="flex items-center gap-2 rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
-            <span className="text-xs text-surface-500 dark:text-surface-300">{t('app.app.uploads.page.language')}: {langName}</span>
+          <div className="flex items-center gap-2 rounded-lg bg-paper-100 p-3 dark:bg-paper-800/50">
+            <span className="text-xs text-ink-500 dark:text-ink-200">{t('app.app.uploads.page.language')}: {langName}</span>
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-2 pt-2 sm:flex sm:justify-end">
           {videoUploadFlow && (
-            <Button size="sm" onClick={onClose} className="w-full bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-300 dark:hover:bg-surface-700 sm:w-auto">
+            <Button size="sm" onClick={onClose} className="w-full sm:w-auto" variant="secondary">
               {t('app.app.uploads.page.cancel')}
             </Button>
           )}
@@ -813,16 +814,16 @@ const UploadRow = forwardRef<UploadRowHandle, UploadRowProps>(function UploadRow
 
   return (
     <>
-      <div className="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800 sm:flex-row sm:items-center">
         {!compact && (
-          <div className="flex h-10 w-16 shrink-0 items-center justify-center rounded bg-surface-100 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-300">
+          <div className="flex h-10 w-16 shrink-0 items-center justify-center rounded bg-paper-100 text-xs text-ink-500 dark:bg-paper-800 dark:text-ink-200">
             {formatDuration(Math.round(item.video_duration_ms / 1000))}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
           {!compact && (
-            <p className="truncate text-sm font-medium text-surface-900 dark:text-white">{settings.title || item.video_title}</p>
+            <p className="truncate text-sm font-medium text-ink-900 dark:text-ink-50">{settings.title || item.video_title}</p>
           )}
           <div className={`${compact ? 'mt-0' : 'mt-1'} flex flex-wrap items-center gap-1.5`}>
             {lang && <LanguageBadge code={item.language_code} />}
@@ -834,7 +835,7 @@ const UploadRow = forwardRef<UploadRowHandle, UploadRowProps>(function UploadRow
                 href={`https://youtube.com/watch?v=${videoId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-brand-500 hover:underline"
+                className="flex items-center gap-1 text-xs text-clay-600 hover:underline dark:text-clay-300"
               >
                 <ExternalLink className="h-3 w-3" />
                 {t('app.app.uploads.page.watchOnYouTube')}
@@ -850,7 +851,7 @@ const UploadRow = forwardRef<UploadRowHandle, UploadRowProps>(function UploadRow
               {t('app.app.uploads.page.uploaded')}
             </Badge>
           ) : isLoading ? (
-            <div className="flex items-center gap-1.5 text-xs text-surface-500 dark:text-surface-300">
+            <div className="flex items-center gap-1.5 text-xs text-ink-500 dark:text-ink-200">
               <Loader2 className="h-4 w-4 animate-spin" />
               {loadingLabel}
             </div>
@@ -907,9 +908,9 @@ function EmbeddedUploadJobCard({ job, userId }: { job: CompletedJobGroup; userId
   }, [bulkUploading, hasPending, pendingItems])
 
   return (
-    <div className="rounded-lg border border-surface-200 bg-white p-4 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-850">
+    <div className="rounded-lg border border-paper-200 bg-paper-50 p-4 transition-colors hover:bg-paper-100/70 dark:border-paper-800 dark:bg-paper-900 dark:hover:bg-paper-800/55">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-md bg-surface-100 dark:bg-surface-800 sm:h-20 sm:w-32">
+        <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-md bg-paper-100 dark:bg-paper-800 sm:h-20 sm:w-32">
           {thumbnailUrl ? (
             <NextImage
               src={thumbnailUrl}
@@ -919,7 +920,7 @@ function EmbeddedUploadJobCard({ job, userId }: { job: CompletedJobGroup; userId
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-surface-400">
+            <div className="flex h-full w-full items-center justify-center text-paper-500 dark:text-paper-300">
               <Video className="h-6 w-6" />
             </div>
           )}
@@ -929,10 +930,10 @@ function EmbeddedUploadJobCard({ job, userId }: { job: CompletedJobGroup; userId
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
               <Badge variant="warning">{locale === 'ko' ? '업로드 대기' : 'Upload pending'}</Badge>
-              <h3 className="mt-2 truncate text-base font-semibold text-surface-900 dark:text-white">
+              <h3 className="mt-2 truncate text-base font-semibold text-ink-900 dark:text-ink-50">
                 {job.title}
               </h3>
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 dark:text-ink-200">
                 <span>{formatDuration(Math.round(job.durationMs / 1000))}</span>
                 <span>{new Date(job.createdAt).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US')}</span>
               </div>
@@ -953,7 +954,7 @@ function EmbeddedUploadJobCard({ job, userId }: { job: CompletedJobGroup; userId
             </Button>
           </div>
 
-          <div className="mt-4 space-y-2 border-t border-surface-100 pt-3 dark:border-surface-800">
+          <div className="mt-4 space-y-2 border-t border-paper-200 pt-3 dark:border-paper-800">
             {job.langs.map((item) => (
               <UploadRow
                 key={uploadRowKey(item)}
@@ -1010,14 +1011,14 @@ export function UploadsPage({ embedded = false }: UploadsPageProps = {}) {
   return (
     <div className={embedded ? 'space-y-3' : 'space-y-6'}>
       {!embedded && (
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('app.app.uploads.page.youTubeUploads')}</h1>
-          <p className="text-surface-600 dark:text-surface-400">{t('app.app.uploads.page.uploadCompletedDubbingResultsToYouTube')}</p>
-        </div>
+        <PageHeader
+          title={t('app.app.uploads.page.youTubeUploads')}
+          description={t('app.app.uploads.page.uploadCompletedDubbingResultsToYouTube')}
+        />
       )}
 
       {isLoading ? (
-        <div className="flex items-center gap-2 text-surface-500 dark:text-surface-400">
+        <div className="flex items-center gap-2 text-ink-500 dark:text-ink-200">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">{t('app.app.uploads.page.loading')}</span>
         </div>
@@ -1039,7 +1040,7 @@ export function UploadsPage({ embedded = false }: UploadsPageProps = {}) {
                 <div className="mb-3 flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base">{job.title}</CardTitle>
-                    <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-400">
+                    <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-200">
                       {formatDuration(Math.round(job.durationMs / 1000))} · {new Date(job.createdAt).toLocaleDateString('ko-KR')}
                     </p>
                   </div>

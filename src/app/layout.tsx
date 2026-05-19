@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import Script from "next/script";
-import "@fontsource/pretendard/400.css";
-import "@fontsource/pretendard/500.css";
-import "@fontsource/pretendard/600.css";
-import "@fontsource/pretendard/700.css";
-import "@fontsource/pretendard/800.css";
+import "pretendard/dist/web/static/pretendard.css";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 import { SUPPORTED_LANGUAGE_COUNT } from "@/utils/languages";
@@ -14,12 +10,6 @@ import {
 } from "@/lib/i18n/config";
 import { message } from "@/lib/i18n/messages";
 import { SEO_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -68,7 +58,7 @@ export default async function RootLayout({
   return (
     <html
       lang={DEFAULT_APP_LOCALE}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

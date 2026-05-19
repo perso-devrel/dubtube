@@ -1,14 +1,18 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CheckCircle2, Clock, Layers, ListFilter, Loader2, Plus, UploadCloud } from 'lucide-react'
+import { CheckCircle2, Clock, Layers, ListFilter, Loader2, Plus, Trash2, UploadCloud } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { UploadsPage } from '@/app/[locale]/(app)/uploads/page'
 import { LocaleLink } from '@/components/i18n/LocaleLink'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { LanguageBadge } from '@/components/shared/LanguageBadge'
 import { Badge, Button, Card, CardTitle, Progress } from '@/components/ui'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useRecentJobs } from '@/hooks/useDashboardData'
-import { useAppLocale } from '@/hooks/useLocaleText'
+import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
+import { useAuthStore } from '@/stores/authStore'
+import { dbMutation } from '@/lib/api/dbMutation'
 import type { AppLocale } from '@/lib/i18n/config'
 import { cn } from '@/utils/cn'
 import { formatDuration } from '@/utils/formatters'
@@ -151,9 +155,13 @@ function matchesFilter(job: DubbingJob, filter: JobFilter) {
 
 export default function JobsPage() {
   const locale = useAppLocale()
+  const t = useLocaleText()
   const text = copy[locale]
   const { data: jobs = [], isLoading, isError } = useRecentJobs(undefined, 100)
+  const queryClient = useQueryClient()
+  const user = useAuthStore((s) => s.user)
   const [filter, setFilter] = useState<JobFilter>('all')
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const dateFormatter = useMemo(
     () => new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
       year: 'numeric',
@@ -182,17 +190,34 @@ export default function JobsPage() {
     [jobs, text],
   )
 
+  const handleDeleteJob = async (jobId: number) => {
+    if (deletingId === jobId) return
+    const ok = window.confirm(t('app.app.batch.page.deleteThisDubbingJobAnyWorkInProgress'))
+    if (!ok) return
+
+    setDeletingId(jobId)
+    queryClient.setQueriesData({ queryKey: ['recent-jobs', user?.uid] }, (old: unknown) =>
+      Array.isArray(old) ? old.filter((job) => (job as DubbingJob).id !== jobId) : old,
+    )
+    try {
+      await dbMutation({ type: 'deleteDubbingJob', payload: { jobId } })
+    } finally {
+      setDeletingId(null)
+      queryClient.invalidateQueries({ queryKey: ['recent-jobs'] })
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{text.title}</h1>
-          <p className="text-surface-600 dark:text-surface-400">{text.description}</p>
-        </div>
-        <LocaleLink href="/dubbing">
-          <Button><Plus className="h-4 w-4" /> {text.newJob}</Button>
-        </LocaleLink>
-      </div>
+      <PageHeader
+        title={text.title}
+        description={text.description}
+        actions={(
+          <LocaleLink href="/dubbing">
+            <Button><Plus className="h-4 w-4" /> {text.newJob}</Button>
+          </LocaleLink>
+        )}
+      />
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filters.map(({ id, label, count, icon: Icon }) => {
@@ -205,8 +230,8 @@ export default function JobsPage() {
               className={cn(
                 'inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-ring',
                 active
-                  ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300'
-                  : 'border-surface-200 bg-white text-surface-600 hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-900 dark:text-surface-300 dark:hover:bg-surface-850',
+                  ? 'border-clay-200 bg-clay-50 text-clay-700 dark:border-clay-800 dark:bg-clay-800/25 dark:text-clay-200'
+                  : 'border-paper-200 bg-paper-50 text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:border-paper-800 dark:bg-paper-900 dark:text-ink-200 dark:hover:bg-paper-800',
               )}
             >
               <Icon className="h-4 w-4" />
@@ -214,8 +239,8 @@ export default function JobsPage() {
               <span className={cn(
                 'rounded-full px-1.5 py-0.5 text-[11px]',
                 active
-                  ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200'
-                  : 'bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-300',
+                  ? 'bg-clay-100 text-clay-700 dark:bg-clay-800/60 dark:text-clay-100'
+                  : 'bg-paper-100 text-ink-500 dark:bg-paper-800 dark:text-ink-200',
               )}>
                 {count}
               </span>
@@ -226,7 +251,7 @@ export default function JobsPage() {
 
       {filter === 'uploadPending' ? (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-surface-900 dark:text-white">{text.filters.uploadPending}</h2>
+          <h2 className="text-base font-semibold text-ink-900 dark:text-ink-50">{text.filters.uploadPending}</h2>
           <UploadsPage embedded />
         </div>
       ) : (
@@ -234,7 +259,7 @@ export default function JobsPage() {
           <CardTitle>{text.filters[filter]}</CardTitle>
 
           {isLoading ? (
-            <div className="mt-6 flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400">
+            <div className="mt-6 flex items-center gap-2 text-sm text-ink-500 dark:text-ink-200">
               <Loader2 className="h-4 w-4 animate-spin" />
               {text.loading}
             </div>
@@ -271,7 +296,7 @@ export default function JobsPage() {
                 return (
                   <div
                     key={job.id}
-                    className="rounded-lg border border-surface-200 p-4 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:hover:bg-surface-850"
+                    className="rounded-lg border border-paper-200 p-4 transition-colors hover:bg-paper-100/70 dark:border-paper-800 dark:hover:bg-paper-800/55"
                   >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0 flex-1">
@@ -286,10 +311,10 @@ export default function JobsPage() {
                             <Badge variant="success">{text.status.uploadCompleted}</Badge>
                           )}
                         </div>
-                        <h2 className="mt-2 truncate text-base font-semibold text-surface-900 dark:text-white">
+                        <h2 className="mt-2 truncate text-base font-semibold text-ink-900 dark:text-ink-50">
                           {job.video_title}
                         </h2>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 dark:text-ink-200">
                           <span>{formatDuration(Math.round(job.video_duration_ms / 1000))}</span>
                           <span>
                             {text.createdAt}: {Number.isNaN(createdAt.getTime()) ? job.created_at : dateFormatter.format(createdAt)}
@@ -298,17 +323,42 @@ export default function JobsPage() {
                         </div>
                       </div>
 
-                      <div className="w-full shrink-0 space-y-2 lg:w-56">
-                        <div className="flex items-center justify-between text-xs text-surface-500 dark:text-surface-400">
-                          <span>{text.progress}</span>
-                          <span>{state.progress}%</span>
+                      <div className="flex w-full shrink-0 items-start gap-3 lg:w-auto">
+                        <div className="w-full space-y-2 lg:w-56">
+                          <div className="flex items-center justify-between text-xs text-ink-500 dark:text-ink-200">
+                            <span>{text.progress}</span>
+                            <span>{state.progress}%</span>
+                          </div>
+                          <Progress value={state.progress} size="sm" />
+                          <div className="flex flex-wrap gap-1 text-xs text-ink-500 dark:text-ink-200">
+                            <span>{text.uploadedCount(state.uploadedCount, state.languageCount)}</span>
+                            {state.uploadProcessingCount > 0 && <span>{text.uploadProcessingCount(state.uploadProcessingCount)}</span>}
+                            {state.uploadPendingCount > 0 && <span>{text.uploadPendingCount(state.uploadPendingCount)}</span>}
+                          </div>
                         </div>
-                        <Progress value={state.progress} size="sm" />
-                        <div className="flex flex-wrap gap-1 text-xs text-surface-500 dark:text-surface-400">
-                          <span>{text.uploadedCount(state.uploadedCount, state.languageCount)}</span>
-                          {state.uploadProcessingCount > 0 && <span>{text.uploadProcessingCount(state.uploadProcessingCount)}</span>}
-                          {state.uploadPendingCount > 0 && <span>{text.uploadPendingCount(state.uploadPendingCount)}</span>}
-                        </div>
+                        {state.isInProgress && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteJob(job.id)}
+                            disabled={deletingId === job.id}
+                            aria-label={t('app.app.batch.page.deleteJob')}
+                            className={cn(
+                              'shrink-0 rounded-md p-1.5 transition-colors',
+                              deletingId === job.id
+                                ? 'cursor-not-allowed text-paper-400'
+                                : 'text-ink-500 hover:bg-red-50 hover:text-red-600 dark:text-ink-200 dark:hover:bg-red-900/20 dark:hover:text-red-400',
+                            )}
+                            title={deletingId === job.id
+                              ? t('app.app.batch.page.deleting')
+                              : t('app.app.batch.page.deleteJob2')}
+                          >
+                            {deletingId === job.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -318,7 +368,7 @@ export default function JobsPage() {
                           <LanguageBadge key={lang} code={lang} />
                         ))}
                         {languages.length > 8 && (
-                          <span className="text-xs text-surface-500 dark:text-surface-400">+{languages.length - 8}</span>
+                          <span className="text-xs text-ink-500 dark:text-ink-200">+{languages.length - 8}</span>
                         )}
                       </div>
                     )}

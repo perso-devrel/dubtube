@@ -30,16 +30,48 @@
   --color-surface-950: #0f1115;
 
   /* Fonts */
-  --font-ko: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-  --font-latin: var(--font-geist-sans), Inter, system-ui, -apple-system, sans-serif;
-  --font-sans: var(--font-latin), var(--font-ko);
+  --font-sans: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Landing-only palette — paper-tone neutrals + terracotta accent.
+     Decoupled from brand/surface so the app dashboard is unaffected. */
+  --color-paper-50:  #faf8f2;
+  --color-paper-100: #f2ede2;
+  --color-paper-200: #e6dfd0;
+  --color-paper-300: #cfc6b3;
+  --color-paper-400: #9a9281;
+  --color-paper-500: #6b6657;
+  --color-paper-600: #4a4639;
+  --color-paper-700: #2e2c24;
+  --color-paper-800: #1c1b16;
+  --color-paper-900: #14130f;
+  --color-paper-950: #0d0d0a;
+
+  --color-ink-50:  #f1eee6;
+  --color-ink-100: #d8d3c5;
+  --color-ink-200: #a8a293;
+  --color-ink-300: #7a7466;
+  --color-ink-500: #4c4839;
+  --color-ink-700: #2a2820;
+  --color-ink-900: #14130f;
+
+  --color-clay-50:  #fbeee9;
+  --color-clay-100: #f5d6c9;
+  --color-clay-200: #eeb39c;
+  --color-clay-300: #e58c6c;
+  --color-clay-400: #f26a4b;
+  --color-clay-500: #d9472b;
+  --color-clay-600: #b53921;
+  --color-clay-700: #8a2b17;
+  --color-clay-800: #5e1c0e;
 
   /* Animations */
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-slide-up: slide-up 0.3s ease-out;
   --animate-slide-down: slide-down 0.3s ease-out;
   --animate-pulse-brand: pulse-brand 2s infinite;
+  --animate-caption-cycle: caption-cycle 12s ease-in-out infinite;
+  --animate-waveform: waveform 1.8s ease-in-out infinite;
 }
 
 @keyframes fade-in {
@@ -62,6 +94,33 @@
   50% { opacity: 0.7; }
 }
 
+@keyframes caption-cycle {
+  0%, 24%   { opacity: 0; transform: translateY(4px); }
+  4%, 20%   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1); }
+}
+
+/* Landing-only utilities. Scoped via the .landing-root wrapper so the rest of
+   the app keeps its current typography even after these are loaded. */
+.landing-root {
+  font-feature-settings: "ss01" on, "kern" on;
+}
+.landing-root .label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.landing-root .display-tight {
+  letter-spacing: -0.028em;
+  font-feature-settings: "ss01" on;
+}
+
 /* Dark mode base */
 html {
   color-scheme: light;
@@ -82,6 +141,16 @@ html.dark body {
   @apply bg-surface-950 text-surface-100;
 }
 
+.app-root {
+  background:
+    linear-gradient(180deg, rgb(250 248 242 / 0.94) 0%, rgb(242 237 226 / 0.84) 42%, rgb(250 248 242 / 0.96) 100%);
+}
+
+html.dark .app-root {
+  background:
+    linear-gradient(180deg, rgb(13 13 10 / 1) 0%, rgb(20 19 15 / 1) 46%, rgb(13 13 10 / 1) 100%);
+}
+
 code,
 kbd,
 samp,
@@ -100,18 +169,18 @@ pre {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-surface-300 rounded-full;
+  @apply bg-paper-300 rounded-full;
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  @apply bg-surface-700;
+  @apply bg-paper-700;
 }
 
 /* Focus ring utility */
 .focus-ring {
-  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-clay-400 focus-visible:ring-offset-2;
 }
 
 html.dark .focus-ring {
-  @apply focus-visible:ring-offset-surface-900;
+  @apply focus-visible:ring-offset-paper-950;
 }

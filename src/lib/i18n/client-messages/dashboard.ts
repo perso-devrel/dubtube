@@ -15,7 +15,7 @@ export const dashboardMessages = {
   "features.dashboard.components.creditChart.min": { ko: "분", en: " min" },
   "features.dashboard.components.creditChart.monthlyUsage": { ko: "월별 사용 시간", en: "Monthly usage" },
   "features.dashboard.components.creditChart.used": { ko: "사용", en: "Used" },
-  "features.dashboard.components.dashboardContent.dashboard": { ko: "대시보드", en: "Dashboard" },
+  "features.dashboard.components.dashboardContent.dashboard": { ko: "홈", en: "Home" },
   "features.dashboard.components.dashboardContent.reviewRecentDubbingUploadsAndMinuteUsage": { ko: "최근 더빙, 업로드, 사용 시간을 확인하세요.", en: "Review recent dubbing, uploads, and minute usage." },
   "features.dashboard.components.dashboardSummary.dubbedVideos": { ko: "더빙된 영상", en: "Dubbed videos" },
   "features.dashboard.components.dashboardSummary.inProgress": { ko: "진행 중", en: "In progress" },

@@ -122,7 +122,7 @@ export function LanguageSelectStep() {
               <button
                 key={code}
                 onClick={() => toggleLanguage(code)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-brand-500 bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-200 dark:hover:bg-brand-900/50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-clay-500 bg-clay-50 px-3 py-1 text-sm font-medium text-clay-700 transition hover:bg-clay-100 dark:bg-clay-800/30 dark:text-clay-200 dark:hover:bg-clay-800/50"
               >
                 <span>{lang.flag}</span>
                 <span>{locale === 'ko' ? lang.nativeName : lang.name}</span>
@@ -136,18 +136,18 @@ export function LanguageSelectStep() {
       {/* Search + region tabs */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('features.dubbing.components.steps.languageSelectStep.searchLanguages')}
-            className="w-full rounded-md border border-surface-300 bg-white py-2 pl-9 pr-9 text-sm text-surface-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-900 dark:text-white"
+            className="w-full rounded-md border border-paper-300 bg-paper-50 py-2 pl-9 pr-9 text-sm text-ink-900 focus:border-clay-500 focus:outline-none focus:ring-1 focus:ring-clay-500 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-50"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-paper-400 hover:text-ink-500"
             >
               <X className="h-4 w-4" />
             </button>
@@ -163,8 +163,8 @@ export function LanguageSelectStep() {
                 className={cn(
                   'rounded-full px-3 py-1 text-sm font-medium transition',
                   region === tab.id
-                    ? 'bg-brand-600 text-white'
-                    : 'bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-300 dark:hover:bg-surface-700',
+                    ? 'bg-clay-500 text-paper-50'
+                    : 'bg-paper-100 text-ink-600 hover:bg-paper-200 dark:bg-paper-800 dark:text-ink-200 dark:hover:bg-paper-700',
                 )}
               >
                 {tab.label}
@@ -184,7 +184,7 @@ export function LanguageSelectStep() {
 
       {/* Language grid */}
       {filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-surface-500 dark:text-surface-300">
+        <p className="py-8 text-center text-sm text-ink-500 dark:text-ink-200">
           {t('features.dubbing.components.steps.languageSelectStep.noMatchingLanguages')}
         </p>
       ) : (
@@ -206,27 +206,27 @@ export function LanguageSelectStep() {
                 className={cn(
                   'relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all',
                   alreadyHasCaption
-                    ? 'cursor-not-allowed border-surface-200 bg-surface-100 opacity-60 dark:border-surface-800 dark:bg-surface-800'
+                    ? 'cursor-not-allowed border-paper-200 bg-paper-100 opacity-60 dark:border-paper-800 dark:bg-paper-800'
                     : isSelected
-                      ? 'cursor-pointer border-brand-600 bg-brand-50 shadow-sm dark:bg-brand-900/20'
-                      : 'cursor-pointer border-surface-200 bg-white hover:border-surface-300 dark:border-surface-800 dark:bg-surface-900 dark:hover:border-surface-700',
+                      ? 'cursor-pointer border-clay-500 bg-clay-50 shadow-sm dark:bg-clay-800/20'
+                      : 'cursor-pointer border-paper-200 bg-paper-50 hover:border-paper-300 dark:border-paper-800 dark:bg-paper-900 dark:hover:border-paper-700',
                 )}
               >
                 {isSelected && !alreadyHasCaption && (
-                  <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
+                  <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-clay-500 text-paper-50">
                     <Check className="h-3 w-3" />
                   </div>
                 )}
                 {alreadyHasCaption && (
-                  <div className="absolute -right-1.5 -top-1.5 rounded-full bg-surface-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <div className="absolute -right-1.5 -top-1.5 rounded-full bg-paper-1000 px-1.5 py-0.5 text-[10px] font-semibold text-paper-50">
                     {t('features.dubbing.components.steps.languageSelectStep.captionExistsBadge')}
                   </div>
                 )}
                 <span className="text-2xl">{lang.flag}</span>
-                <span className="text-sm font-medium text-surface-900 dark:text-white">
+                <span className="text-sm font-medium text-ink-900 dark:text-ink-50">
                   {locale === 'ko' ? lang.nativeName : lang.name}
                 </span>
-                <span className="max-w-full truncate text-xs text-surface-500 dark:text-surface-400">
+                <span className="max-w-full truncate text-xs text-ink-500 dark:text-paper-400">
                   {locale === 'ko' ? lang.name : lang.nativeName}
                 </span>
               </button>
@@ -237,7 +237,7 @@ export function LanguageSelectStep() {
 
       {/* Dub options */}
       <Card>
-        <div className="space-y-2 rounded-lg bg-surface-50 p-3 dark:bg-surface-800">
+        <div className="space-y-2 rounded-lg bg-paper-100 p-3 dark:bg-paper-800">
           <EstimateRow
             label={t('features.dubbing.components.steps.languageSelectStep.videoLengthRounded')}
             value={videoMinutes > 0
@@ -303,10 +303,10 @@ function EstimateRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4 text-sm">
-      <span className="text-surface-600 dark:text-surface-400">{label}</span>
+      <span className="text-ink-500 dark:text-paper-400">{label}</span>
       <span className={cn(
         'whitespace-nowrap text-right',
-        strong ? 'font-bold text-surface-900 dark:text-white' : 'font-medium text-surface-700 dark:text-surface-200',
+        strong ? 'font-bold text-ink-900 dark:text-ink-50' : 'font-medium text-ink-600 dark:text-ink-100',
         danger && 'text-red-600 dark:text-red-400',
       )}>
         {value}

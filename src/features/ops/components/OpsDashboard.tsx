@@ -14,6 +14,7 @@ import {
   Webhook,
 } from 'lucide-react'
 import { Badge, Button, Card, CardTitle, Select } from '@/components/ui'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { cn } from '@/utils/cn'
 import { useAppLocale, useLocaleText } from '@/hooks/useLocaleText'
 import type { AppLocale } from '@/lib/i18n/config'
@@ -168,15 +169,20 @@ export function OpsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.ops.components.opsDashboard.operations')}</h1>
-          <p className="text-surface-500 dark:text-surface-300">
+      <PageHeader
+        title={t('features.ops.components.opsDashboard.operations')}
+        description={(
+          <>
             {t('features.ops.components.opsDashboard.monitorUploadQueueDubbingJobsMinuteReleasesAnd')}
-          </p>
-          {generatedLabel && <p className="mt-1 text-xs text-surface-500 dark:text-surface-300">{t('features.ops.components.opsDashboard.lastUpdated')}: {generatedLabel}</p>}
-        </div>
-        <div className="flex items-end gap-2">
+            {generatedLabel && (
+              <span className="mt-1 block text-xs">
+                {t('features.ops.components.opsDashboard.lastUpdated')}: {generatedLabel}
+              </span>
+            )}
+          </>
+        )}
+        actions={(
+          <div className="flex items-end gap-2">
           <Select
             label={t('features.ops.components.opsDashboard.window')}
             value={String(hours)}
@@ -188,8 +194,9 @@ export function OpsDashboard() {
             <RefreshCw className="h-4 w-4" />
             {t('features.ops.components.opsDashboard.refresh')}
           </Button>
-        </div>
-      </div>
+          </div>
+        )}
+      />
 
       {summary ? (
         <>
@@ -240,7 +247,7 @@ export function OpsDashboard() {
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <CardTitle>{t('features.ops.components.opsDashboard.alerts')}</CardTitle>
-                <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+                <p className="mt-1 text-sm text-ink-500 dark:text-ink-200">
                   {t('features.ops.components.opsDashboard.thresholdAlertsForTheSelectedWindow')}
                 </p>
               </div>
@@ -251,7 +258,7 @@ export function OpsDashboard() {
               </Badge>
             </div>
             {summary.alerts.length === 0 ? (
-              <div className="flex items-center gap-2 rounded-lg bg-surface-50 p-4 text-sm text-surface-500 dark:bg-surface-800/60 dark:text-surface-400">
+              <div className="flex items-center gap-2 rounded-lg bg-paper-100 p-4 text-sm text-ink-500 dark:bg-paper-800/60 dark:text-ink-200">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 {t('features.ops.components.opsDashboard.noActiveOperationsAlertsForThisWindow')}
               </div>
@@ -274,10 +281,10 @@ export function OpsDashboard() {
 
           <Card>
             <CardTitle>{t('features.ops.components.opsDashboard.recentEvents')}</CardTitle>
-            <div className="mt-4 overflow-hidden rounded-lg border border-surface-200 dark:border-surface-800">
+            <div className="mt-4 overflow-hidden rounded-lg border border-paper-200 dark:border-paper-800">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
-                  <thead className="bg-surface-50 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-400">
+                  <thead className="bg-paper-100 text-xs text-ink-500 dark:bg-paper-800 dark:text-ink-200">
                     <tr>
                       <th className="px-3 py-2 font-medium">{t('features.ops.components.opsDashboard.time')}</th>
                       <th className="px-3 py-2 font-medium">{t('features.ops.components.opsDashboard.category')}</th>
@@ -286,17 +293,17 @@ export function OpsDashboard() {
                       <th className="px-3 py-2 font-medium">{t('features.ops.components.opsDashboard.reference')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-surface-200 dark:divide-surface-800">
+                  <tbody className="divide-y divide-paper-200 dark:divide-paper-800">
                     {summary.recentEvents.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-8 text-center text-surface-500 dark:text-surface-300">
+                        <td colSpan={5} className="px-3 py-8 text-center text-ink-500 dark:text-ink-200">
                           {t('features.ops.components.opsDashboard.noRecentOperationalEvents')}
                         </td>
                       </tr>
                     ) : (
                       summary.recentEvents.map((event) => (
-                        <tr key={event.id} className="text-surface-700 dark:text-surface-200">
-                          <td className="whitespace-nowrap px-3 py-2 text-xs text-surface-500 dark:text-surface-300">
+                        <tr key={event.id} className="text-ink-600 dark:text-ink-100">
+                          <td className="whitespace-nowrap px-3 py-2 text-xs text-ink-500 dark:text-ink-200">
                             {formatDate(event.createdAt, locale)}
                           </td>
                           <td className="px-3 py-2">{t(categoryLabel[event.category])}</td>
@@ -304,7 +311,7 @@ export function OpsDashboard() {
                             <Badge variant={severityVariant(event.severity)}>{t(severityLabel[event.severity])}</Badge>
                           </td>
                           <td className="px-3 py-2">{eventMessageLabel[event.message] ? t(eventMessageLabel[event.message]) : event.message}</td>
-                          <td className="px-3 py-2 text-xs text-surface-500 dark:text-surface-300">
+                          <td className="px-3 py-2 text-xs text-ink-500 dark:text-ink-200">
                             {event.referenceType && event.referenceId
                               ? `${event.referenceType}:${event.referenceId}`
                               : '-'}
@@ -320,7 +327,7 @@ export function OpsDashboard() {
         </>
       ) : (
         <Card>
-          <div className="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-300">
+          <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-200">
             <Clock className="h-4 w-4 animate-pulse" />
             {t('features.ops.components.opsDashboard.loadingOperationsSummary')}
           </div>
@@ -352,9 +359,9 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-surface-500 dark:text-surface-300">{title}</p>
-          <p className="mt-2 text-2xl font-bold text-surface-900 dark:text-white">{value}</p>
-          <p className="mt-1 text-xs text-surface-500 dark:text-surface-300">{detail}</p>
+          <p className="text-sm text-ink-500 dark:text-ink-200">{title}</p>
+          <p className="mt-2 text-2xl font-semibold text-ink-900 dark:text-ink-50">{value}</p>
+          <p className="mt-1 text-xs text-ink-500 dark:text-ink-200">{detail}</p>
         </div>
         <div
           className={cn(
@@ -363,7 +370,7 @@ function MetricCard({
               ? 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-300'
               : tone === 'warn'
                 ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-300'
-                : 'bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-300',
+                : 'bg-paper-100 text-ink-500 dark:bg-paper-800 dark:text-ink-200',
           )}
         >
           {icon}

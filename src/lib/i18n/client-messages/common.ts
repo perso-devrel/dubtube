@@ -241,7 +241,7 @@ export const commonMessages = {
   "lib.i18n.metadata.descriptionHowsub2tubeHandlesPersonalDataYouTubeAPI": { ko: "sub2tube의 개인정보처리방침. YouTube API Services 데이터 사용, 수집, 보관, 삭제 정책을 안내합니다.", en: "How sub2tube handles personal data, YouTube API Services data, retention, and deletion." },
   "lib.i18n.metadata.descriptionSupportAndContact": { ko: "sub2tube 이용, 계정, YouTube 연결, 데이터 삭제와 관련된 문의 안내입니다.", en: "How to contact sub2tube about support, accounts, YouTube access, and data deletion." },
   "lib.i18n.metadata.titleBilling": { ko: "결제", en: "Billing" },
-  "lib.i18n.metadata.titleDashboard": { ko: "대시보드", en: "Dashboard" },
+  "lib.i18n.metadata.titleDashboard": { ko: "홈", en: "Home" },
   "lib.i18n.metadata.titleDubbingJobs": { ko: "진행 중인 작업", en: "In progress" },
   "lib.i18n.metadata.titleNewDubbing": { ko: "새 작업", en: "New job" },
   "lib.i18n.metadata.titleOperations": { ko: "운영 상태", en: "Operations" },

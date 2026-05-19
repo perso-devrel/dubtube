@@ -1,66 +1,62 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp } from 'lucide-react'
-import { Card } from '@/components/ui'
+import { BarChart3, Globe2, TrendingUp } from 'lucide-react'
+import { CategoryLabel } from './_shared'
 import { formatNumber } from '@/utils/formatters'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
 const BASE_VIEWS = 100000
 
-// 언어별 추가 조회수 기여율 (원본 조회수 대비).
-// 앵커 데이터:
-//  - YouTube 공식 (blog.youtube, 2023): 멀티오디오 적용 영상 평균 시청시간의 25%+ 가 비주력 언어
-//    → 원본 대비 약 +33% 추가 도달
-//  - Jamie Oliver: 멀티오디오로 조회수 3배 (+200%)
-//  - AIR Media-Tech: 채널 간 오디오 교차 적용 시 +45%
-//  - 국제 구독자 평균 +40%
-// 위 매크로 데이터를 언어별로 분배한 추정치로, 화자 규모·YouTube 시장 점유율·시청 시간 비중을
-// 반영해 도달률 내림차순 정렬했다. 단순 누적합 = 단조 증가 + 자연스러운 한계효용 감소.
-// 정확한 채널별 측정값이 아니므로 UI에서 반드시 추정치임을 명시할 것.
-const LANGUAGE_LIFT_RATES = [
-  0.30, // 스페인어 (LATAM + 스페인, 공개 사례 중 가장 큰 단일 언어 효과)
-  0.22, // 힌디어 (인도, YouTube 1위 시장)
-  0.18, // 포르투갈어 (브라질, YouTube 상위 시장)
-  0.14, // 아랍어 (MENA 권역)
-  0.12, // 인도네시아어
-  0.10, // 프랑스어 (프랑스 + 아프리카 프랑코폰)
-  0.09, // 일본어
-  0.08, // 독일어
-  0.06, // 한국어
-  0.04, // 중국어 (YouTube 접근성 제한)
-]
+// Per-language reach contribution (relative to source views). Values are an
+// internal heuristic distributed from public macro data; NOT a guarantee and
+// NOT shown per-language on the page — the UI only renders generic bars.
+const LIFT_PER_LANGUAGE = [0.30, 0.22, 0.18, 0.14, 0.12, 0.10, 0.09, 0.08, 0.06, 0.04]
+const CUMULATIVE_LIFT = LIFT_PER_LANGUAGE.reduce<number[]>((acc, rate) => {
+  acc.push((acc.at(-1) ?? 0) + rate)
+  return acc
+}, [])
+const TOTAL_LIFT = CUMULATIVE_LIFT.at(-1) ?? 0
 
 export function ROICalculator() {
   const [selectedCount, setSelectedCount] = useState(5)
   const t = useLocaleText()
 
-  const lift = LANGUAGE_LIFT_RATES.slice(0, selectedCount).reduce((a, b) => a + b, 0)
+  const lift = LIFT_PER_LANGUAGE.slice(0, selectedCount).reduce((a, b) => a + b, 0)
   const growthPct = Math.round(lift * 100)
   const projectedViews = Math.round(BASE_VIEWS * (1 + lift))
 
   return (
-    <section className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-surface-900 dark:text-white sm:text-4xl">
-            {t('features.landing.rOICalculator.estimatedReachCalculator')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-surface-600 dark:text-surface-300">
-            {t('features.landing.rOICalculator.aReferenceEstimateBasedOnPublicCasesAnd')}
-            <br className="hidden sm:block" />
-            {t('features.landing.rOICalculator.actualPerformanceDependsOnContentThumbnailsUploadCadence')}
-          </p>
-        </div>
+    <section className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+          {/* LEFT — editorial column */}
+          <div>
+            <CategoryLabel kr="조회수 예상" en="View estimate" />
+            <h2 className="display-tight mt-3 max-w-md break-keep text-[32px] font-semibold leading-[1.08] text-ink-900 dark:text-ink-50 sm:text-[40px] lg:text-[44px]">
+              {t('features.landing.rOICalculator.estimatedReachCalculator')}
+            </h2>
+            <p className="mt-5 max-w-md break-keep text-[15px] leading-[1.65] text-ink-500 dark:text-ink-200">
+              {t('features.landing.rOICalculator.aReferenceEstimateBasedOnPublicCasesAnd')}
+            </p>
+            <p className="mt-4 max-w-md break-keep text-[12.5px] leading-[1.6] text-ink-300 dark:text-ink-300">
+              <span aria-hidden>* </span>
+              {t('features.landing.rOICalculator.actualPerformanceDependsOnContentThumbnailsUploadCadence')}
+            </p>
+          </div>
 
-        <Card className="mx-auto mt-12 max-w-2xl">
-          <div className="space-y-8">
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <label htmlFor="roi-langs" className="text-sm font-medium text-surface-700 dark:text-surface-300">
+          {/* RIGHT — instrument panel */}
+          <div className="overflow-hidden rounded-xl border border-paper-200 bg-paper-50 shadow-[0_1px_0_rgba(20,19,15,0.03),0_12px_32px_-16px_rgba(20,19,15,0.12)] dark:border-paper-800 dark:bg-paper-900 dark:shadow-[0_1px_0_rgba(0,0,0,0.3),0_12px_32px_-16px_rgba(0,0,0,0.5)]">
+            {/* Slider strip */}
+            <div className="border-b border-paper-200 bg-paper-50 p-5 dark:border-paper-800 dark:bg-paper-900">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <label htmlFor="roi-langs" className="flex items-center gap-2 text-[13px] font-medium text-ink-900 dark:text-ink-50">
+                  <BarChart3 className="h-4 w-4 text-clay-500 dark:text-clay-400" />
                   {t('features.landing.rOICalculator.numberOfDubbingLanguages')}
                 </label>
-                <span className="text-lg font-bold text-surface-900 dark:text-white">{t('features.landing.rOICalculator.value', { selectedCount: selectedCount })}</span>
+                <span className="inline-flex h-7 items-center rounded-md border border-paper-300 bg-paper-100 px-2.5 font-mono text-[12.5px] tabular-nums text-ink-900 dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50">
+                  {t('features.landing.rOICalculator.value', { selectedCount })}
+                </span>
               </div>
               <input
                 id="roi-langs"
@@ -70,31 +66,90 @@ export function ROICalculator() {
                 value={selectedCount}
                 onChange={(e) => setSelectedCount(Number(e.target.value))}
                 aria-label={t('features.landing.rOICalculator.numberOfDubbingLanguages2')}
-                className="w-full accent-brand-600"
+                className="mt-4 w-full accent-clay-500 dark:accent-clay-400"
               />
-              <div className="mt-1 flex justify-between text-xs text-surface-600 dark:text-surface-300"><span>1</span><span>10</span></div>
+              <div className="mt-1.5 flex justify-between font-mono text-[10.5px] text-ink-300 dark:text-ink-300">
+                <span>1</span><span>10</span>
+              </div>
             </div>
 
-            <div className="rounded-lg border border-brand-100 bg-brand-50 p-6 dark:border-brand-900/50 dark:bg-brand-900/20">
-              <div className="flex items-center gap-2 text-sm font-medium text-brand-700 dark:text-brand-400">
-                <TrendingUp className="h-4 w-4" />
-                {t('features.landing.rOICalculator.referenceEstimateForSelectedLanguages')}
+            {/* Result split */}
+            <div className="grid grid-cols-1 sm:grid-cols-[0.85fr_1.15fr]">
+              <div className="border-b border-paper-200 p-6 dark:border-paper-800 sm:border-b-0 sm:border-r">
+                <div className="flex items-center gap-2 text-[12px] font-medium text-ink-700 dark:text-ink-100">
+                  <TrendingUp className="h-3.5 w-3.5 text-clay-500 dark:text-clay-400" />
+                  <span className="break-keep">
+                    {t('features.landing.rOICalculator.referenceEstimateForSelectedLanguages')}
+                  </span>
+                </div>
+                {/* fixed-width container so digit-count changes never jitter the layout */}
+                <div className="mt-5">
+                  <span
+                    className="display-tight inline-block min-w-[6ch] text-left font-semibold tabular-nums text-clay-500 dark:text-clay-400"
+                    style={{ fontSize: 'clamp(48px, 7vw, 72px)', lineHeight: 1 }}
+                  >
+                    +{growthPct}%
+                  </span>
+                </div>
+                <p className="mt-5 break-keep text-[13px] leading-[1.6] text-ink-500 dark:text-ink-200">
+                  {t('features.landing.rOICalculator.from')}{' '}
+                  <span className="font-mono tabular-nums text-ink-900 dark:text-ink-50">{formatNumber(BASE_VIEWS)}</span>
+                  {t('features.landing.rOICalculator.monthlyViews')}{' '}
+                  {t('features.landing.rOICalculator.toAnEstimated')}{' '}
+                  <span className="font-mono font-semibold tabular-nums text-ink-900 dark:text-ink-50">{formatNumber(projectedViews)}</span>
+                  {t('features.landing.rOICalculator.views')}
+                </p>
               </div>
-              <div className="mt-2 text-5xl font-extrabold text-surface-900 dark:text-white">
-                +{growthPct}%
+
+              <div className="p-6">
+                <div className="mb-3 flex items-center gap-2 text-[12px] font-medium text-ink-700 dark:text-ink-100">
+                  <Globe2 className="h-3.5 w-3.5 text-clay-500 dark:text-clay-400" />
+                  <span className="whitespace-nowrap">
+                    {t('features.landing.rOICalculator.numberOfDubbingLanguages')}
+                  </span>
+                </div>
+                <ol className="space-y-2">
+                  {CUMULATIVE_LIFT.map((cumulative, index) => {
+                    const isActive = index < selectedCount
+                    // Cumulative reach up to this language count — the bar
+                    // grows as more languages are added, matching the "reach"
+                    // label intuitively (an increasing graph).
+                    const widthPct = Math.max(8, Math.round((cumulative / TOTAL_LIFT) * 100))
+                    const label = String(index + 1).padStart(2, '0')
+                    return (
+                      <li key={index} className="flex items-center gap-3">
+                        <span
+                          className={`inline-flex h-5 w-8 shrink-0 items-center justify-center rounded-[3px] border font-mono text-[10.5px] font-medium tabular-nums transition-colors ${
+                            isActive
+                              ? 'border-clay-500 bg-clay-500 text-paper-50 dark:border-clay-400 dark:bg-clay-400 dark:text-paper-950'
+                              : 'border-paper-300 bg-paper-100 text-ink-300 dark:border-paper-700 dark:bg-paper-800 dark:text-ink-300'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                        <div className="relative h-[10px] flex-1 overflow-hidden rounded-full bg-paper-200 dark:bg-paper-800">
+                          <div
+                            className={`h-full rounded-full transition-colors duration-300 ${
+                              isActive ? 'bg-clay-500 dark:bg-clay-400' : 'bg-paper-300 dark:bg-paper-700'
+                            }`}
+                            style={{ width: `${widthPct}%` }}
+                          />
+                        </div>
+                        <span
+                          className={`w-12 text-right font-mono text-[11px] tabular-nums ${
+                            isActive ? 'text-ink-900 dark:text-ink-50' : 'text-ink-300 dark:text-ink-300'
+                          }`}
+                        >
+                          +{Math.round(cumulative * 100)}%
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ol>
               </div>
-              <div className="mt-3 text-sm text-surface-600 dark:text-surface-400">
-                {t('features.landing.rOICalculator.from')}{' '}
-                <span className="font-semibold">{formatNumber(BASE_VIEWS)}{t('features.landing.rOICalculator.monthlyViews')}</span>{' '}
-                {t('features.landing.rOICalculator.toAnEstimated')}{' '}
-                <span className="font-semibold text-emerald-700 dark:text-emerald-400">{formatNumber(projectedViews)}{t('features.landing.rOICalculator.views')}</span>
-              </div>
-              <p className="mt-3 text-xs text-surface-600 dark:text-surface-300">
-                {t('features.landing.rOICalculator.thisIsAReferenceEstimateFromPublicCases')}
-              </p>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </section>
   )

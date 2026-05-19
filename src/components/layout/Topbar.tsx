@@ -38,7 +38,7 @@ export function Topbar({ isOpsAdmin = false }: TopbarProps = {}) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-surface-200 bg-white/80 px-6 backdrop-blur-md dark:border-surface-800 dark:bg-surface-900/80">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-paper-200 bg-paper-50/78 px-4 backdrop-blur-md dark:border-paper-800 dark:bg-paper-950/78 sm:px-6">
       <div />
 
       <div className="flex items-center gap-2">
@@ -48,11 +48,11 @@ export function Topbar({ isOpsAdmin = false }: TopbarProps = {}) {
         {user && (
           <div className="ml-2 flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <p className="max-w-48 truncate text-sm font-medium leading-snug text-surface-900 dark:text-white">
+              <p className="max-w-48 truncate text-sm font-medium leading-snug text-ink-900 dark:text-ink-50">
                 {accountName}
               </p>
               {subscriberLabel && (
-                <p className="whitespace-nowrap text-xs leading-snug text-surface-600 dark:text-surface-400">{subscriberLabel}</p>
+                <p className="whitespace-nowrap text-xs leading-snug text-ink-500 dark:text-ink-200">{subscriberLabel}</p>
               )}
             </div>
             {user.photoURL ? (
@@ -61,11 +61,11 @@ export function Topbar({ isOpsAdmin = false }: TopbarProps = {}) {
                 alt={accountName}
                 width={32}
                 height={32}
-                className="rounded-full object-cover"
+                className="rounded-full object-cover ring-1 ring-paper-200 dark:ring-paper-700"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-clay-500 text-sm font-bold text-white ring-1 ring-clay-200 dark:ring-clay-700">
                 {accountName[0].toUpperCase()}
               </div>
             )}

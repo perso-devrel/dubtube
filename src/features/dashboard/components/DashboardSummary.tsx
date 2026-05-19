@@ -37,7 +37,7 @@ export function DashboardSummary({ initialData }: DashboardSummaryProps) {
       label: t('features.dashboard.components.dashboardSummary.inProgress'),
       value: data ? Number(data.active_jobs) : 0,
       icon: Zap,
-      color: 'text-brand-500 bg-brand-50 dark:bg-brand-900/20',
+      color: 'text-clay-600 bg-clay-50 dark:bg-clay-800/35 dark:text-clay-200',
     },
   ]
 
@@ -45,12 +45,12 @@ export function DashboardSummary({ initialData }: DashboardSummaryProps) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map(({ label, value, icon: Icon, color }) => (
         <Card key={label} className="flex items-center gap-4">
-          <div className={`rounded-xl p-3 ${color}`}>
+          <div className={`rounded-lg p-3 ${color}`}>
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm text-surface-500 dark:text-surface-400">{label}</p>
-            <p className="whitespace-nowrap text-2xl font-bold text-surface-900 dark:text-white">{value}</p>
+            <p className="text-sm text-ink-500 dark:text-ink-200">{label}</p>
+            <p className="whitespace-nowrap text-2xl font-semibold text-ink-900 dark:text-ink-50">{value}</p>
           </div>
         </Card>
       ))}

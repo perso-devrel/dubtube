@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { LocaleLink } from '@/components/i18n/LocaleLink'
 import { useAuthStore } from '@/stores/authStore'
 import { signInWithGoogle } from '@/lib/google-auth'
 import { useNotificationStore } from '@/stores/notificationStore'
-import { Button } from '@/components/ui'
 import { AppLocaleSelect } from '@/components/layout/AppLocaleSelect'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
@@ -20,7 +18,6 @@ export function LandingNavBar() {
     setLoading(true)
     try {
       await signInWithGoogle({ returnTo: '/dashboard' })
-      // Page navigates to Google; control never returns here on success.
     } catch (err) {
       const message = err instanceof Error
         ? err.message
@@ -31,36 +28,35 @@ export function LandingNavBar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-surface-200/50 bg-white/80 backdrop-blur-md dark:border-surface-800/50 dark:bg-surface-950/80">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <LocaleLink href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logo.png"
-            alt="sub2tube"
-            width={36}
-            height={36}
-            className="rounded-lg"
-            priority
-          />
-          <span className="hidden text-lg font-bold text-surface-900 dark:text-surface-100 min-[360px]:inline">
-            sub<span className="text-brand-600 dark:text-brand-400">2tube</span>
+    <nav className="sticky top-0 z-50 border-b border-paper-200 bg-paper-50/95 backdrop-blur-[1px] dark:border-paper-800 dark:bg-paper-950/95">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
+        <LocaleLink href="/" className="group inline-flex items-baseline">
+          <span className="display-tight text-[17px] font-semibold tracking-tight text-ink-900 dark:text-ink-50">
+            sub<span className="text-clay-500 dark:text-clay-400">2tube</span>
           </span>
         </LocaleLink>
 
-        <div className="hidden items-center gap-6 md:flex">
-          <a href="#features" className="text-sm text-surface-700 hover:text-surface-950 dark:text-surface-300 dark:hover:text-white">{t('components.layout.landingNavBar.features')}</a>
-          <a href="#pricing" className="text-sm text-surface-700 hover:text-surface-950 dark:text-surface-300 dark:hover:text-white">{t('components.layout.landingNavBar.pricing')}</a>
-          <a href="#how-it-works" className="text-sm text-surface-700 hover:text-surface-950 dark:text-surface-300 dark:hover:text-white">{t('components.layout.landingNavBar.howItWorks')}</a>
+        <div className="hidden items-center gap-7 md:flex">
+          <a href="#how-it-works" className="text-[13px] text-ink-500 transition-colors hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
+            {t('components.layout.landingNavBar.howItWorks')}
+          </a>
+          <a href="#features" className="text-[13px] text-ink-500 transition-colors hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
+            {t('components.layout.landingNavBar.features')}
+          </a>
+          <a href="#pricing" className="text-[13px] text-ink-500 transition-colors hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
+            {t('components.layout.landingNavBar.pricing')}
+          </a>
         </div>
 
-        <div className="flex items-center gap-2">
-          <AppLocaleSelect className="w-28 sm:w-32" />
+        <div className="flex items-center gap-2.5">
+          <AppLocaleSelect className="w-24 sm:w-28" />
           {isAuthenticated ? (
-            <LocaleLink href="/dashboard">
-              <Button size="sm">
-                <span className="hidden sm:inline">{t('components.layout.landingNavBar.dashboard')}</span>
-                <span className="sm:hidden">{t('components.layout.landingNavBar.home')}</span>
-              </Button>
+            <LocaleLink
+              href="/dashboard"
+              className="inline-flex h-9 items-center rounded-md bg-ink-900 px-3.5 text-[13px] font-medium text-paper-50 transition-colors hover:bg-ink-700 dark:bg-paper-50 dark:text-ink-900 dark:hover:bg-paper-200"
+            >
+              <span className="hidden sm:inline">{t('components.layout.landingNavBar.dashboard')}</span>
+              <span className="sm:hidden">{t('components.layout.landingNavBar.home')}</span>
             </LocaleLink>
           ) : (
             <button
@@ -68,7 +64,7 @@ export function LandingNavBar() {
               onClick={handleGoogleLogin}
               disabled={loading}
               aria-label={t('components.layout.landingNavBar.startWithGoogle')}
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-[#747775] bg-white px-3 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#f8f9fa] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b57d0] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3] dark:hover:bg-[#1f1f1f]"
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-[#747775] bg-white px-3 text-[13px] font-medium text-[#1f1f1f] transition-colors hover:bg-[#f8f9fa] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b57d0] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3] dark:hover:bg-[#1f1f1f]"
             >
               {loading ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />

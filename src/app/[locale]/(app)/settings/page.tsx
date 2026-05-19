@@ -1,6 +1,7 @@
 'use client'
 
 import { SettingsClient } from '@/features/settings/components/SettingsClient'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
 export default function SettingsPage() {
@@ -8,14 +9,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white">
-          {t('app.app.settings.page.settings')}
-        </h1>
-        <p className="text-surface-500 dark:text-surface-400">
-          {t('app.app.settings.page.manageDisplayLanguageAndYouTubeDefaults')}
-        </p>
-      </div>
+      <PageHeader
+        title={t('app.app.settings.page.settings')}
+        description={t('app.app.settings.page.manageDisplayLanguageAndYouTubeDefaults')}
+      />
 
       <SettingsClient />
     </div>

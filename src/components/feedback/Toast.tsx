@@ -13,10 +13,10 @@ const icons: Record<ToastType, typeof CheckCircle2> = {
 }
 
 const styles: Record<ToastType, string> = {
-  success: 'border-emerald-200 bg-white dark:border-emerald-700 dark:bg-surface-900',
-  error: 'border-red-200 bg-white dark:border-red-700 dark:bg-surface-900',
-  info: 'border-blue-200 bg-white dark:border-blue-700 dark:bg-surface-900',
-  warning: 'border-amber-200 bg-white dark:border-amber-700 dark:bg-surface-900',
+  success: 'border-emerald-200 bg-paper-50 dark:border-emerald-700 dark:bg-paper-900',
+  error: 'border-red-200 bg-paper-50 dark:border-red-700 dark:bg-paper-900',
+  info: 'border-blue-200 bg-paper-50 dark:border-blue-700 dark:bg-paper-900',
+  warning: 'border-amber-200 bg-paper-50 dark:border-amber-700 dark:bg-paper-900',
 }
 
 const accentStyles: Record<ToastType, string> = {
@@ -59,7 +59,7 @@ export function ToastContainer() {
           <div
             key={toast.id}
             className={cn(
-              'pointer-events-auto relative flex w-full max-w-[560px] items-start gap-3 overflow-hidden rounded-lg border p-4 pl-5 shadow-2xl ring-1 ring-black/5 animate-slide-down dark:ring-white/10 sm:p-5 sm:pl-6',
+              'pointer-events-auto relative flex w-full max-w-[560px] items-start gap-3 overflow-hidden rounded-lg border p-4 pl-5 shadow-[0_20px_70px_-34px_rgb(20_19_15/0.72)] ring-1 ring-black/5 animate-slide-down dark:ring-white/10 sm:p-5 sm:pl-6',
               styles[toast.type],
             )}
           >
@@ -68,15 +68,15 @@ export function ToastContainer() {
               <Icon className={cn('h-5 w-5', iconColors[toast.type])} aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="break-words text-base font-semibold leading-6 text-surface-950 dark:text-surface-50">{toast.title}</p>
+              <p className="break-words text-base font-semibold leading-6 text-ink-900 dark:text-ink-50">{toast.title}</p>
               {toast.message && (
-                <p className="mt-1 break-words text-sm leading-6 text-surface-700 dark:text-surface-300">{toast.message}</p>
+                <p className="mt-1 break-words text-sm leading-6 text-ink-600 dark:text-ink-200">{toast.message}</p>
               )}
             </div>
             <button
               onClick={() => removeToast(toast.id)}
               aria-label={t('components.feedback.toast.closeNotification')}
-              className="shrink-0 rounded-md p-1 text-surface-500 hover:bg-surface-100 hover:text-surface-800 dark:text-surface-400 dark:hover:bg-surface-800 dark:hover:text-surface-100"
+              className="shrink-0 rounded-md p-1 text-ink-500 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>

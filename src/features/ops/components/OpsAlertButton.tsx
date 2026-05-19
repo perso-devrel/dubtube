@@ -27,7 +27,7 @@ export function OpsAlertButton() {
     >
       <Bell className="h-4.5 w-4.5" />
       {count > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-red-600 px-1 text-[10px] font-semibold leading-4 text-white">
+        <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-red-600 px-1 text-[10px] font-semibold leading-4 text-paper-50">
           {count > 9 ? '9+' : count}
         </span>
       )}

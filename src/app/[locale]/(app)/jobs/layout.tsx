@@ -6,6 +6,7 @@ import {
 } from '@/lib/i18n/metadata'
 import { ClientMessagesProvider } from '@/lib/i18n/clientMessages'
 import { uploadsMessages } from '@/lib/i18n/client-messages/uploads'
+import { batchMessages } from '@/lib/i18n/client-messages/batch'
 
 export async function generateMetadata({ params }: LocaleMetadataProps): Promise<Metadata> {
   const locale = await resolveMetadataLocale(params)
@@ -13,5 +14,5 @@ export async function generateMetadata({ params }: LocaleMetadataProps): Promise
 }
 
 export default function JobsLayout({ children }: { children: React.ReactNode }) {
-  return <ClientMessagesProvider messages={uploadsMessages}>{children}</ClientMessagesProvider>
+  return <ClientMessagesProvider messages={{ ...uploadsMessages, ...batchMessages }}>{children}</ClientMessagesProvider>
 }

@@ -24,13 +24,13 @@ interface RecentJobsProps {
 
 export function RecentJobs({ initialData }: RecentJobsProps) {
   const t = useLocaleText()
-  const { data: jobs } = useRecentJobs(initialData)
+  const { data: jobs } = useRecentJobs(initialData, 5)
 
   return (
     <Card>
       <div className="mb-4 flex items-center justify-between">
         <CardTitle>{t('features.dashboard.components.recentJobs.recentJobs')}</CardTitle>
-        <LocaleLink href="/jobs" aria-label={t('features.dashboard.components.recentJobs.viewAllRecentJobs')} className="text-sm text-brand-500 hover:text-brand-600">{t('features.dashboard.components.recentJobs.viewAll')}</LocaleLink>
+        <LocaleLink href="/jobs" aria-label={t('features.dashboard.components.recentJobs.viewAllRecentJobs')} className="text-sm font-medium text-clay-600 hover:text-clay-700 dark:text-clay-300 dark:hover:text-clay-200">{t('features.dashboard.components.recentJobs.viewAll')}</LocaleLink>
       </div>
 
       {!jobs || jobs.length === 0 ? (
@@ -49,13 +49,13 @@ export function RecentJobs({ initialData }: RecentJobsProps) {
             return (
               <div
                 key={job.id}
-                className="flex flex-col gap-3 rounded-lg border border-surface-100 p-3 dark:border-surface-800 sm:flex-row sm:items-center sm:gap-4"
+                className="flex flex-col gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800 sm:flex-row sm:items-center sm:gap-4"
               >
-                <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-md bg-surface-200 text-xs text-surface-500 dark:bg-surface-800 dark:text-surface-300">
+                <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-md bg-paper-200 text-xs text-ink-500 dark:bg-paper-800 dark:text-ink-200">
                   {formatDuration(job.video_duration_ms / 1000)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-surface-900 dark:text-white">
+                  <p className="truncate text-sm font-medium text-ink-900 dark:text-ink-50">
                     {job.video_title}
                   </p>
                   <div className="mt-1 flex flex-wrap gap-1">
@@ -63,7 +63,7 @@ export function RecentJobs({ initialData }: RecentJobsProps) {
                       <LanguageBadge key={lang} code={lang} />
                     ))}
                     {languages.length > 4 && (
-                      <span className="text-xs text-surface-500 dark:text-surface-300">+{languages.length - 4}</span>
+                      <span className="text-xs text-ink-500 dark:text-ink-200">+{languages.length - 4}</span>
                     )}
                   </div>
                 </div>

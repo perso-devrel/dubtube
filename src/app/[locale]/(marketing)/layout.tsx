@@ -10,7 +10,7 @@ export default function MarketingLayout({
 }) {
   return (
     <ClientMessagesProvider messages={marketingShellMessages}>
-      <div className="min-h-screen">
+      <div className="landing-root min-h-screen bg-paper-50 text-ink-900 dark:bg-paper-950 dark:text-ink-50">
         <LandingNavBar />
         {children}
         <LandingFooter />

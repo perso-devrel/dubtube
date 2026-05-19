@@ -1,6 +1,7 @@
 'use client'
 
-import { FileText, FileVideo, Languages, Upload } from 'lucide-react'
+import { FileVideo, Languages, FileText, Upload } from 'lucide-react'
+import { SectionHeading } from './_shared'
 import { useLocaleText } from '@/hooks/useLocaleText'
 
 const steps = [
@@ -34,33 +35,39 @@ export function HowItWorks() {
   const t = useLocaleText()
 
   return (
-    <section id="how-it-works" className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-          <div>
-            <h2 className="max-w-xl break-keep text-3xl font-semibold leading-tight text-surface-900 dark:text-white sm:text-4xl">
-              {t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
-            </h2>
-          </div>
-          <p className="max-w-2xl text-base leading-7 text-surface-600 dark:text-surface-300 lg:justify-self-end">
-            {t('features.landing.howItWorks.moveFromVideoSelectionToYouTubeUploadIn')}
-          </p>
-        </div>
+    <section id="how-it-works" className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <SectionHeading
+          kr="작동 방식"
+          en="Process"
+          title={t('features.landing.howItWorks.startMultilingualDubbingInFourSteps')}
+        />
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map(({ icon: Icon, step, title, description }) => (
-            <div
+        <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map(({ icon: Icon, step, title, description }, i) => (
+            <li
               key={step}
-              className="group relative min-h-64 rounded-2xl border border-surface-200 bg-white p-6 shadow-[0_1px_0_rgba(15,17,21,0.03)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_18px_50px_rgba(15,17,21,0.08)] dark:border-surface-800 dark:bg-surface-900 dark:hover:border-brand-800 dark:hover:shadow-black/20"
+              className="group relative flex min-h-[240px] flex-col rounded-xl border border-paper-200 bg-paper-50 p-6 shadow-[0_1px_0_rgba(20,19,15,0.03)] transition-colors hover:border-ink-900 dark:border-paper-800 dark:bg-paper-900 dark:shadow-[0_1px_0_rgba(0,0,0,0.2)] dark:hover:border-paper-200"
             >
-              <div className="mb-7 flex h-11 w-11 items-center justify-center rounded-lg border border-surface-200 bg-surface-50 text-brand-600 transition-colors group-hover:border-brand-200 group-hover:bg-brand-50 dark:border-surface-800 dark:bg-surface-850 dark:text-brand-400 dark:group-hover:border-brand-800 dark:group-hover:bg-brand-900/20">
-                <Icon className="h-5 w-5" />
+              <div className="flex items-start justify-between">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-paper-200 bg-paper-100 text-ink-700 transition-colors group-hover:border-clay-500 group-hover:bg-clay-500 group-hover:text-paper-50 dark:border-paper-800 dark:bg-paper-800 dark:text-ink-100 dark:group-hover:border-clay-400 dark:group-hover:bg-clay-400 dark:group-hover:text-paper-950">
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="font-mono text-[11px] tracking-wider text-ink-300 dark:text-ink-300">
+                  {step}
+                  {i < steps.length - 1 ? <span className="ml-1.5 text-ink-300/60 dark:text-ink-300/60">→</span> : null}
+                </span>
               </div>
-              <h3 className="break-keep text-lg font-semibold text-surface-900 dark:text-white">{t(title)}</h3>
-              <p className="mt-3 break-keep text-sm leading-6 text-surface-600 dark:text-surface-300">{t(description)}</p>
-            </div>
+
+              <h3 className="display-tight mt-8 break-keep text-[19px] font-medium leading-tight text-ink-900 dark:text-ink-50">
+                {t(title)}
+              </h3>
+              <p className="mt-2.5 break-keep text-[13.5px] leading-[1.6] text-ink-500 dark:text-ink-200">
+                {t(description)}
+              </p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   )

@@ -466,7 +466,7 @@ export function MetadataLocalizationTool() {
   return (
     <div className="space-y-6">
       {/* 모드 토글 */}
-      <div className="flex gap-1 rounded-lg bg-surface-100 p-1 dark:bg-surface-800" role="tablist">
+      <div className="flex gap-1 rounded-lg bg-paper-100 p-1 dark:bg-paper-800" role="tablist">
         <button
           type="button"
           role="tab"
@@ -475,8 +475,8 @@ export function MetadataLocalizationTool() {
           className={cn(
             'flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-ring',
             mode === 'new'
-              ? 'bg-white text-surface-900 shadow-sm dark:bg-surface-700 dark:text-white'
-              : 'text-surface-600 hover:text-surface-800 dark:text-surface-300 dark:hover:text-surface-100',
+              ? 'bg-paper-50 text-ink-900 shadow-sm dark:bg-paper-700 dark:text-ink-50'
+              : 'text-ink-500 hover:text-ink-700 dark:text-ink-200 dark:hover:text-ink-50',
           )}
         >
           <FileVideo className="h-4 w-4" />
@@ -490,8 +490,8 @@ export function MetadataLocalizationTool() {
           className={cn(
             'flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-ring',
             mode === 'existing'
-              ? 'bg-white text-surface-900 shadow-sm dark:bg-surface-700 dark:text-white'
-              : 'text-surface-600 hover:text-surface-800 dark:text-surface-300 dark:hover:text-surface-100',
+              ? 'bg-paper-50 text-ink-900 shadow-sm dark:bg-paper-700 dark:text-ink-50'
+              : 'text-ink-500 hover:text-ink-700 dark:text-ink-200 dark:hover:text-ink-50',
           )}
         >
           <RefreshCw className="h-4 w-4" />
@@ -504,7 +504,7 @@ export function MetadataLocalizationTool() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <CardTitle>{t('features.metadata.components.metadataLocalizationTool.selectAYouTubeVideo')}</CardTitle>
-              <p className="mt-1 text-sm text-surface-600 dark:text-surface-300">
+              <p className="mt-1 text-sm text-ink-500 dark:text-ink-200">
                 {t('features.metadata.components.metadataLocalizationTool.loadTheTitleDescriptionAndExistingTranslationsFor')}
               </p>
             </div>
@@ -527,13 +527,13 @@ export function MetadataLocalizationTool() {
           <div className="grid gap-3 md:grid-cols-[1fr_auto]">
             <div className="space-y-3">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-400" />
                 <input
                   type="text"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={t('features.metadata.components.metadataLocalizationTool.searchByVideoTitle')}
-                  className="h-10 w-full rounded-lg border border-surface-300 bg-white pl-9 pr-3 text-sm text-surface-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-800 dark:text-white"
+                  className="h-10 w-full rounded-lg border border-paper-300 bg-paper-50 pl-9 pr-3 text-sm text-ink-900 focus:border-clay-500 focus:outline-none focus:ring-1 focus:ring-clay-500 dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50"
                 />
               </div>
               <Select
@@ -583,7 +583,7 @@ export function MetadataLocalizationTool() {
         <Card>
           <div className="mb-5">
             <CardTitle>{t('features.metadata.components.metadataLocalizationTool.selectAVideoFile')}</CardTitle>
-            <p className="mt-1 text-sm text-surface-600 dark:text-surface-300">
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-200">
               {t('features.metadata.components.metadataLocalizationTool.selectAVideoFileToUploadMultilingualTitles')}
             </p>
           </div>
@@ -593,26 +593,26 @@ export function MetadataLocalizationTool() {
             className={cn(
               'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors',
               videoFile
-                ? 'border-brand-300 bg-brand-50 dark:border-brand-700 dark:bg-brand-900/20'
-                : 'border-surface-300 hover:border-brand-300 hover:bg-surface-50 dark:border-surface-700 dark:hover:border-brand-700 dark:hover:bg-surface-800',
+                ? 'border-clay-300 bg-clay-50 dark:border-clay-700 dark:bg-clay-800/20'
+                : 'border-paper-300 hover:border-clay-300 hover:bg-paper-100 dark:border-paper-700 dark:hover:border-clay-700 dark:hover:bg-paper-800',
             )}
           >
-            <FileVideo className="h-8 w-8 text-surface-400" />
+            <FileVideo className="h-8 w-8 text-paper-400" />
             {videoFile ? (
               <>
-                <span className="text-sm font-medium text-surface-900 dark:text-white">
+                <span className="text-sm font-medium text-ink-900 dark:text-ink-50">
                   {videoFile.name}
                 </span>
-                <span className="text-xs text-surface-500 dark:text-surface-300">
+                <span className="text-xs text-ink-500 dark:text-ink-200">
                   {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
                 </span>
               </>
             ) : (
               <>
-                <span className="text-sm font-medium text-surface-700 dark:text-surface-200">
+                <span className="text-sm font-medium text-ink-600 dark:text-ink-100">
                   {t('features.metadata.components.metadataLocalizationTool.selectAVideoFile2')}
                 </span>
-                <span className="text-xs text-surface-500 dark:text-surface-300">
+                <span className="text-xs text-ink-500 dark:text-ink-200">
                   {t('features.metadata.components.metadataLocalizationTool.videoFormatsSupportedByYouTubeSuchAsMp4')}
                 </span>
               </>
@@ -628,7 +628,7 @@ export function MetadataLocalizationTool() {
               }}
             />
           </label>
-          <p className="mt-3 text-xs text-surface-500 dark:text-surface-300">
+          <p className="mt-3 text-xs text-ink-500 dark:text-ink-200">
             {t('features.metadata.components.metadataLocalizationTool.videosAreUploadedAsPrivateByDefaultReview')}
           </p>
         </Card>
@@ -637,12 +637,12 @@ export function MetadataLocalizationTool() {
       {((mode === 'existing' && metadataLoaded) || (mode === 'new' && videoFile)) && (
       <Card>
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-clay-50 text-clay-600 dark:bg-clay-800/20 dark:text-clay-200">
             <Languages className="h-5 w-5" />
           </div>
           <div>
             <CardTitle>{t('features.metadata.components.metadataLocalizationTool.titleAndDescriptionTranslation')}</CardTitle>
-            <p className="mt-1 text-sm text-surface-600 dark:text-surface-300">
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-200">
               {mode === 'new'
                 ? t('features.metadata.components.metadataLocalizationTool.generateTranslatedTitlesAndDescriptionsForUpload')
                 : t('features.metadata.components.metadataLocalizationTool.generateTranslationsForYouTubeMultilingualTitlesAndDescriptions')}
@@ -683,7 +683,7 @@ export function MetadataLocalizationTool() {
             placeholder={t('features.metadata.components.metadataLocalizationTool.youTubeTitle')}
           />
           <div>
-            <label htmlFor="metadata-source-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+            <label htmlFor="metadata-source-description" className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
               {t('features.metadata.components.metadataLocalizationTool.sourceDescription')}
             </label>
             <textarea
@@ -692,7 +692,7 @@ export function MetadataLocalizationTool() {
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder={t('features.metadata.components.metadataLocalizationTool.youTubeDescription')}
-              className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+              className="w-full resize-none rounded-lg border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-500 transition-colors focus-ring dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50 dark:placeholder:text-paper-400"
             />
           </div>
           {mode === 'new' && (
@@ -704,20 +704,20 @@ export function MetadataLocalizationTool() {
                 onBlur={commitTags}
                 placeholder={t('features.metadata.components.metadataLocalizationTool.commaSeparatedEGGamingVlog')}
               />
-              <p className="mt-1.5 text-xs text-surface-500 dark:text-surface-300">
+              <p className="mt-1.5 text-xs text-ink-500 dark:text-ink-200">
                 {t('features.metadata.components.metadataLocalizationTool.defaultTagsAreAppliedChangeThemForThis')}
               </p>
             </div>
           )}
         </div>
 
-        <div className="mt-4 rounded-lg bg-surface-50 p-3 dark:bg-surface-800/60">
+        <div className="mt-4 rounded-lg bg-paper-100 p-3 dark:bg-paper-800/60">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-surface-800 dark:text-surface-100">
+              <p className="text-sm font-medium text-ink-700 dark:text-ink-50">
                 {t(selectedPreset.labelKey)}
               </p>
-              <p className="text-xs text-surface-500 dark:text-surface-300">
+              <p className="text-xs text-ink-500 dark:text-ink-200">
                 {t(selectedPreset.descriptionKey)}
               </p>
             </div>
@@ -738,22 +738,22 @@ export function MetadataLocalizationTool() {
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 transition',
                     selected
-                      ? 'bg-brand-50 text-brand-700 ring-brand-300 dark:bg-brand-900/30 dark:text-brand-200 dark:ring-brand-800'
+                      ? 'bg-clay-50 text-clay-700 ring-clay-300 dark:bg-clay-800/30 dark:text-clay-200 dark:ring-clay-800'
                       : alreadyTranslated
-                        ? 'bg-surface-100 text-surface-600 ring-surface-200 dark:bg-surface-800 dark:text-surface-300 dark:ring-surface-700'
-                        : 'bg-white text-surface-600 ring-surface-200 hover:bg-surface-50 dark:bg-surface-900 dark:text-surface-300 dark:ring-surface-700 dark:hover:bg-surface-800',
+                        ? 'bg-paper-100 text-ink-500 ring-paper-200 dark:bg-paper-800 dark:text-ink-200 dark:ring-paper-700'
+                        : 'bg-paper-50 text-ink-500 ring-paper-200 hover:bg-paper-100 dark:bg-paper-900 dark:text-ink-200 dark:ring-paper-700 dark:hover:bg-paper-800',
                     disabled && 'cursor-not-allowed',
                   )}
                 >
                   {selected && <Check className="h-3 w-3" />}
-                  {alreadyTranslated && <Check className="h-3 w-3 text-surface-500 dark:text-surface-300" />}
+                  {alreadyTranslated && <Check className="h-3 w-3 text-ink-500 dark:text-ink-200" />}
                   {language.flag} {isEnglish ? language.name : language.nativeName}
                 </button>
               )
             })}
           </div>
           {mode === 'existing' && existingLocalizationLangs.size > 0 && (
-            <p className="mt-2 text-xs text-surface-500 dark:text-surface-300">
+            <p className="mt-2 text-xs text-ink-500 dark:text-ink-200">
               {t('features.metadata.components.metadataLocalizationTool.valueExistingTranslationsCannotBeSelected', { existingLocalizationLangsSize: existingLocalizationLangs.size })}
             </p>
           )}
@@ -795,7 +795,7 @@ export function MetadataLocalizationTool() {
         <Card>
           <div className="mb-5">
             <CardTitle>{t('features.metadata.components.metadataLocalizationTool.reviewTranslations')}</CardTitle>
-            <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+            <p className="mt-1 text-sm text-ink-500 dark:text-paper-400">
               {t('features.metadata.components.metadataLocalizationTool.editTitlesAndDescriptionsBeforeApplyingThem')}
             </p>
           </div>
@@ -805,13 +805,13 @@ export function MetadataLocalizationTool() {
               const language = getLanguageByCode(code) ?? getLanguageByCode(code.split('-')[0])
               const isPreExisting = mode === 'existing' && existingLocalizationLangs.has(code)
               return (
-                <div key={code} className="rounded-lg border border-surface-200 p-4 dark:border-surface-800">
+                <div key={code} className="rounded-lg border border-paper-200 p-4 dark:border-paper-800">
                   <div className="mb-3 flex items-center gap-2">
                     <span className="text-lg">{language?.flag}</span>
-                    <span className="font-medium text-surface-900 dark:text-white">
+                    <span className="font-medium text-ink-900 dark:text-ink-50">
                       {language ? (isEnglish ? language.name : language.nativeName) : code}
                     </span>
-                    <span className="text-xs text-surface-500 dark:text-surface-400">{toBcp47(code)}</span>
+                    <span className="text-xs text-ink-500 dark:text-paper-400">{toBcp47(code)}</span>
                     {isPreExisting && (
                       <Badge variant="default">{t('features.metadata.components.metadataLocalizationTool.existingYouTubeTranslation')}</Badge>
                     )}
@@ -823,14 +823,14 @@ export function MetadataLocalizationTool() {
                       onChange={(event) => updateTranslation(code, { title: event.target.value })}
                     />
                     <div>
-                      <label className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                      <label className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
                         {t('features.metadata.components.metadataLocalizationTool.description')}
                       </label>
                       <textarea
                         rows={4}
                         value={value.description}
                         onChange={(event) => updateTranslation(code, { description: event.target.value })}
-                        className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100"
+                        className="w-full resize-none rounded-lg border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 transition-colors focus-ring dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50"
                       />
                     </div>
                   </div>
@@ -849,17 +849,17 @@ export function MetadataLocalizationTool() {
           size="lg"
         >
           <div className="space-y-5">
-            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
-              <p className="text-xs font-medium text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.channel')}</p>
-              <p className="mt-1 text-sm text-surface-900 dark:text-surface-100">
+            <div className="rounded-lg border border-paper-200 p-3 dark:border-paper-800">
+              <p className="text-xs font-medium text-ink-500 dark:text-paper-400">{t('features.metadata.components.metadataLocalizationTool.channel')}</p>
+              <p className="mt-1 text-sm text-ink-900 dark:text-ink-50">
                 {channel
                   ? t('features.metadata.components.metadataLocalizationTool.valueValueSubscribers', { channelTitle: channel.title, channelSubscriberCountToLocaleStringKoKR: channel.subscriberCount.toLocaleString('ko-KR'), channelSubscriberCountToLocaleStringEnUS: channel.subscriberCount.toLocaleString('en-US') })
                   : t('features.metadata.components.metadataLocalizationTool.noConnectedChannelInformation')}
               </p>
             </div>
 
-            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
-              <p className="text-xs font-medium text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.targetLanguagesValue', { ObjectKeysTranslationsLength: Object.keys(translations).length })}</p>
+            <div className="rounded-lg border border-paper-200 p-3 dark:border-paper-800">
+              <p className="text-xs font-medium text-ink-500 dark:text-paper-400">{t('features.metadata.components.metadataLocalizationTool.targetLanguagesValue', { ObjectKeysTranslationsLength: Object.keys(translations).length })}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {Object.keys(translations).map((code) => {
                   const lang = getLanguageByCode(code) ?? getLanguageByCode(code.split('-')[0])
@@ -872,17 +872,17 @@ export function MetadataLocalizationTool() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
-              <p className="text-xs font-medium text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.tags2')}</p>
-              <p className="mt-1 text-sm text-surface-900 dark:text-surface-100">
-                {uploadTagsPreview.length > 0 ? uploadTagsPreview.join(', ') : <span className="text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.none')}</span>}
+            <div className="rounded-lg border border-paper-200 p-3 dark:border-paper-800">
+              <p className="text-xs font-medium text-ink-500 dark:text-paper-400">{t('features.metadata.components.metadataLocalizationTool.tags2')}</p>
+              <p className="mt-1 text-sm text-ink-900 dark:text-ink-50">
+                {uploadTagsPreview.length > 0 ? uploadTagsPreview.join(', ') : <span className="text-ink-500 dark:text-paper-400">{t('features.metadata.components.metadataLocalizationTool.none')}</span>}
               </p>
             </div>
 
-            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <div className="rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <div className="mb-3 flex min-w-0 items-start gap-2">
-                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
-                <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.uploadOptions}</p>
+                <Tag className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-400" />
+                <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{uploadText.uploadOptions}</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Select
@@ -908,14 +908,14 @@ export function MetadataLocalizationTool() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                  <label className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
                     {uploadText.thumbnailFile}
                   </label>
                   <input
                     type="file"
                     accept="image/png,image/jpeg"
                     onChange={(e) => setUploadThumbnailFile(e.target.files?.[0] ?? null)}
-                    className="block w-full text-sm text-surface-700 file:mr-3 file:rounded-md file:border-0 file:bg-surface-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-surface-700 hover:file:bg-surface-300 dark:text-surface-300 dark:file:bg-surface-700 dark:file:text-surface-100 dark:hover:file:bg-surface-600"
+                    className="block w-full text-sm text-ink-600 file:mr-3 file:rounded-md file:border-0 file:bg-paper-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink-600 hover:file:bg-paper-300 dark:text-ink-200 dark:file:bg-paper-700 dark:file:text-ink-50 dark:hover:file:bg-paper-600"
                   />
                 </div>
               </div>
@@ -933,21 +933,21 @@ export function MetadataLocalizationTool() {
               ]}
             />
             {uploadHasPublishSchedule && (
-              <p className="-mt-3 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-3 text-xs text-ink-500 dark:text-ink-200">
                 {uploadText.scheduledPrivate}
               </p>
             )}
-            <p className="-mt-3 text-xs text-surface-500 dark:text-surface-300">
+            <p className="-mt-3 text-xs text-ink-500 dark:text-ink-200">
               {t('features.metadata.components.metadataLocalizationTool.theDefaultIsAppliedChangeItForThis')}
             </p>
 
-            <div className="rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <div className="rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-2">
-                  <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+                  <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-400" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.schedulePublish}</p>
-                    <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-400">{uploadText.scheduleDescription}</p>
+                    <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{uploadText.schedulePublish}</p>
+                    <p className="mt-1 text-xs leading-5 text-ink-500 dark:text-paper-400">{uploadText.scheduleDescription}</p>
                   </div>
                 </div>
                 <Toggle checked={uploadHasPublishSchedule} onChange={handlePublishScheduleToggle} />
@@ -979,44 +979,44 @@ export function MetadataLocalizationTool() {
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <div className="flex min-w-0 items-start gap-2">
-                <Bell className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
-                <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.notifySubscribers}</p>
+                <Bell className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-400" />
+                <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{uploadText.notifySubscribers}</p>
               </div>
               <Toggle checked={uploadNotifySubscribers} onChange={setUploadNotifySubscribers} />
             </div>
 
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 flex-shrink-0 text-surface-400" />
-                  <p className="text-sm font-medium text-surface-900 dark:text-white">{t('features.metadata.components.metadataLocalizationTool.madeForKids')}</p>
+                  <ShieldCheck className="h-4 w-4 flex-shrink-0 text-paper-400" />
+                  <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{t('features.metadata.components.metadataLocalizationTool.madeForKids')}</p>
                 </div>
-                <p className="text-xs leading-5 text-surface-500 dark:text-surface-400">{t('features.metadata.components.metadataLocalizationTool.setThisAccordingToYouTubeMadeForKids')}</p>
+                <p className="text-xs leading-5 text-ink-500 dark:text-paper-400">{t('features.metadata.components.metadataLocalizationTool.setThisAccordingToYouTubeMadeForKids')}</p>
               </div>
               <Toggle checked={uploadMadeForKids} onChange={setUploadMadeForKids} />
             </div>
 
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <p className="text-sm font-medium text-surface-900 dark:text-white">{uploadText.syntheticMedia}</p>
+                  <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{uploadText.syntheticMedia}</p>
                 </div>
-                <p className="text-xs leading-5 text-surface-500 dark:text-surface-400">{uploadText.syntheticMediaDescription}</p>
+                <p className="text-xs leading-5 text-ink-500 dark:text-paper-400">{uploadText.syntheticMediaDescription}</p>
               </div>
               <Toggle checked={uploadContainsSyntheticMedia} onChange={setUploadContainsSyntheticMedia} />
             </div>
 
-            <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+            <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
               <input
                 type="checkbox"
                 checked={uploadConfirmed}
                 onChange={(e) => setUploadConfirmed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-surface-300 text-brand-600 focus-ring"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-paper-300 text-clay-600 focus-ring"
               />
-              <span className="text-sm leading-6 text-surface-700 dark:text-surface-300">
+              <span className="text-sm leading-6 text-ink-600 dark:text-ink-200">
                 {t('features.metadata.components.metadataLocalizationTool.iReviewedTheSettingsAndWantToUpload')}
               </span>
             </label>

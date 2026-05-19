@@ -109,13 +109,13 @@ function ScriptRow({
   }, [dirty, handleSave, projectSeq, sentence.audioSentenceSeq, sentence.editedTranslatedText, addToast, t])
 
   return (
-    <div className="space-y-2 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-surface-500 dark:text-surface-300">
+    <div className="space-y-2 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-500 dark:text-ink-200">
         <span className="font-mono">
           {formatShortTime(sentence.startMs)} <span aria-hidden="true">→</span> {formatShortTime(sentence.endMs)}
         </span>
         {sentence.speakerLabel && (
-          <span className="rounded bg-surface-100 px-1.5 py-0.5 dark:bg-surface-800">
+          <span className="rounded bg-paper-100 px-1.5 py-0.5 dark:bg-paper-800">
             {sentence.speakerLabel}
           </span>
         )}
@@ -125,7 +125,7 @@ function ScriptRow({
           </Badge>
         )}
       </div>
-      <p className="text-xs italic text-surface-500 dark:text-surface-300">&ldquo;{sentence.originalText}&rdquo;</p>
+      <p className="text-xs italic text-ink-500 dark:text-ink-200">&ldquo;{sentence.originalText}&rdquo;</p>
       <textarea
         value={sentence.editedTranslatedText}
         onChange={(e) =>
@@ -133,7 +133,7 @@ function ScriptRow({
         }
         rows={2}
         disabled={disabled}
-        className="w-full resize-none rounded-md border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-700 dark:bg-surface-900 dark:text-white"
+        className="w-full resize-none rounded-md border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 focus:border-clay-500 focus:outline-none focus:ring-1 focus:ring-clay-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-50"
       />
       {ENABLE_SENTENCE_LEVEL_AUDIO_REGENERATION && (
         <div className="flex justify-end gap-2">
@@ -203,7 +203,7 @@ function SrtRow({
   }, [startStr, endStr, cue.id, onPatch, onValidityChange, t])
 
   return (
-    <div className="space-y-2 rounded-lg border border-surface-200 p-3 dark:border-surface-800">
+    <div className="space-y-2 rounded-lg border border-paper-200 p-3 dark:border-paper-800">
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <input
           type="text"
@@ -212,9 +212,9 @@ function SrtRow({
           onBlur={validateAndPatchTiming}
           disabled={disabled}
           aria-invalid={Boolean(timeError)}
-          className="w-32 rounded border border-surface-300 bg-white px-2 py-0.5 font-mono text-xs text-surface-700 focus:border-brand-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300"
+          className="w-32 rounded border border-paper-300 bg-paper-50 px-2 py-0.5 font-mono text-xs text-ink-600 focus:border-clay-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-200"
         />
-        <span className="text-surface-500 dark:text-surface-300" aria-hidden="true">→</span>
+        <span className="text-ink-500 dark:text-ink-200" aria-hidden="true">→</span>
         <input
           type="text"
           value={endStr}
@@ -222,7 +222,7 @@ function SrtRow({
           onBlur={validateAndPatchTiming}
           disabled={disabled}
           aria-invalid={Boolean(timeError)}
-          className="w-32 rounded border border-surface-300 bg-white px-2 py-0.5 font-mono text-xs text-surface-700 focus:border-brand-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300"
+          className="w-32 rounded border border-paper-300 bg-paper-50 px-2 py-0.5 font-mono text-xs text-ink-600 focus:border-clay-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-200"
         />
       </div>
       {timeError && (
@@ -235,7 +235,7 @@ function SrtRow({
         onChange={(e) => onPatch(cue.id, { text: e.target.value })}
         rows={2}
         disabled={disabled}
-        className="w-full resize-none rounded-md border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-700 dark:bg-surface-900 dark:text-white"
+        className="w-full resize-none rounded-md border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 focus:border-clay-500 focus:outline-none focus:ring-1 focus:ring-clay-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-50"
       />
     </div>
   )
@@ -563,15 +563,15 @@ export function SubtitleScriptEditor({
   }, [youtubeVideoId, hasInvalidCaptionTiming, buildCurrentSrt, langCode, addToast, t])
 
   return (
-    <div className="rounded-lg border border-surface-200 dark:border-surface-800">
+    <div className="rounded-lg border border-paper-200 dark:border-paper-800">
       <button
         type="button"
         onClick={handleToggle}
-        className="flex w-full cursor-pointer items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/50"
+        className="flex w-full cursor-pointer items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-paper-100 dark:hover:bg-paper-800/50"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{lang?.flag}</span>
-          <span className="text-sm font-medium text-surface-900 dark:text-white">
+          <span className="text-sm font-medium text-ink-900 dark:text-ink-50">
             {t(
               allowDialogueEditing
                 ? 'features.dubbing.components.subtitleScriptEditor.valueCaptionsAndDialogue'
@@ -586,26 +586,26 @@ export function SubtitleScriptEditor({
           )}
         </div>
         {scriptLoading || srtLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin text-surface-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-paper-400" />
         ) : open ? (
-          <ChevronUp className="h-4 w-4 text-surface-400" />
+          <ChevronUp className="h-4 w-4 text-paper-400" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-surface-400" />
+          <ChevronDown className="h-4 w-4 text-paper-400" />
         )}
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-surface-200 p-3 dark:border-surface-800">
+        <div className="space-y-4 border-t border-paper-200 p-3 dark:border-paper-800">
           {allowDialogueEditing && (
-            <div className="inline-flex rounded-lg border border-surface-200 bg-surface-50 p-1 dark:border-surface-800 dark:bg-surface-900">
+            <div className="inline-flex rounded-lg border border-paper-200 bg-paper-100 p-1 dark:border-paper-800 dark:bg-paper-900">
               <button
                 type="button"
                 onClick={() => handleTabChange('dialogue')}
                 className={cn(
                   'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                   visibleTab === 'dialogue'
-                    ? 'bg-white text-surface-900 shadow-sm dark:bg-surface-800 dark:text-white'
-                    : 'text-surface-500 hover:text-surface-900 dark:text-surface-300 dark:hover:text-white',
+                    ? 'bg-paper-50 text-ink-900 shadow-sm dark:bg-paper-800 dark:text-ink-50'
+                    : 'text-ink-500 hover:text-ink-900 dark:text-ink-200 dark:hover:text-paper-50',
                 )}
               >
                 {t('features.dubbing.components.subtitleScriptEditor.dialogueTab')}
@@ -616,8 +616,8 @@ export function SubtitleScriptEditor({
                 className={cn(
                   'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                   visibleTab === 'captions'
-                    ? 'bg-white text-surface-900 shadow-sm dark:bg-surface-800 dark:text-white'
-                    : 'text-surface-500 hover:text-surface-900 dark:text-surface-300 dark:hover:text-white',
+                    ? 'bg-paper-50 text-ink-900 shadow-sm dark:bg-paper-800 dark:text-ink-50'
+                    : 'text-ink-500 hover:text-ink-900 dark:text-ink-200 dark:hover:text-paper-50',
                 )}
               >
                 {t('features.dubbing.components.subtitleScriptEditor.captionsTab')}
@@ -626,21 +626,21 @@ export function SubtitleScriptEditor({
           )}
 
           {showPreviewVideoLoading ? (
-            <div className="rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-800 dark:bg-surface-900/50">
-              <div className="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-300">
+            <div className="rounded-lg border border-paper-200 bg-paper-100 p-3 dark:border-paper-800 dark:bg-paper-900/50">
+              <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-200">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 {t('features.dubbing.components.subtitleScriptEditor.videoPreview')}
               </div>
             </div>
           ) : effectivePreviewVideoUrl ? (
-            <div className="rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-800 dark:bg-surface-900/50">
+            <div className="rounded-lg border border-paper-200 bg-paper-100 p-3 dark:border-paper-800 dark:bg-paper-900/50">
               <div className="mb-3 flex min-w-0 items-start gap-2">
-                <Video className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                <p className="text-sm font-medium text-surface-900 dark:text-white">
+                <Video className="mt-0.5 h-4 w-4 shrink-0 text-clay-600" />
+                <p className="text-sm font-medium text-ink-900 dark:text-ink-50">
                   {t('features.dubbing.components.subtitleScriptEditor.videoPreview')}
                 </p>
               </div>
-              <div className="aspect-video w-full max-w-xl overflow-hidden rounded-lg border border-surface-200 bg-black dark:border-surface-700">
+              <div className="aspect-video w-full max-w-xl overflow-hidden rounded-lg border border-paper-200 bg-black dark:border-paper-700">
                 <video controls preload="metadata" className="h-full w-full" src={effectivePreviewVideoUrl}>
                   <track kind="captions" />
                 </video>
@@ -650,7 +650,7 @@ export function SubtitleScriptEditor({
                   href={youtubeWatchUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-surface-300 bg-white px-3 text-sm font-medium text-surface-700 transition-all duration-200 hover:bg-surface-100 focus-ring dark:border-surface-700 dark:bg-transparent dark:text-surface-300 dark:hover:bg-surface-800"
+                  className="mt-3 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-paper-300 bg-paper-50 px-3 text-sm font-medium text-ink-600 transition-all duration-200 hover:bg-paper-100 focus-ring dark:border-paper-700 dark:bg-transparent dark:text-ink-200 dark:hover:bg-paper-800"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   {t('features.dubbing.components.subtitleScriptEditor.openInYouTube')}
@@ -662,23 +662,23 @@ export function SubtitleScriptEditor({
           {allowDialogueEditing && visibleTab === 'dialogue' && (
             <section className="space-y-3">
               <div>
-                <h4 className="text-sm font-semibold text-surface-900 dark:text-white">
+                <h4 className="text-sm font-semibold text-ink-900 dark:text-ink-50">
                   {t('features.dubbing.components.subtitleScriptEditor.editDialogue')}
                 </h4>
-                <p className="mt-1 text-xs text-surface-500 dark:text-surface-300">
+                <p className="mt-1 text-xs text-ink-500 dark:text-ink-200">
                   {t('features.dubbing.components.subtitleScriptEditor.editDialogueThenApplyToRegenerateLanguageAudio')}
                 </p>
               </div>
 
               {scriptLoading && (
-                <div className="flex items-center gap-2 py-4 text-sm text-surface-500 dark:text-surface-300">
+                <div className="flex items-center gap-2 py-4 text-sm text-ink-500 dark:text-ink-200">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   {t('features.dubbing.components.subtitleScriptEditor.loadingDialogue')}
                 </div>
               )}
 
               {!scriptLoading && sentences && sentences.length === 0 && (
-                <p className="py-2 text-xs text-surface-500 dark:text-surface-300">
+                <p className="py-2 text-xs text-ink-500 dark:text-ink-200">
                   {t('features.dubbing.components.subtitleScriptEditor.noLinesToShow')}
                 </p>
               )}
@@ -698,14 +698,14 @@ export function SubtitleScriptEditor({
               )}
 
               {sentences && sentences.length > 0 && (
-                <div className="flex flex-col gap-2 rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-800 dark:bg-surface-900/50 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2 rounded-lg border border-paper-200 bg-paper-100 p-3 dark:border-paper-800 dark:bg-paper-900/50 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-surface-900 dark:text-white">
+                    <p className="text-sm font-medium text-ink-900 dark:text-ink-50">
                       {dirtySentenceCount > 0
                         ? t('features.dubbing.components.subtitleScriptEditor.dialogueChangesValue', { count: dirtySentenceCount })
                         : t('features.dubbing.components.subtitleScriptEditor.noDialogueChanges')}
                     </p>
-                    <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-300">
+                    <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-200">
                       {t('features.dubbing.components.subtitleScriptEditor.applyRegeneratesThisLanguageAudio')}
                     </p>
                   </div>
@@ -736,23 +736,23 @@ export function SubtitleScriptEditor({
           {visibleTab === 'captions' && (
             <section className="space-y-3">
               <div>
-                <h4 className="text-sm font-semibold text-surface-900 dark:text-white">
+                <h4 className="text-sm font-semibold text-ink-900 dark:text-ink-50">
                   {t('features.dubbing.components.subtitleScriptEditor.editCaptionFile')}
                 </h4>
-                <p className="mt-1 text-xs text-surface-500 dark:text-surface-300">
+                <p className="mt-1 text-xs text-ink-500 dark:text-ink-200">
                   {t('features.dubbing.components.subtitleScriptEditor.editTheGeneratedCaptionTextAndTimingThese')}
                 </p>
               </div>
 
               {srtLoading && (
-                <div className="flex items-center gap-2 py-4 text-sm text-surface-500 dark:text-surface-300">
+                <div className="flex items-center gap-2 py-4 text-sm text-ink-500 dark:text-ink-200">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   {t('features.dubbing.components.subtitleScriptEditor.loadingCaptions')}
                 </div>
               )}
 
               {!srtLoading && cues && cues.length === 0 && (
-                <p className="py-2 text-xs text-surface-500 dark:text-surface-300">
+                <p className="py-2 text-xs text-ink-500 dark:text-ink-200">
                   {t('features.dubbing.components.subtitleScriptEditor.theCaptionFileIsEmpty')}
                 </p>
               )}
@@ -776,12 +776,12 @@ export function SubtitleScriptEditor({
                   readOnly
                   value={srtPreview}
                   rows={12}
-                  className="w-full resize-y rounded-md border border-surface-300 bg-surface-50 px-3 py-2 font-mono text-xs text-surface-700 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300"
+                  className="w-full resize-y rounded-md border border-paper-300 bg-paper-100 px-3 py-2 font-mono text-xs text-ink-600 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-200"
                 />
               )}
 
               {cues && cues.length > 0 && (
-                <div className="space-y-2 rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-800 dark:bg-surface-900/50">
+                <div className="space-y-2 rounded-lg border border-paper-200 bg-paper-100 p-3 dark:border-paper-800 dark:bg-paper-900/50">
                   {hasInvalidCaptionTiming && (
                     <p className="text-xs text-red-600 dark:text-red-400">
                       {t('features.dubbing.components.subtitleScriptEditor.fixCaptionTimingBeforeExport')}

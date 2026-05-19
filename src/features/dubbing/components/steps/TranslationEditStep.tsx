@@ -146,10 +146,10 @@ export function TranslationEditStep() {
           립싱크 UI는 임시 숨김 상태이며, 기능 복구 시 아래 블록과 Toggle import,
           lipSyncEnabled/setLipSync store 값을 함께 되살리면 된다.
           {deliverableMode !== 'originalWithMultiAudio' && (
-            <div className="flex items-center justify-between rounded-lg bg-surface-50 p-3 dark:bg-surface-800">
+            <div className="flex items-center justify-between rounded-lg bg-paper-100 p-3 dark:bg-paper-800">
               <div>
-                <span className="text-sm text-surface-600 dark:text-surface-400">립싱크</span>
-                <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-300">더빙 오디오에 맞춰 입 모양을 조절합니다</p>
+                <span className="text-sm text-ink-500 dark:text-paper-400">립싱크</span>
+                <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-200">더빙 오디오에 맞춰 입 모양을 조절합니다</p>
               </div>
               <Toggle checked={lipSyncEnabled} onChange={setLipSync} />
             </div>
@@ -201,7 +201,7 @@ export function TranslationEditStep() {
                 value={
                   uploadSettings.thumbnailUrl
                     ? (
-                      <span className="relative block h-10 w-16 shrink-0 overflow-hidden rounded-md border border-surface-200 bg-surface-100 dark:border-surface-700 dark:bg-surface-900">
+                      <span className="relative block h-10 w-16 shrink-0 overflow-hidden rounded-md border border-paper-200 bg-paper-100 dark:border-paper-700 dark:bg-paper-900">
                         <Image
                           src={uploadSettings.thumbnailUrl}
                           alt=""
@@ -238,10 +238,10 @@ export function TranslationEditStep() {
         </div>
 
         {needsAutoUploadReview && (
-          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-surface-700 dark:border-amber-900/70 dark:bg-amber-950/20 dark:text-surface-200">
+          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-ink-600 dark:border-amber-900/70 dark:bg-amber-950/20 dark:text-ink-100">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 h-4 w-4 rounded border-paper-300 text-clay-600 focus:ring-clay-500"
               checked={uploadSettings.uploadReviewConfirmed}
               onChange={(e) => setUploadSettings({ uploadReviewConfirmed: e.target.checked })}
             />
@@ -276,14 +276,14 @@ function SummaryRow({
   description?: string
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-lg bg-surface-50 p-3 dark:bg-surface-800">
+    <div className="flex items-start justify-between gap-4 rounded-lg bg-paper-100 p-3 dark:bg-paper-800">
       <div className="min-w-0">
-        <span className="text-sm text-surface-600 dark:text-surface-300">{label}</span>
+        <span className="text-sm text-ink-500 dark:text-ink-200">{label}</span>
         {description && (
-          <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-300">{description}</p>
+          <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-200">{description}</p>
         )}
       </div>
-      <div className="max-w-[60%] break-words text-right text-sm font-medium text-surface-900 dark:text-white">
+      <div className="max-w-[60%] break-words text-right text-sm font-medium text-ink-900 dark:text-ink-50">
         {value}
       </div>
     </div>
@@ -295,7 +295,7 @@ function StatusValue({ active }: { active: boolean }) {
 
   return (
     <span className={cn(
-      active ? 'text-emerald-600 dark:text-emerald-400' : 'text-surface-500 dark:text-surface-300',
+      active ? 'text-emerald-600 dark:text-emerald-400' : 'text-ink-500 dark:text-ink-200',
     )}>
       {active ? t('features.dubbing.components.steps.translationEditStep.on') : t('features.dubbing.components.steps.translationEditStep.off')}
     </span>

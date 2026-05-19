@@ -351,7 +351,7 @@ export function UploadSettingsStep() {
                 onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
                 options={languageOptions}
               />
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles')}
               </p>
 
@@ -363,7 +363,7 @@ export function UploadSettingsStep() {
               />
 
               <div className="w-full">
-                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
                   {t('features.dubbing.components.steps.uploadSettingsStep.description')}
                 </label>
                 <textarea
@@ -372,7 +372,7 @@ export function UploadSettingsStep() {
                   value={uploadSettings.description}
                   onChange={(e) => setUploadSettings({ description: e.target.value })}
                   placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription')}
-                  className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+                  className="w-full resize-none rounded-lg border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-500 transition-colors focus-ring dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50 dark:placeholder:text-paper-400"
                 />
                 {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
                   <AiDisclosurePreview text={aiDisclosureText} />
@@ -386,7 +386,7 @@ export function UploadSettingsStep() {
                 onBlur={commitTags}
                 placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingReview')}
               />
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot')}
               </p>
             </>
@@ -398,7 +398,7 @@ export function UploadSettingsStep() {
                 onChange={(e) => setUploadSettings({ metadataLanguage: e.target.value })}
                 options={languageOptions}
               />
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadSettingsStep.thisIsTheLanguageYouWriteInTitles2')}
               </p>
 
@@ -410,7 +410,7 @@ export function UploadSettingsStep() {
               />
 
               <div className="w-full">
-                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
+                <label htmlFor="upload-description" className="mb-1.5 block text-sm font-medium text-ink-600 dark:text-ink-200">
                   {t('features.dubbing.components.steps.uploadSettingsStep.description2')}
                 </label>
                 <textarea
@@ -419,7 +419,7 @@ export function UploadSettingsStep() {
                   value={uploadSettings.description}
                   onChange={(e) => setUploadSettings({ description: e.target.value })}
                   placeholder={t('features.dubbing.components.steps.uploadSettingsStep.videoDescription2')}
-                  className="w-full resize-none rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-surface-900 placeholder:text-surface-500 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-400"
+                  className="w-full resize-none rounded-lg border border-paper-300 bg-paper-50 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-500 transition-colors focus-ring dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50 dark:placeholder:text-paper-400"
                 />
                 {uploadSettings.containsSyntheticMedia && shouldShowAiDisclosure && (
                   <AiDisclosurePreview text={aiDisclosureText} />
@@ -433,7 +433,7 @@ export function UploadSettingsStep() {
                 onBlur={commitTags}
                 placeholder={t('features.dubbing.components.steps.uploadSettingsStep.dubtubeAIDubbingCaptions')}
               />
-              <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+              <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.uploadSettingsStep.tagsAreUsedAsWrittenAndAreNot2')}
               </p>
             </>
@@ -464,7 +464,7 @@ export function UploadSettingsStep() {
 
         {(deliverableMode === 'newDubbedVideos' || isMultiAudio) && (
           <ToggleRow
-            icon={<Captions className="h-4 w-4 text-surface-400" />}
+            icon={<Captions className="h-4 w-4 text-paper-400" />}
             label={isMultiAudio
               ? t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRT')
               : t('features.dubbing.components.steps.uploadSettingsStep.uploadCaptionsSRTWithDubbedVideos')}
@@ -482,7 +482,7 @@ export function UploadSettingsStep() {
 
         {originalYouTubeUrl && deliverableMode === 'newDubbedVideos' && (
           <ToggleRow
-            icon={<Link2 className="h-4 w-4 text-surface-400" />}
+            icon={<Link2 className="h-4 w-4 text-paper-400" />}
             label={t('features.dubbing.components.steps.uploadSettingsStep.addOriginalYouTubeLinkToDescription')}
             description={originalYouTubeUrl}
             active={uploadSettings.attachOriginalLink}
@@ -526,13 +526,13 @@ export function UploadSettingsStep() {
             options={privacyOptions}
           />
           {hasPublishSchedule && (
-            <p className="-mt-2 text-xs text-surface-500 dark:text-surface-300">
+            <p className="-mt-2 text-xs text-ink-500 dark:text-ink-200">
               {t('features.dubbing.components.steps.uploadSettingsStep.scheduledUploadsArePrivateUntilPublish')}
             </p>
           )}
 
           <ToggleRow
-            icon={<Bell className="h-4 w-4 text-surface-400" />}
+            icon={<Bell className="h-4 w-4 text-paper-400" />}
             label={uploadOptionText.notifySubscribers}
             description={uploadOptionText.notifySubscribersDescription}
             active={uploadSettings.notifySubscribers}
@@ -605,7 +605,7 @@ export function UploadSettingsStep() {
                   </Button>
                 )}
               </div>
-              <p className="text-xs leading-5 text-surface-500 dark:text-surface-300">
+              <p className="text-xs leading-5 text-ink-500 dark:text-ink-200">
                 {thumbnailUploading
                   ? `${uploadOptionText.thumbnailUploading} ${thumbnailProgress}%`
                   : uploadOptionText.thumbnailHelp}
@@ -641,7 +641,7 @@ export function UploadSettingsStep() {
           {uploadsVideoToYouTube && (
             <>
               <ToggleRow
-                icon={<ShieldCheck className="h-4 w-4 text-surface-400" />}
+                icon={<ShieldCheck className="h-4 w-4 text-paper-400" />}
                 label={t('features.dubbing.components.steps.uploadSettingsStep.madeForKids')}
                 description={t('features.dubbing.components.steps.uploadSettingsStep.setThisAccordingToYouTubeMadeForKids')}
                 active={uploadSettings.selfDeclaredMadeForKids}
@@ -666,7 +666,7 @@ export function UploadSettingsStep() {
 
           {isMultiAudio && (
             <ToggleRow
-              icon={<Languages className="h-4 w-4 text-surface-400" />}
+              icon={<Languages className="h-4 w-4 text-paper-400" />}
               label={t('features.dubbing.components.steps.uploadSettingsStep.addMultilingualAudioTracks')}
               description={t('features.dubbing.components.steps.uploadSettingsStep.youTubeMultilingualAudioTracksAreComingSoon')}
               active={false}
@@ -701,7 +701,7 @@ function AiDisclosurePreview({ text }: { text: string }) {
       <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
         {t('features.dubbing.components.steps.uploadSettingsStep.automaticallyAddedToTheEndOfTheDescription')}
       </p>
-      <p className="mt-1 text-xs leading-5 text-surface-700 dark:text-surface-200">
+      <p className="mt-1 text-xs leading-5 text-ink-600 dark:text-ink-100">
         {text}
       </p>
     </div>
@@ -730,28 +730,28 @@ function SettingsSection({
   children,
 }: SettingsSectionProps) {
   return (
-    <section className="overflow-hidden rounded-lg border border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900">
+    <section className="overflow-hidden rounded-lg border border-paper-200 bg-paper-50 dark:border-paper-800 dark:bg-paper-900">
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-50 focus-ring dark:hover:bg-surface-850"
+        className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-paper-100 focus-ring dark:hover:bg-paper-900"
         aria-expanded={open}
       >
         <span className="min-w-0">
-          <span className="block text-sm font-semibold text-surface-900 dark:text-white">{title}</span>
+          <span className="block text-sm font-semibold text-ink-900 dark:text-ink-50">{title}</span>
           {description && (
-            <span className="mt-1 block text-xs leading-5 text-surface-500 dark:text-surface-300">
+            <span className="mt-1 block text-xs leading-5 text-ink-500 dark:text-ink-200">
               {description}
             </span>
           )}
         </span>
         <ChevronDown
-          className={`mt-0.5 h-4 w-4 shrink-0 text-surface-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`mt-0.5 h-4 w-4 shrink-0 text-paper-400 transition-transform ${open ? 'rotate-180' : ''}`}
           aria-hidden="true"
         />
       </button>
       {open && (
-        <div className="border-t border-surface-100 p-4 dark:border-surface-800">
+        <div className="border-t border-paper-200 p-4 dark:border-paper-800">
           <div className="space-y-4">{children}</div>
           {onContinue && (
             <div className="mt-4 flex justify-end">
@@ -794,15 +794,15 @@ function SchedulePublishRow({
   const t = useLocaleText()
 
   return (
-    <div className="rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50">
+    <div className="rounded-lg bg-paper-100 p-3 dark:bg-paper-800/50">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-2">
-          <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-surface-400" />
+          <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-paper-400" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-surface-700 dark:text-surface-300">
+            <p className="text-sm text-ink-600 dark:text-ink-200">
               {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublish')}
             </p>
-            <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-300">
+            <p className="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-200">
               {t('features.dubbing.components.steps.uploadSettingsStep.schedulePublishDescription')}
             </p>
           </div>
@@ -816,12 +816,12 @@ function SchedulePublishRow({
         >
           <span
             className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
-              active ? 'bg-brand-600' : 'bg-surface-300 dark:bg-surface-600'
+              active ? 'bg-clay-500' : 'bg-paper-300 dark:bg-paper-600'
             }`}
             aria-hidden="true"
           >
             <span
-              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-paper-50 shadow-sm transition-transform ${
                 active ? 'translate-x-4' : 'translate-x-0'
               }`}
             />
@@ -874,12 +874,12 @@ function ToggleRow({ icon, label, description, active, activeLabel, inactiveLabe
   const t = useLocaleText()
 
   return (
-    <div className={`flex flex-col gap-3 rounded-lg bg-surface-50 p-3 dark:bg-surface-800/50 sm:flex-row sm:items-start sm:justify-between ${disabled ? 'opacity-75' : ''}`}>
+    <div className={`flex flex-col gap-3 rounded-lg bg-paper-100 p-3 dark:bg-paper-800/50 sm:flex-row sm:items-start sm:justify-between ${disabled ? 'opacity-75' : ''}`}>
       <div className="flex min-w-0 items-start gap-2">
         <div className="mt-0.5 flex-shrink-0">{icon}</div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm text-surface-700 dark:text-surface-300">{label}</p>
+            <p className="text-sm text-ink-600 dark:text-ink-200">{label}</p>
             {disabled && (
               <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                 {disabledBadgeLabel ?? t('features.dubbing.components.steps.uploadSettingsStep.comingSoon')}
@@ -887,7 +887,7 @@ function ToggleRow({ icon, label, description, active, activeLabel, inactiveLabe
             )}
           </div>
           {description && (
-            <p className="mt-1 text-xs leading-5 text-surface-500 dark:text-surface-300">{description}</p>
+            <p className="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-200">{description}</p>
           )}
         </div>
       </div>
@@ -906,13 +906,13 @@ function ToggleRow({ icon, label, description, active, activeLabel, inactiveLabe
         <span
           className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
             active && !disabled
-              ? 'bg-brand-600'
-              : 'bg-surface-300 dark:bg-surface-600'
+              ? 'bg-clay-500'
+              : 'bg-paper-300 dark:bg-paper-600'
           }`}
           aria-hidden="true"
         >
           <span
-            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-paper-50 shadow-sm transition-transform ${
               active ? 'translate-x-4' : 'translate-x-0'
             }`}
           />

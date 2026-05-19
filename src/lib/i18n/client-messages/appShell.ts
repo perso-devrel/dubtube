@@ -6,7 +6,7 @@ export const appShellMessages = {
   "app.app.error.somethingWentWrong": { ko: "문제가 발생했습니다", en: "Something went wrong" },
   "app.app.error.tryAgain": { ko: "다시 시도", en: "Try again" },
   "components.layout.sidebar.labelBilling": { ko: "결제", en: "Billing" },
-  "components.layout.sidebar.labelDashboard": { ko: "대시보드", en: "Dashboard" },
+  "components.layout.sidebar.labelDashboard": { ko: "홈", en: "Home" },
   "components.layout.sidebar.labelDubbingJobs": { ko: "작업", en: "Jobs" },
   "components.layout.sidebar.labelNewDubbing": { ko: "새 작업", en: "New job" },
   "components.layout.sidebar.labelOperations": { ko: "운영 상태", en: "Operations" },

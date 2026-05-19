@@ -14,7 +14,7 @@ export default async function DashboardPage() {
 
   const [summary, jobs, creditUsage, ytUploads] = await Promise.all([
     getUserSummary(uid),
-    getUserDubbingJobs(uid, 10),
+    getUserDubbingJobs(uid, 5),
     getCreditUsageByMonth(uid),
     getUserYouTubeUploads(uid),
   ])

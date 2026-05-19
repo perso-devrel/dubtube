@@ -264,7 +264,7 @@ export function VideoInputStep() {
               </Button>
             </div>
             {loading && (
-              <p className="mt-2 text-xs text-surface-500 dark:text-surface-400">
+              <p className="mt-2 text-xs text-ink-500 dark:text-paper-400">
                 {isValidYouTubeUrl(url)
                   ? t('features.dubbing.components.steps.videoInputStep.importingFromYouTubeLongerVideosCanTakeA')
                   : t('features.dubbing.components.steps.videoInputStep.importingTheVideoFileLongerVideosCanTake')}
@@ -285,7 +285,7 @@ export function VideoInputStep() {
             role="button"
             tabIndex={0}
             aria-label={t('features.dubbing.components.steps.videoInputStep.selectVideoFile')}
-            className="cursor-pointer border-2 border-dashed border-surface-300 text-center transition-colors hover:border-brand-400 focus-ring dark:border-surface-700"
+            className="cursor-pointer border-2 border-dashed border-paper-300 text-center transition-colors hover:border-clay-400 focus-ring dark:border-paper-700"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileDrop}
             onClick={() => !loading && fileInputRef.current?.click()}
@@ -294,19 +294,19 @@ export function VideoInputStep() {
             <div className="py-8">
               {loading ? (
                 <>
-                  <FileVideo className="mx-auto h-10 w-10 text-brand-500 animate-pulse" />
-                  <p className="mt-3 text-sm font-medium text-surface-700 dark:text-surface-300">
+                  <FileVideo className="mx-auto h-10 w-10 text-clay-500 animate-pulse" />
+                  <p className="mt-3 text-sm font-medium text-ink-600 dark:text-ink-200">
                     {t('features.dubbing.components.steps.videoInputStep.uploadingVideo')}
                   </p>
                   <Progress value={uploadProgress} size="sm" className="mx-auto mt-3 max-w-xs" />
                 </>
               ) : (
                 <>
-                  <Upload className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-                  <p className="mt-3 text-sm font-medium text-surface-700 dark:text-surface-300">
+                  <Upload className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+                  <p className="mt-3 text-sm font-medium text-ink-600 dark:text-ink-200">
                     {t('features.dubbing.components.steps.videoInputStep.dragAVideoHereOrClickToSelect')}
                   </p>
-                  <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
+                  <p className="mt-1 text-xs text-ink-500 dark:text-paper-400">
                     {t('features.dubbing.components.steps.videoInputStep.mP4MOVAndWebMUpTo30Minutes')}
                   </p>
                 </>
@@ -321,32 +321,32 @@ export function VideoInputStep() {
         <TabsContent value="channel" className="mt-6">
           {channelLoading ? (
             <Card className="py-12 text-center">
-              <Loader2 className="mx-auto h-6 w-6 animate-spin text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.loadingChannelInformation')}</p>
+              <Loader2 className="mx-auto h-6 w-6 animate-spin text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.loadingChannelInformation')}</p>
             </Card>
           ) : isYouTubeConnectionError(channelError) ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
               <Button variant="outline" className="mt-4" onClick={goToYouTubeSettings}>{t('features.dubbing.components.steps.videoInputStep.connectChannel')}</Button>
             </Card>
           ) : channelError ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
               <p className="mt-3 text-sm text-red-500">
                 {channelError instanceof Error ? channelError.message : t('features.dubbing.components.steps.videoInputStep.couldNotLoadYouTubeChannelInformation')}
               </p>
             </Card>
           ) : !isConnected ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
               <Button variant="outline" className="mt-4" onClick={goToYouTubeSettings}>{t('features.dubbing.components.steps.videoInputStep.connectChannel')}</Button>
             </Card>
           ) : !myVideosLoaded ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">
                 {t('features.dubbing.components.steps.videoInputStep.loadMyVideosDescription')}
               </p>
               <Button
@@ -366,56 +366,56 @@ export function VideoInputStep() {
             </Card>
           ) : myVideosLoading ? (
             <Card className="py-12 text-center">
-              <Loader2 className="mx-auto h-6 w-6 animate-spin text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.loadingVideos')}</p>
+              <Loader2 className="mx-auto h-6 w-6 animate-spin text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.loadingVideos')}</p>
             </Card>
           ) : isYouTubeConnectionError(myVideosError) ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.connectYourYouTubeChannelToChooseFromYour')}</p>
               <Button variant="outline" className="mt-4" onClick={goToYouTubeSettings}>{t('features.dubbing.components.steps.videoInputStep.connectChannel')}</Button>
             </Card>
           ) : myVideosError ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
               <p className="mt-3 text-sm text-red-500">
                 {myVideosError instanceof Error ? myVideosError.message : t('features.dubbing.components.steps.videoInputStep.couldNotLoadYouTubeVideos')}
               </p>
             </Card>
           ) : myVideos.length === 0 ? (
             <Card className="py-12 text-center">
-              <Film className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.thereAreNoUploadedVideosOnThisChannel')}</p>
+              <Film className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.thereAreNoUploadedVideosOnThisChannel')}</p>
             </Card>
           ) : publicVideos.length === 0 ? (
             <Card className="py-12 text-center">
-              <Lock className="mx-auto h-10 w-10 text-surface-500 dark:text-surface-400" />
-              <p className="mt-3 text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.thereAreNoPublicVideosAvailableToImport')}</p>
-              <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
+              <Lock className="mx-auto h-10 w-10 text-ink-500 dark:text-paper-400" />
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.thereAreNoPublicVideosAvailableToImport')}</p>
+              <p className="mt-1 text-xs text-ink-500 dark:text-paper-400">
                 {t('features.dubbing.components.steps.videoInputStep.forPrivateOrUnlistedVideosUploadTheVideo')}
               </p>
             </Card>
           ) : (
             <Card>
               <div className="relative mb-3">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-400" />
                 <input
                   type="text"
                   value={videoSearch}
                   onChange={(e) => setVideoSearch(e.target.value)}
                   placeholder={t('features.dubbing.components.steps.videoInputStep.searchByVideoTitle')}
-                  className="w-full rounded-md border border-surface-300 bg-white py-2 pl-9 pr-3 text-sm text-surface-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-900 dark:text-white"
+                  className="w-full rounded-md border border-paper-300 bg-paper-50 py-2 pl-9 pr-3 text-sm text-ink-900 focus:border-clay-500 focus:outline-none focus:ring-1 focus:ring-clay-500 dark:border-paper-700 dark:bg-paper-900 dark:text-ink-50"
                 />
               </div>
 
               <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
                 {filteredVideos.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-surface-500 dark:text-surface-300">{t('features.dubbing.components.steps.videoInputStep.noMatchingVideos')}</p>
+                  <p className="py-8 text-center text-sm text-ink-500 dark:text-ink-200">{t('features.dubbing.components.steps.videoInputStep.noMatchingVideos')}</p>
                 ) : (
                   filteredVideos.map((video) => (
                     <div
                       key={video.videoId}
-                      className="flex items-center justify-between rounded-lg border border-surface-200 p-3 transition-colors hover:bg-surface-50 dark:border-surface-800 dark:hover:bg-surface-800/50"
+                      className="flex items-center justify-between rounded-lg border border-paper-200 p-3 transition-colors hover:bg-paper-100 dark:border-paper-800 dark:hover:bg-paper-800/50"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {video.thumbnail ? (
@@ -427,13 +427,13 @@ export function VideoInputStep() {
                             className="rounded object-cover shrink-0"
                           />
                         ) : (
-                          <div className="flex h-9 w-16 shrink-0 items-center justify-center rounded bg-surface-100 dark:bg-surface-800">
+                          <div className="flex h-9 w-16 shrink-0 items-center justify-center rounded bg-paper-100 dark:bg-paper-800">
                             <YouTubeLogo className="h-5 w-7" />
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-surface-900 dark:text-white">{video.title}</p>
-                          <p className="text-xs text-surface-500 dark:text-surface-300">
+                          <p className="truncate text-sm font-medium text-ink-900 dark:text-ink-50">{video.title}</p>
+                          <p className="text-xs text-ink-500 dark:text-ink-200">
                             {new Date(video.publishedAt).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US')}
                           </p>
                         </div>
@@ -454,7 +454,7 @@ export function VideoInputStep() {
               </div>
 
               {hiddenCount > 0 && !videoSearch && (
-                  <p className="mt-3 text-xs text-surface-500 dark:text-surface-400">
+                  <p className="mt-3 text-xs text-ink-500 dark:text-paper-400">
                   {t('features.dubbing.components.steps.videoInputStep.valuePrivateOrUnlistedVideosMustBeUploaded', { hiddenCount: hiddenCount })}
                 </p>
               )}
@@ -476,26 +476,26 @@ export function VideoInputStep() {
                 alt={videoMeta.title}
                 width={128}
                 height={80}
-                className="shrink-0 rounded-lg object-cover bg-surface-200"
+                className="shrink-0 rounded-lg object-cover bg-paper-200"
                 unoptimized={!videoMeta.thumbnail.startsWith('http')}
               />
             ) : (
-              <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg bg-surface-100 dark:bg-surface-800">
+              <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg bg-paper-100 dark:bg-paper-800">
                 <YouTubeLogo className="h-8 w-12" />
               </div>
             )}
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
-                <h3 className="min-w-0 flex-1 truncate font-semibold text-surface-900 dark:text-white">{videoMeta.title}</h3>
+                <h3 className="min-w-0 flex-1 truncate font-semibold text-ink-900 dark:text-ink-50">{videoMeta.title}</h3>
                 {videoMeta.durationMs <= 180000 && (
                   <Badge variant="brand" className="shrink-0">
                     <Zap className="h-3 w-3" /> {t('features.dubbing.components.steps.videoInputStep.shorts')}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-surface-500 dark:text-surface-300">{videoMeta.channelTitle}</p>
+              <p className="text-sm text-ink-500 dark:text-ink-200">{videoMeta.channelTitle}</p>
               {videoMeta.duration > 0 && (
-                <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
+                <p className="mt-1 text-xs text-ink-500 dark:text-paper-400">
                   {t('features.dubbing.components.steps.videoInputStep.durationLabel', {
                     duration: formatDuration(videoMeta.duration),
                   })}

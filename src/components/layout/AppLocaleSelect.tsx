@@ -39,14 +39,14 @@ export function AppLocaleSelect({ className }: AppLocaleSelectProps) {
 
   return (
     <div className={cn('relative', className)}>
-      <Globe2 className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500 dark:text-surface-300" />
+      <Globe2 className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500 dark:text-ink-200" />
       <select
         key={appLocale}
         aria-label="Language / 언어"
         defaultValue={appLocale}
         onChange={handleChange}
         onInput={handleInput}
-        className="h-9 w-full appearance-none rounded-md border border-surface-300 bg-white pl-8 pr-8 text-sm font-medium text-surface-800 transition-colors focus-ring dark:border-surface-700 dark:bg-surface-850 dark:text-surface-100"
+        className="h-9 w-full appearance-none rounded-md border border-paper-300 bg-paper-50 pl-8 pr-8 text-sm font-medium text-ink-800 transition-colors focus-ring dark:border-paper-700 dark:bg-paper-900 dark:text-ink-50"
       >
         {APP_LOCALES.map((locale) => (
           <option key={locale} value={locale}>
@@ -54,7 +54,7 @@ export function AppLocaleSelect({ className }: AppLocaleSelectProps) {
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-400" />
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-500 dark:text-paper-300" />
     </div>
   )
 }

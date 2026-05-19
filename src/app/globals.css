@@ -141,6 +141,16 @@ html.dark body {
   @apply bg-surface-950 text-surface-100;
 }
 
+.app-root {
+  background:
+    linear-gradient(180deg, rgb(250 248 242 / 0.94) 0%, rgb(242 237 226 / 0.84) 42%, rgb(250 248 242 / 0.96) 100%);
+}
+
+html.dark .app-root {
+  background:
+    linear-gradient(180deg, rgb(13 13 10 / 1) 0%, rgb(20 19 15 / 1) 46%, rgb(13 13 10 / 1) 100%);
+}
+
 code,
 kbd,
 samp,
@@ -159,18 +169,18 @@ pre {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-surface-300 rounded-full;
+  @apply bg-paper-300 rounded-full;
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  @apply bg-surface-700;
+  @apply bg-paper-700;
 }
 
 /* Focus ring utility */
 .focus-ring {
-  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-clay-400 focus-visible:ring-offset-2;
 }
 
 html.dark .focus-ring {
-  @apply focus-visible:ring-offset-surface-900;
+  @apply focus-visible:ring-offset-paper-950;
 }

@@ -14,7 +14,7 @@ export const youtubeMessages = {
   "app.app.youtube.page.defaultVisibility": { ko: "기본 공개 범위", en: "Default visibility" },
   "app.app.youtube.page.disconnectYouTube": { ko: "YouTube 연결 해제", en: "Disconnect YouTube" },
   "app.app.youtube.page.dubThisVideo": { ko: "이 영상 더빙", en: "Dub this video" },
-  "app.app.youtube.page.dubtubeRequestsYouTubePermissionsForChannelReadsUploads": { ko: "업로드, 자막 추가, 제목·설명 수정, 내 영상 목록 조회에 필요한 YouTube 권한만 요청합니다. 권한은 언제든 해제할 수 있습니다.", en: "sub2tube requests only the YouTube permissions needed to upload videos, add captions, update titles/descriptions, and list your videos. You can disconnect at any time." },
+  "app.app.youtube.page.dubtubeRequestsYouTubePermissionsForChannelReadsUploads": { ko: "업로드, 자막 추가, 제목·설명 수정, 내 영상 목록 조회에 필요한 YouTube 권한만 요청합니다.\n권한은 언제든 해제할 수 있습니다.", en: "sub2tube requests only the YouTube permissions needed to upload videos, add captions, update titles/descriptions, and list your videos.\nYou can disconnect at any time." },
   "app.app.youtube.page.loadingChannelInformation": { ko: "채널 정보 불러오는 중...", en: "Loading channel information..." },
   "app.app.youtube.page.loadingVideoList": { ko: "영상 목록 불러오는 중...", en: "Loading video list..." },
   "app.app.youtube.page.manageYourYouTubeChannelConnectionAndUploadDefaults": { ko: "YouTube 채널 연결과 업로드 기본값을 관리하세요.", en: "Manage your YouTube channel connection and upload defaults." },
@@ -30,5 +30,6 @@ export const youtubeMessages = {
   "app.app.youtube.page.uploadDefaults": { ko: "업로드 기본값", en: "Upload defaults" },
   "app.app.youtube.page.valueSubscribersValueVideos": { ko: "구독자 {formatNumberChannelSubscriberCount} · 영상 {formatNumberChannelVideoCount}개", en: "{formatNumberChannelSubscriberCount} subscribers · {formatNumberChannelVideoCount} videos" },
   "app.app.youtube.page.valueVideos": { ko: "{formatNumberChannelVideoCount}개 영상", en: "{formatNumberChannelVideoCount} videos" },
+  "app.app.youtube.page.youTubeConnectionRequired": { ko: "YouTube 연결이 필요합니다.", en: "YouTube connection required." },
   "app.app.youtube.page.youTubeSettings": { ko: "YouTube 설정", en: "YouTube settings" },
 } as const satisfies Record<string, LocalizedText>

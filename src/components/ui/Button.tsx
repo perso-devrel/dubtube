@@ -6,13 +6,13 @@ import { Loader2 } from 'lucide-react'
 
 const variants = {
   primary:
-    'bg-brand-600 text-white shadow-sm hover:bg-brand-700',
+    'bg-ink-900 text-paper-50 shadow-[0_1px_0_rgb(20_19_15/0.18)] hover:bg-clay-500 dark:bg-paper-50 dark:text-ink-900 dark:hover:bg-clay-400 dark:hover:text-paper-50',
   secondary:
-    'bg-surface-200 text-surface-900 hover:bg-surface-300 dark:bg-surface-800 dark:text-surface-100 dark:hover:bg-surface-700',
-  ghost: 'text-surface-700 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800',
-  destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
+    'border border-paper-200 bg-paper-100 text-ink-900 hover:bg-paper-200 dark:border-paper-700 dark:bg-paper-800 dark:text-ink-50 dark:hover:bg-paper-700',
+  ghost: 'text-ink-600 hover:bg-paper-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-paper-800 dark:hover:text-ink-50',
+  destructive: 'bg-red-600 text-paper-50 shadow-[0_1px_0_rgb(127_29_29/0.18)] hover:bg-red-700',
   outline:
-    'border border-surface-300 bg-white text-surface-700 hover:bg-surface-100 dark:border-surface-700 dark:bg-transparent dark:text-surface-300 dark:hover:bg-surface-800',
+    'border border-paper-300 bg-paper-50 text-ink-700 hover:border-ink-900 hover:bg-paper-100 hover:text-ink-900 dark:border-paper-700 dark:bg-transparent dark:text-ink-100 dark:hover:border-paper-500 dark:hover:bg-paper-800',
 } as const
 
 const sizes = {
@@ -33,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer',
+          'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer',
           variants[variant],
           sizes[size],
           className,

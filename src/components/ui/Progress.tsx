@@ -15,13 +15,13 @@ export function Progress({ value, max = 100, className, showLabel, size = 'md' }
   return (
     <div className={cn('w-full', className)}>
       {showLabel && (
-        <div className="mb-1 flex justify-between text-xs text-surface-500 dark:text-surface-400">
+        <div className="mb-1 flex justify-between text-xs text-ink-500 dark:text-ink-200">
           <span>Progress</span>
           <span>{Math.round(pct)}%</span>
         </div>
       )}
-      <div className={cn('w-full overflow-hidden rounded-full bg-surface-200 dark:bg-surface-800', heights[size])}>
-        <div className={cn('h-full rounded-full bg-brand-600 transition-all duration-500')} style={{ width: `${pct}%` }} />
+      <div className={cn('w-full overflow-hidden rounded-full bg-paper-200 dark:bg-paper-800', heights[size])}>
+        <div className={cn('h-full rounded-full bg-clay-500 transition-all duration-500')} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

@@ -227,12 +227,12 @@ export function SettingsClient() {
       {isYouTubeConnected && (
         <Card>
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-300">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-clay-50 text-clay-600 dark:bg-clay-800/20 dark:text-clay-200">
               <Video className="h-5 w-5" />
             </div>
             <div>
               <CardTitle>{t('settings.youtubeDefaults.title')}</CardTitle>
-              <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+              <p className="mt-1 text-sm text-ink-500 dark:text-paper-400">
                 {t('settings.youtubeDefaults.description')}
               </p>
             </div>
@@ -257,7 +257,7 @@ export function SettingsClient() {
             />
             <div className="md:col-span-2">
               <div className="mb-1.5 flex items-center justify-between gap-3">
-                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300">
+                <label className="block text-sm font-medium text-ink-600 dark:text-ink-200">
                   {t('settings.launchLanguageSelection')}
                 </label>
                 <Button type="button" variant="outline" size="sm" onClick={openLaunchLanguageModal}>
@@ -265,13 +265,13 @@ export function SettingsClient() {
                   {t('settings.launchLanguageSelection.edit')}
                 </Button>
               </div>
-              <div className="rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-850">
+              <div className="rounded-lg border border-paper-200 bg-paper-100 p-3 dark:border-paper-700 dark:bg-paper-900">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-sm font-medium text-surface-900 dark:text-surface-100">
+                    <p className="text-sm font-medium text-ink-900 dark:text-ink-50">
                       {t(selectedPreset.labelKey)}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-surface-600 dark:text-surface-300">
+                    <p className="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-200">
                       {t('settings.launchLanguageSelection.selectedCount', { count: targetLanguageCodes.length })}
                     </p>
                   </div>
@@ -281,7 +281,7 @@ export function SettingsClient() {
                   {presetLanguages.map((language) => language && (
                     <span
                       key={language.code}
-                      className="max-w-full rounded-full bg-white px-2.5 py-1 text-xs font-medium text-surface-700 ring-1 ring-surface-200 dark:bg-surface-900 dark:text-surface-200 dark:ring-surface-700"
+                      className="max-w-full rounded-full bg-paper-50 px-2.5 py-1 text-xs font-medium text-ink-600 ring-1 ring-paper-200 dark:bg-paper-900 dark:text-ink-100 dark:ring-paper-700"
                     >
                       {language.flag} {isEnglish ? language.name : language.nativeName}
                     </span>
@@ -295,12 +295,12 @@ export function SettingsClient() {
 
       <Card>
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-clay-50 text-clay-600 dark:bg-clay-800/20 dark:text-clay-200">
             <Globe2 className="h-5 w-5" />
           </div>
           <div>
             <CardTitle>{t('settings.languageDefaults.title')}</CardTitle>
-            <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+            <p className="mt-1 text-sm text-ink-500 dark:text-paper-400">
               {t('settings.languageDefaults.description')}
             </p>
           </div>
@@ -336,8 +336,8 @@ export function SettingsClient() {
       </Card>
 
       {hasPendingPreferenceChanges && (
-        <div className="flex flex-col gap-3 rounded-lg border border-brand-200 bg-brand-50 p-3 dark:border-brand-500/60 dark:bg-surface-850 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium text-brand-800 dark:text-surface-100">
+        <div className="flex flex-col gap-3 rounded-lg border border-clay-200 bg-clay-50 p-3 dark:border-clay-500/60 dark:bg-paper-900 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium text-clay-700 dark:text-ink-50">
             {t('settings.preferences.unsavedChanges')}
           </p>
           <Button onClick={savePreferences} loading={saveMutation.isPending} className="w-full sm:w-auto">
@@ -357,7 +357,7 @@ export function SettingsClient() {
       >
         <div className="space-y-5">
           <div>
-            <p className="mb-2 text-sm font-medium text-surface-800 dark:text-surface-100">
+            <p className="mb-2 text-sm font-medium text-ink-700 dark:text-ink-50">
               {t('settings.launchLanguages.presets')}
             </p>
             <div className="grid gap-2 md:grid-cols-3">
@@ -370,15 +370,15 @@ export function SettingsClient() {
                     onClick={() => applyLanguagePreset(preset.languageCodes)}
                     className={`rounded-lg border p-3 text-left transition focus-ring ${
                       active
-                        ? 'border-brand-500 bg-brand-50 text-brand-900 dark:border-brand-400 dark:bg-surface-800 dark:text-surface-50'
-                        : 'border-surface-200 bg-white text-surface-800 hover:bg-surface-50 dark:border-surface-600 dark:bg-surface-850 dark:text-surface-100 dark:hover:bg-surface-800'
+                        ? 'border-clay-500 bg-clay-50 text-clay-800 dark:border-clay-400 dark:bg-paper-800 dark:text-ink-50'
+                        : 'border-paper-200 bg-paper-50 text-ink-700 hover:bg-paper-100 dark:border-paper-600 dark:bg-paper-900 dark:text-ink-50 dark:hover:bg-paper-800'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold">{t(preset.labelKey)}</span>
                       {active && <Check className="h-4 w-4" />}
                     </div>
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-surface-600 dark:text-surface-300">
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink-500 dark:text-ink-200">
                       {t(preset.descriptionKey)}
                     </p>
                   </button>
@@ -389,7 +389,7 @@ export function SettingsClient() {
 
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-surface-800 dark:text-surface-100">
+              <p className="text-sm font-medium text-ink-700 dark:text-ink-50">
                 {t('settings.launchLanguages.allLanguages')}
               </p>
               <Badge variant="brand">
@@ -406,8 +406,8 @@ export function SettingsClient() {
                     onClick={() => toggleModalLanguage(language.code)}
                     className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition focus-ring ${
                       selected
-                        ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-surface-800 dark:text-surface-50'
-                        : 'border-surface-200 bg-white text-surface-700 hover:bg-surface-50 dark:border-surface-600 dark:bg-surface-850 dark:text-surface-200 dark:hover:bg-surface-800'
+                        ? 'border-clay-400 bg-clay-50 text-clay-700 dark:border-clay-400 dark:bg-paper-800 dark:text-ink-50'
+                        : 'border-paper-200 bg-paper-50 text-ink-600 hover:bg-paper-100 dark:border-paper-600 dark:bg-paper-900 dark:text-ink-100 dark:hover:bg-paper-800'
                     }`}
                   >
                     <span className="min-w-0 truncate">
@@ -502,7 +502,7 @@ function AccountDangerZone() {
         title={t('settings.accountDeletion.modalTitle')}
       >
         <div className="space-y-5">
-          <p className="text-sm leading-6 text-surface-700 dark:text-surface-300">
+          <p className="text-sm leading-6 text-ink-600 dark:text-ink-200">
             {t('settings.accountDeletion.modalDescription')}
           </p>
           <Input
@@ -541,9 +541,7 @@ function YouTubeConnectionCard() {
   const { data: channel, isLoading: channelLoading, error: channelError } = useChannelStats()
   const missingYouTubeConnection = isYouTubeConnectionError(channelError)
   const isConnected = !!channel && !missingYouTubeConnection
-  const connectionMessage = missingYouTubeConnection && channelError instanceof Error
-    ? channelError.message
-    : t('app.app.youtube.page.noYouTubeChannelConnected')
+  const connectionMessage = t('app.app.youtube.page.youTubeConnectionRequired')
 
   const handleReconnect = async () => {
     setConnecting(true)
@@ -583,18 +581,18 @@ function YouTubeConnectionCard() {
   return (
     <Card>
       <div className="mb-4 flex items-center gap-2">
-        <Settings className="h-5 w-5 text-surface-400" />
+        <Settings className="h-5 w-5 text-paper-400" />
         <CardTitle>{t('app.app.youtube.page.connectedChannel')}</CardTitle>
       </div>
 
       {channelLoading ? (
-        <div className="mt-4 flex items-center gap-2 text-surface-500 dark:text-surface-300">
+        <div className="mt-4 flex items-center gap-2 text-ink-500 dark:text-ink-200">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">{t('app.app.youtube.page.loadingChannelInformation')}</span>
         </div>
       ) : channelError && !missingYouTubeConnection ? (
         <div className="mt-4 flex flex-col items-center gap-3 py-8">
-          <Video className="h-12 w-12 text-surface-300" />
+          <Video className="h-12 w-12 text-ink-200" />
           <p className="text-sm text-red-500">
             {channelError instanceof Error ? channelError.message : t('app.app.youtube.page.couldNotLoadYouTubeChannelInformation')}
           </p>
@@ -612,13 +610,13 @@ function YouTubeConnectionCard() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-lg font-bold text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-clay-500 text-lg font-bold text-paper-50">
                 {channel.title[0]?.toUpperCase() || 'Y'}
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate font-semibold text-surface-900 dark:text-white">{channel.title}</p>
-              <p className="text-sm text-surface-500 dark:text-surface-300">
+              <p className="truncate font-semibold text-ink-900 dark:text-ink-50">{channel.title}</p>
+              <p className="text-sm text-ink-500 dark:text-ink-200">
                 {t('app.app.youtube.page.valueSubscribersValueVideos', {
                   formatNumberChannelSubscriberCount: formatNumber(channel.subscriberCount),
                   formatNumberChannelVideoCount: formatNumber(channel.videoCount),
@@ -634,9 +632,9 @@ function YouTubeConnectionCard() {
         </div>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-4 py-8">
-          <Video className="h-12 w-12 text-surface-300" />
-          <p className="max-w-md text-center text-sm leading-6 text-surface-600 dark:text-surface-300">{connectionMessage}</p>
-          <p className="max-w-md text-center text-xs leading-5 text-surface-600 dark:text-surface-300">
+          <Video className="h-12 w-12 text-ink-200" />
+          <p className="max-w-md text-center text-sm leading-6 text-ink-500 dark:text-ink-200">{connectionMessage}</p>
+          <p className="max-w-md whitespace-pre-line text-center text-xs leading-5 text-ink-500 dark:text-ink-200">
             {t('app.app.youtube.page.dubtubeRequestsYouTubePermissionsForChannelReadsUploads')}
           </p>
           <Button onClick={handleReconnect} loading={connecting}>

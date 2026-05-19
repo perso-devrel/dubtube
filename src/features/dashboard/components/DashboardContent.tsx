@@ -12,9 +12,9 @@ import type { DashboardInitialData } from './types'
 function ChartSkeleton() {
   return (
     <Card>
-      <div className="h-8 w-32 animate-pulse rounded bg-surface-200 dark:bg-surface-700" />
-      <div className="mt-2 h-4 w-48 animate-pulse rounded bg-surface-100 dark:bg-surface-800" />
-      <div className="mt-4 h-64 animate-pulse rounded bg-surface-100 dark:bg-surface-800" />
+      <div className="h-8 w-32 animate-pulse rounded bg-paper-200 dark:bg-paper-700" />
+      <div className="mt-2 h-4 w-48 animate-pulse rounded bg-paper-100 dark:bg-paper-800" />
+      <div className="mt-4 h-64 animate-pulse rounded bg-paper-100 dark:bg-paper-800" />
     </Card>
   )
 }
@@ -69,10 +69,7 @@ export function DashboardContent({ initial }: { initial: DashboardInitialData })
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{t('features.dashboard.components.dashboardContent.dashboard')}</h1>
-        <p className="text-surface-600 dark:text-surface-400">{t('features.dashboard.components.dashboardContent.reviewRecentDubbingUploadsAndMinuteUsage')}</p>
-      </div>
+      <h1 className="sr-only">{t('features.dashboard.components.dashboardContent.dashboard')}</h1>
 
       <DashboardSummary initialData={initial.summary} />
       <QuickStart />

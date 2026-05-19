@@ -33,7 +33,7 @@ export function Tabs({ defaultValue, children, className, onChange }: TabsProps)
 
 export function TabsList({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div role="tablist" className={cn('flex gap-1 rounded-lg bg-surface-100 p-1 dark:bg-surface-800', className)}>
+    <div role="tablist" className={cn('flex gap-1 rounded-lg bg-paper-100 p-1 dark:bg-paper-800', className)}>
       {children}
     </div>
   )
@@ -51,8 +51,8 @@ export function TabsTrigger({ value, children, className }: { value: string; chi
       className={cn(
         'rounded-md px-3 py-1.5 text-sm font-medium transition-all cursor-pointer focus-ring',
         isActive
-          ? 'bg-white text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-100'
-          : 'text-surface-600 hover:text-surface-800 dark:text-surface-300 dark:hover:text-surface-100',
+          ? 'bg-ink-900 text-paper-50 shadow-sm dark:bg-paper-50 dark:text-ink-900'
+          : 'text-ink-500 hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50',
         className,
       )}
     >

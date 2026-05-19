@@ -186,7 +186,7 @@ export const dubbingMessages = {
   "features.dubbing.components.steps.uploadStep.editCaptionsAndDialogue": { ko: "자막 · 대사 편집", en: "Edit captions and dialogue" },
   "features.dubbing.components.steps.uploadStep.failedLanguages": { ko: "실패한 언어", en: "Failed languages" },
   "features.dubbing.components.steps.uploadStep.googleSignInRequired": { ko: "Google 로그인 필요", en: "Google sign-in required" },
-  "features.dubbing.components.steps.uploadStep.goToDashboard": { ko: "대시보드로", en: "Go to dashboard" },
+  "features.dubbing.components.steps.uploadStep.goToDashboard": { ko: "홈으로", en: "Go home" },
   "features.dubbing.components.steps.uploadStep.madeForKids": { ko: "아동용", en: "Made for kids" },
   "features.dubbing.components.steps.uploadStep.newDubbing": { ko: "새 작업", en: "New job" },
   "features.dubbing.components.steps.uploadStep.no": { ko: "아니오", en: "No" },

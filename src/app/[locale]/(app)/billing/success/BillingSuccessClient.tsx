@@ -60,11 +60,11 @@ export function BillingSuccessClient({ paymentKey, orderId, amount }: Props) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Card className="overflow-hidden rounded-2xl p-0">
-        <div className="border-b border-surface-200 bg-surface-50 p-6 dark:border-surface-800 dark:bg-surface-950">
-          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-paper-200 bg-paper-100 p-6 dark:border-paper-800 dark:bg-paper-950">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-paper-200 bg-paper-50 dark:border-paper-800 dark:bg-paper-900">
             {status === 'confirming' ? (
-              <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+              <Loader2 className="h-6 w-6 animate-spin text-clay-500" />
             ) : status === 'done' ? (
               <Check className="h-6 w-6 text-emerald-500" />
             ) : (
@@ -78,24 +78,24 @@ export function BillingSuccessClient({ paymentKey, orderId, amount }: Props) {
                 ? t('app.app.billing.success.billingSuccessClient.paymentConfirmationFailed2')
                 : t('app.app.billing.success.billingSuccessClient.confirmingPayment')}
           </CardTitle>
-          <p className="mt-2 break-keep text-sm leading-6 text-surface-600 dark:text-surface-300">{message}</p>
+          <p className="mt-2 break-keep text-sm leading-6 text-ink-500 dark:text-ink-200">{message}</p>
         </div>
 
         <div className="p-6">
-          <div className="mb-5 h-2 overflow-hidden rounded-full bg-surface-100 dark:bg-surface-800">
+          <div className="mb-5 h-2 overflow-hidden rounded-full bg-paper-100 dark:bg-paper-800">
             <div
               className={`h-full rounded-full ${
                 status === 'done'
                   ? 'bg-emerald-500'
                   : status === 'error'
                     ? 'bg-red-500'
-                    : 'bg-brand-600'
+                    : 'bg-clay-500'
               }`}
               style={{ width: status === 'confirming' ? '62%' : '100%' }}
             />
           </div>
           <LocaleLink href="/billing">
-            <Button className="w-full rounded-xl">{t('app.app.billing.success.billingSuccessClient.backToBilling')}</Button>
+            <Button className="w-full">{t('app.app.billing.success.billingSuccessClient.backToBilling')}</Button>
           </LocaleLink>
         </div>
       </Card>

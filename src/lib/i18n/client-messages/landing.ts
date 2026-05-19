@@ -79,7 +79,7 @@ export const landingMessages = {
   "features.landing.pricingSection.noSubscriptionRequiredPurchasedMinutesAreUsedIn": { ko: "구독 없이 필요한 만큼 충전하세요. 시간은 1분 단위로 사용합니다.", en: "No subscription required. Purchased minutes are used in one-minute units." },
   "features.landing.rOICalculator.actualPerformanceDependsOnContentThumbnailsUploadCadence": { ko: "실제 성과는 콘텐츠·썸네일·업로드 빈도·채널 규모에 따라 크게 달라집니다.", en: "Actual performance depends on content, thumbnails, upload cadence, and channel size." },
   "features.landing.rOICalculator.aReferenceEstimateBasedOnPublicCasesAnd": { ko: "공개 사례와 업계 데이터를 바탕으로 한 참고용 추정치입니다.", en: "A reference estimate based on public cases and industry data." },
-  "features.landing.rOICalculator.estimatedReachCalculator": { ko: "예상 도달 범위 계산기", en: "Estimated reach calculator" },
+  "features.landing.rOICalculator.estimatedReachCalculator": { ko: "언어 수에 따른 예상 조회수", en: "Projected views by language count" },
   "features.landing.rOICalculator.from": { ko: "월 조회수", en: "From" },
   "features.landing.rOICalculator.monthlyViews": { ko: "회에서", en: " monthly views" },
   "features.landing.rOICalculator.numberOfDubbingLanguages": { ko: "더빙 언어 수", en: "Number of dubbing languages" },

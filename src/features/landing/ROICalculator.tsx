@@ -32,7 +32,7 @@ export function ROICalculator() {
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           {/* LEFT — editorial column */}
           <div>
-            <CategoryLabel kr="도달 범위" en="Reach" />
+            <CategoryLabel kr="조회수 예상" en="View estimate" />
             <h2 className="display-tight mt-3 max-w-md break-keep text-[32px] font-semibold leading-[1.08] text-ink-900 dark:text-ink-50 sm:text-[40px] lg:text-[44px]">
               {t('features.landing.rOICalculator.estimatedReachCalculator')}
             </h2>
